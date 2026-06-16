@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+
+# Python
+.venv/
+dist/
+*.egg-info/
+.eggs/
+__pycache__/
+.ruff_cache/
+uv.lock
+.python-version
+
+# Tests & coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# MkDocs
+site/
+mkdocs.log
