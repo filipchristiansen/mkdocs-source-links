@@ -14,6 +14,8 @@ MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML
 - **Directories** → `https://…/tree/<branch>/<path>`
 - **v1:** GitHub only (other hosts: links left unchanged)
 
+**Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links/>
+
 ## Install
 
 ```bash
