@@ -1,0 +1,52 @@
+# Install: uv sync --all-groups && pre-commit install
+# Run manually: uv run pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-ast
+      - id: check-added-large-files
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.48.0
+    hooks:
+      - id: markdownlint-fix
+        args: [--config, .markdownlint.yaml]
+
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+
+      - id: pydoclint
+        name: pydoclint
+        entry: uv run pydoclint src tests
+        language: system
+        pass_filenames: false
+
+      - id: pylint
+        name: pylint
+        entry: uv run pylint src tests
+        language: system
+        pass_filenames: false

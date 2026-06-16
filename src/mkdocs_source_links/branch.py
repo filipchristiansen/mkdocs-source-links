@@ -2,14 +2,36 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 
 def resolve_branch(
     *,
     plugin_branch: str | None,
-    extra: dict,
+    extra: Mapping[str, Any],
     edit_uri: str | None,
 ) -> str:
-    """Return branch name using plugin config, extra.git_branch, edit_uri, or main."""
+    """Resolve the git branch name used in forge view URLs.
+
+    Branch resolution follows MkDocs and plugin configuration in priority order: explicit plugin
+    ``branch``, then ``extra.git_branch``, then the branch parsed from ``edit_uri``, then ``main``.
+
+    Parameters
+    ----------
+    plugin_branch : str | None
+        Value of the plugin's ``branch`` config option, if set.
+    extra : Mapping[str, Any]
+        MkDocs ``extra`` mapping; ``git_branch`` is consulted when present.
+    edit_uri : str | None
+        MkDocs ``edit_uri``; the segment after ``edit/`` or ``blob/`` is used as the branch name
+        when present.
+
+    Returns
+    -------
+    str
+        Branch name for forge URLs.
+    """
     if plugin_branch:
         return plugin_branch
     if branch := extra.get("git_branch"):

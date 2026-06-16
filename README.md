@@ -1,4 +1,12 @@
-# mkdocs-source-links
+# MkDocs Source Links
+
+[![CI](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/filipchristiansen/mkdocs-source-links/graph/badge.svg)](https://codecov.io/gh/filipchristiansen/mkdocs-source-links)
+[![python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads)
+[![uv](https://img.shields.io/badge/uv-managed-DE5FE9?logo=astral)](https://docs.astral.sh/uv)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![mypy](https://img.shields.io/badge/mypy-checked-039dfc?logo=mypy&logoColor=white)](https://mypy-lang.org/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML only**. Source markdown keeps relative paths so GitHub and your IDE still work.
 
@@ -54,10 +62,19 @@ If your default branch is not `main`, set `edit_uri`, `extra.git_branch`, or `so
 
 ## Development
 
+This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-commit.com), and a `Makefile`.
+
 ```bash
-uv sync --group dev
-uv run pytest
-uv run ruff check .
+make install   # install Python 3.10, sync all groups, set up pre-commit hooks
+make ci        # run the full pre-PR suite: lint, test, coverage
+```
+
+Individual targets:
+
+```bash
+make sync      # sync all dependency groups
+make lint      # run pre-commit hooks (ruff, mypy, pydoclint, pylint, ...)
+make test      # run pytest with coverage
 ```
 
 ## License

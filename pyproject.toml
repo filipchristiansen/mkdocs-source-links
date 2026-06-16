@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-source-links"
-version = "0.1.0"
+version = "0.1.1"
 description = "MkDocs plugin: rewrite ../ repo links to forge view URLs in built HTML"
 readme = "README.md"
 license = "MIT"
@@ -36,10 +36,24 @@ source-links = "mkdocs_source_links.plugin:SourceLinksPlugin"
 packages = ["src/mkdocs_source_links"]
 
 [dependency-groups]
-dev = ["pytest>=8.0", "ruff>=0.8"]
+dev = [
+    "mypy>=2.1.0",
+    "pytest>=9.1.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.17",
+    "pre-commit>=3.0",
+    "pydoclint>=0.8.6",
+    "pylint>=4.0.6",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src/mkdocs_source_links"]
+
+[tool.coverage.report]
+fail_under = 100
 
 [tool.ruff]
 target-version = "py310"
@@ -47,4 +61,59 @@ line-length = 100
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = [
+  # Style & format
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "I",   # isort
+  "Q",   # flake8-quotes
+  "UP",  # pyupgrade
+  "ISC", # flake8-implicit-str-concat
+  "TID", # flake8-tidy-imports
+  # Correctness & bugs
+  "F",   # pyflakes
+  "B",   # flake8-bugbear
+  "BLE", # flake8-blind-except
+  "TRY", # tryceratops (exception handling)
+  "EM",  # flake8-errmsg
+  "RSE", # flake8-raise
+  "SLF", # flake8-self
+  # Simplify & modernize
+  "C4",  # flake8-comprehensions
+  "SIM", # flake8-simplify
+  "PTH", # flake8-use-pathlib
+  "ERA", # eradicate (commented-out code)
+  "T10", # flake8-debugger
+  "T20", # flake8-print
+  "PIE", # flake8-pie
+  "RET", # flake8-return
+  "YTT", # flake8-2020 (version checks)
+  "FLY", # flynt (f-strings)
+  "RUF", # Ruff-specific
+  # Type hints & API
+  "ANN", # flake8-annotations
+  "ARG", # flake8-unused-arguments
+  "FBT", # flake8-boolean-trap
+  # Security
+  "S",   # flake8-bandit
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",  # assert — standard in pytest
+    "S603",  # subprocess — used in integration tests with fixed argv
+]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src", "tests"]
+
+[tool.pylint.basic]
+no-docstring-rgx = "^(test_|_)"
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pydoclint]
+style = "numpy"
+check-style-mismatch = true

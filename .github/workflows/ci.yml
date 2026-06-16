@@ -1,11 +1,55 @@
 name: CI
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
-  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Force uv to use managed CPython installs so cache-python actually caches the interpreter
+env:
+  UV_PYTHON_PREFERENCE: only-managed
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          python-version: "3.10"
+          enable-cache: true
+          cache-python: true
+          cache-suffix: lint
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Ruff
+        run: uv run ruff check src tests
+
+      - name: Ruff format
+        run: uv run ruff format --check src tests
+
+      - name: Mypy
+        run: uv run mypy
+
+      - name: Pydoclint
+        run: uv run pydoclint src tests
+
+      - name: Pylint
+        run: uv run pylint src tests
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -13,21 +57,31 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
-
-      - name: Set up Python
-        run: uv python install ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-python: true
+          cache-suffix: test
 
       - name: Install dependencies
         run: uv sync --group dev
 
-      - name: Ruff
-        run: uv run ruff check .
-
+      # Coverage only on 3.10 (uploaded to Codecov); other versions run tests only.
       - name: Pytest
-        run: uv run pytest -q
+        run: uv run pytest ${{ matrix.python-version == '3.10' && '--cov --cov-report=xml' || '' }}
+
+      # Uses the token for pushes/same-repo PRs; falls back to tokenless uploads on fork PRs
+      # (where secrets are unavailable). fail_ci_if_error stays false so an occasional
+      # flaky/tokenless upload never blocks a merge.
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.python-version == '3.10' }}
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false

@@ -12,8 +12,8 @@ from mkdocs_source_links.urls import repo_view_url
 REPO = "https://github.com/example/example-repo"
 
 
-@pytest.fixture
-def repo_tree(tmp_path: Path) -> Path:
+@pytest.fixture(name="repo_tree")
+def _repo_tree(tmp_path: Path) -> Path:
     """Minimal repo: docs/page.md, env.example, backend/, scripts/."""
     docs = tmp_path / "docs"
     docs.mkdir()
@@ -59,6 +59,26 @@ def test_repo_relative_path_outside_repo(repo_tree: Path) -> None:
     )
 
 
+def test_repo_relative_path_non_parent_href(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    assert repo_relative_path(page_abs_path=page, href="other.md", repo_root=repo_tree) is None
+
+
+def test_rewrite_outside_repo_unchanged(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[etc](../../etc/passwd)."
+    assert (
+        rewrite_repo_parent_links(
+            md,
+            page_abs_path=page,
+            repo_root=repo_tree,
+            repo_url=REPO,
+            branch="main",
+        )
+        == md
+    )
+
+
 def test_rewrite_leaves_in_doc_links(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "See [other](other.md#anchor)."
@@ -84,9 +104,7 @@ def test_rewrite_file_link_to_blob(repo_tree: Path) -> None:
         repo_url=REPO,
         branch="main",
     )
-    assert out == (
-        "[`config.py`](https://github.com/example/example-repo/blob/main/backend/src/config.py)."
-    )
+    assert out == (f"[`config.py`]({REPO}/blob/main/backend/src/config.py).")
 
 
 def test_rewrite_directory_link_to_tree(repo_tree: Path) -> None:
@@ -99,7 +117,7 @@ def test_rewrite_directory_link_to_tree(repo_tree: Path) -> None:
         repo_url=REPO,
         branch="develop",
     )
-    assert out == "[scripts](https://github.com/example/example-repo/tree/develop/scripts)."
+    assert out == f"[scripts]({REPO}/tree/develop/scripts)."
 
 
 def test_rewrite_link_with_fragment(repo_tree: Path) -> None:
@@ -112,7 +130,7 @@ def test_rewrite_link_with_fragment(repo_tree: Path) -> None:
         repo_url=REPO,
         branch="main",
     )
-    assert out == "[env](https://github.com/example/example-repo/blob/main/env.example#section)."
+    assert out == f"[env]({REPO}/blob/main/env.example#section)."
 
 
 def test_rewrite_missing_path_unchanged(repo_tree: Path) -> None:
