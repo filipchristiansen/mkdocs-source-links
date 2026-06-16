@@ -5,12 +5,16 @@
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `branch` | string | resolved (see below) | Git branch used in forge URLs. |
+| `forge` | string | autodetected | Forge type: `github`, `gitlab`, `bitbucket`, `gitea`, or `azure`. Overrides host autodetection. |
 
 ```yaml
 plugins:
   - source-links:
       branch: develop
+      forge: gitlab   # only needed when autodetection can't identify the host
 ```
+
+See [Forges](forges.md) for the support matrix and when `forge` is needed.
 
 ## Branch resolution
 

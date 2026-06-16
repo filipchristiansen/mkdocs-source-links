@@ -13,6 +13,7 @@ from mkdocs.structure.pages import Page
 
 from .branch import resolve_branch
 from .rewrite import rewrite_repo_parent_links
+from .urls import SUPPORTED_FORGES
 
 
 class SourceLinksPlugin(BasePlugin):
@@ -25,7 +26,8 @@ class SourceLinksPlugin(BasePlugin):
     ----------
     config_scheme : PlainConfigSchema
         Plugin configuration schema. Supports an optional ``branch`` key to override the git branch
-        used in forge URLs.
+        used in forge URLs, and an optional ``forge`` key to override forge autodetection (one of
+        ``github``, ``gitlab``, ``bitbucket``, ``gitea``, ``azure``).
 
     Notes
     -----
@@ -35,6 +37,7 @@ class SourceLinksPlugin(BasePlugin):
 
     config_scheme: PlainConfigSchema = (
         ("branch", config_options.Optional(config_options.Type(str))),
+        ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
     )
 
     def on_page_markdown(
@@ -81,4 +84,5 @@ class SourceLinksPlugin(BasePlugin):
                 extra=config.extra or {},
                 edit_uri=config.edit_uri,
             ),
+            forge=self.config.get("forge"),
         )
