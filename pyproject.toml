@@ -35,6 +35,15 @@ source-links = "mkdocs_source_links.plugin:SourceLinksPlugin"
 [tool.hatch.build.targets.wheel]
 packages = ["src/mkdocs_source_links"]
 
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/mkdocs_source_links",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+
 [dependency-groups]
 dev = [
     "mypy>=2.1.0",
