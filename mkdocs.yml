@@ -1,0 +1,59 @@
+site_name: MkDocs Source Links
+site_description: MkDocs plugin that rewrites ../ repo links to git-forge view URLs in built HTML.
+site_url: https://filipchristiansen.github.io/mkdocs-source-links/
+repo_url: https://github.com/filipchristiansen/mkdocs-source-links
+repo_name: filipchristiansen/mkdocs-source-links
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+  - source-links
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_root_heading: true
+            show_source: true
+            separate_signature: true
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Configuration: configuration.md
+  - Forges: forges.md
+  - Limitations: limitations.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+  - API reference: api.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true

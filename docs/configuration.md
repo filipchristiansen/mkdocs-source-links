@@ -1,0 +1,33 @@
+# Configuration
+
+## Options
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `branch` | string | resolved (see below) | Git branch used in forge URLs. |
+
+```yaml
+plugins:
+  - source-links:
+      branch: develop
+```
+
+## Branch resolution
+
+When `branch` is not set explicitly, it is resolved in this order:
+
+1. Plugin `branch:` config
+2. `extra.git_branch` in `mkdocs.yml`
+3. Parsed from `edit_uri` (`edit/<branch>/...` or `blob/<branch>/...`)
+4. Fallback: `main`
+
+If your default branch is not `main`, set `edit_uri`, `extra.git_branch`, or `source-links.branch`
+so links point at the right ref.
+
+```yaml
+# Example: resolve branch from edit_uri
+edit_uri: edit/trunk/docs/
+
+plugins:
+  - source-links
+```
