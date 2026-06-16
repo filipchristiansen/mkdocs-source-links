@@ -15,10 +15,12 @@ can be surprising. Tracked in
 Only inline links of the form `](../path)` are matched. Reference-style links (`[x][ref]`), links
 with titles (`](../x "title")`), and angle-bracket links (`](<../x>)`) are not currently rewritten.
 
-## GitHub only
+## Forge detection
 
-URLs are only built for `github.com`. Other hosts (including GitHub Enterprise) are left unchanged
-for now. See [Forges](forges.md).
+URLs are built for GitHub, GitLab, Bitbucket, Gitea/Forgejo, and Azure DevOps. Public hosts and
+common self-hosted patterns are autodetected; an instance on an unrelated custom domain needs an
+explicit [`forge`](configuration.md#options) setting, otherwise its links are left unchanged. See
+[Forges](forges.md).
 
 ## Existing targets only
 

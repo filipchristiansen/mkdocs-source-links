@@ -64,6 +64,7 @@ def rewrite_repo_parent_links(
     repo_root: Path,
     repo_url: str,
     branch: str,
+    forge: str | None = None,
 ) -> str:
     """Replace ``](../…)`` markdown links with git-forge view URLs.
 
@@ -83,6 +84,8 @@ def rewrite_repo_parent_links(
         Forge repository URL from ``mkdocs.yml`` (for example a GitHub URL).
     branch : str
         Git branch name to embed in blob/tree URLs.
+    forge : str | None
+        Explicit forge name; when ``None`` the forge is autodetected from ``repo_url``.
 
     Returns
     -------
@@ -91,8 +94,8 @@ def rewrite_repo_parent_links(
 
     Notes
     -----
-    Directory targets use ``tree`` URLs; file targets use ``blob`` URLs.
-    URL fragments (``#anchor``) are preserved. v1 supports GitHub only.
+    Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
+    distinguish them). URL fragments (``#anchor``) are preserved.
     """
 
     def repl(match: re.Match[str]) -> str:
@@ -111,7 +114,13 @@ def rewrite_repo_parent_links(
         else:
             return match.group(0)
 
-        url = repo_view_url(repo_url=repo_url, branch=branch, repo_path=repo_path, is_dir=is_dir)
+        url = repo_view_url(
+            repo_url=repo_url,
+            branch=branch,
+            repo_path=repo_path,
+            is_dir=is_dir,
+            forge=forge,
+        )
         if url is None:
             return match.group(0)
         return f"]({url}{fragment})"

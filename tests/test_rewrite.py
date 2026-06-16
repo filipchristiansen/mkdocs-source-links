@@ -151,17 +151,32 @@ def test_rewrite_missing_path_unchanged(repo_tree: Path) -> None:
 def test_rewrite_unsupported_host_unchanged(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[cfg](../backend/src/config.py)."
-    gitlab = "https://gitlab.com/example/example-repo"
+    unknown = "https://example.com/example/example-repo"
     assert (
         rewrite_repo_parent_links(
             md,
             page_abs_path=page,
             repo_root=repo_tree,
-            repo_url=gitlab,
+            repo_url=unknown,
             branch="main",
         )
         == md
     )
+
+
+def test_rewrite_forge_override(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[cfg](../backend/src/config.py)."
+    self_hosted = "https://scm.internal.example/example/example-repo"
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=self_hosted,
+        branch="main",
+        forge="gitlab",
+    )
+    assert out == f"[cfg]({self_hosted}/-/blob/main/backend/src/config.py)."
 
 
 def test_rewrite_uses_branch(repo_tree: Path) -> None:
@@ -204,7 +219,7 @@ def test_repo_view_url_directory() -> None:
 def test_repo_view_url_unsupported_host() -> None:
     assert (
         repo_view_url(
-            repo_url="https://gitlab.com/org/repo",
+            repo_url="https://example.com/org/repo",
             branch="main",
             repo_path="foo.py",
             is_dir=False,

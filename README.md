@@ -12,7 +12,7 @@ MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML
 
 - **Files** → `https://…/blob/<branch>/<path>`
 - **Directories** → `https://…/tree/<branch>/<path>`
-- **v1:** GitHub only (other hosts: links left unchanged)
+- **Forges:** GitHub, GitLab, Bitbucket, Gitea/Forgejo, Azure DevOps (autodetected; self-hosted via `forge:`)
 
 **Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links/>
 
