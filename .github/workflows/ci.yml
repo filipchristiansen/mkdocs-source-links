@@ -33,22 +33,17 @@ jobs:
           cache-suffix: lint
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --frozen
 
-      - name: Ruff
-        run: uv run ruff check src tests
+      - name: Cache pre-commit environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Ruff format
-        run: uv run ruff format --check src tests
-
-      - name: Mypy
-        run: uv run mypy
-
-      - name: Pydoclint
-        run: uv run pydoclint src tests
-
-      - name: Pylint
-        run: uv run pylint src tests
+      # Single source of truth: run the same hooks as `make lint` locally.
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files --show-diff-on-failure
 
   test:
     runs-on: ubuntu-latest
@@ -69,7 +64,7 @@ jobs:
           cache-suffix: test
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --frozen
 
       # Coverage only on 3.10 (uploaded to Codecov); other versions run tests only.
       - name: Pytest
