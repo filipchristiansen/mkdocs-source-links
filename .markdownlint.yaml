@@ -2,3 +2,7 @@ default: true
 
 # Disable:
 MD013: false # line-length
+
+# Allow repeated section headings across siblings (e.g. Keep a Changelog "Added"/"Fixed"):
+MD024:
+  siblings_only: true

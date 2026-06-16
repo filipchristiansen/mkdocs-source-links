@@ -60,7 +60,7 @@ Branch for forge URLs is resolved in order:
 
 If your default branch is not `main`, set `edit_uri`, `extra.git_branch`, or `source-links.branch`.
 
-## Development
+## Contributing
 
 This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-commit.com), and a `Makefile`.
 
@@ -69,13 +69,8 @@ make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 make ci        # run the full pre-PR suite: lint, test, coverage
 ```
 
-Individual targets:
-
-```bash
-make sync      # sync all dependency groups
-make lint      # run pre-commit hooks (ruff, mypy, pydoclint, pylint, ...)
-make test      # run pytest with coverage
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for
+release notes. Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License
 
