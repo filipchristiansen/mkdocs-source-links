@@ -5,8 +5,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from .anchors import translate_line_fragment
 from .ref import ViewRef
-from .urls import repo_view_url
+from .urls import detect_forge, repo_view_url
 
 # Single left-to-right scan matching, in order: a fenced code block, an inline code span, or a
 # ``](../path)`` / ``](../path#fragment)`` link. Matching code regions first means links inside
@@ -141,17 +142,21 @@ def rewrite_repo_parent_links(
         else:
             return match.group(0)
 
+        forge_name = forge or detect_forge(repo_url)
         url = repo_view_url(
             repo_url=repo_url,
             ref=view_ref.ref,
             ref_kind=view_ref.kind,
             repo_path=repo_path,
             is_dir=is_dir,
-            forge=forge,
+            forge=forge_name,
         )
         if url is None:
             return match.group(0)
+        out_fragment = (
+            translate_line_fragment(fragment, forge=forge_name) if forge_name else fragment
+        )
         title_suffix = f" {title}" if title else ""
-        return f"]({url}{fragment}{title_suffix})"
+        return f"]({url}{out_fragment}{title_suffix})"
 
     return _SCAN.sub(repl, markdown)

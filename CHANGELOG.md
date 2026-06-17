@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `pin` config option (`branch` or `commit`, default `branch`) to embed the current commit SHA in
   forge URLs instead of a branch name. Azure DevOps uses `version=GC<sha>` for commits.
+- Line-anchor translation: canonical `#L10` / `#L10-L20` fragments in rewritten links are converted
+  to each forge's line-reference syntax. Non-line fragments pass through; Azure line anchors are
+  omitted.
 
 ### Changed
 
