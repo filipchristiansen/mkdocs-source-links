@@ -17,9 +17,9 @@ docs. This plugin rewrites only those parent-directory links to point at the for
 source untouched.
 
 !!! note "This site dogfoods the plugin"
-    These docs are built with `source-links` enabled. The link to
-    [the plugin source](../src/mkdocs_source_links/plugin.py) below the `docs/` directory is a
-    relative `../` link in markdown, but in this built page it points at GitHub.
+    These docs are built with `source-links` enabled. In the source markdown the link below points
+    at [`../src/mkdocs_source_links/plugin.py`](../src/mkdocs_source_links/plugin.py) (a relative
+    `../` path), but in this built page its destination is a GitHub URL.
 
 ## Install
 
