@@ -6,7 +6,7 @@
 [![python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads)
 [![uv](https://img.shields.io/badge/uv-managed-DE5FE9?logo=astral)](https://docs.astral.sh/uv)
 [![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![mypy](https://img.shields.io/badge/mypy-checked-039dfc?logo=mypy&logoColor=white)](https://mypy-lang.org/)
+[![mypy](https://img.shields.io/badge/mypy-checked-039dfc?logo=mypy&logoColor=white)](https://mypy-lang.org)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML only**. Source markdown keeps relative paths so GitHub and your IDE still work.
@@ -15,7 +15,7 @@ MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML
 - **Directories** → `https://…/tree/<branch>/<path>`
 - **Forges:** GitHub, GitLab, Bitbucket, Gitea/Forgejo, Azure DevOps (autodetected; self-hosted via `forge:`)
 
-**Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links/>
+**Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links>
 
 ## Install
 
