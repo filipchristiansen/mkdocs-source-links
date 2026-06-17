@@ -38,9 +38,9 @@ class SourceLinksPlugin(BasePlugin):
     """
 
     config_scheme: PlainConfigSchema = (
+        ("pin", config_options.Choice(("branch", "commit"), default="branch")),
         ("branch", config_options.Optional(config_options.Type(str))),
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
-        ("pin", config_options.Choice(("branch", "commit"), default="branch")),
     )
 
     _view_ref: ViewRef
