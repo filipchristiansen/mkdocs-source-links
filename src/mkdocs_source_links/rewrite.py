@@ -18,8 +18,14 @@ _SCAN = re.compile(
         [\s\S]*?                                # body (lazy, spans lines)
         ^[ \t]*(?P=fence_marker)[ \t]*$         # closing fence (same marker)
     )
-    | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))    # inline code span
-    | \]\((?P<path>\.\./[^)\#]+)(?P<frag>\#[^)]*)?\)         # the link
+    | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
+    | \]\(\s*                                                  # the link: ](
+        (?:
+            <(?P<path_a>\.\./[^>\s\#]+)(?P<frag_a>\#[^>]*)?>   # angle-bracket destination
+          | (?P<path>\.\./[^)\s\#]+)(?P<frag>\#[^)\s]*)?       # bare destination
+        )
+        (?:\s+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?           # optional title
+      \s*\)
     """,
     re.MULTILINE | re.VERBOSE,
 )
@@ -109,16 +115,18 @@ def rewrite_repo_parent_links(
     Notes
     -----
     Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
-    distinguish them). URL fragments (``#anchor``) are preserved. Links inside fenced code blocks
+    distinguish them). URL fragments (``#anchor``) and link titles are preserved, and
+    angle-bracket destinations (``](<../x>)``) are supported. Links inside fenced code blocks
     and inline code spans are left unchanged.
     """
 
     def repl(match: re.Match[str]) -> str:
-        path_part = match.group("path")
+        path_part = match.group("path") or match.group("path_a")
         if path_part is None:
             # Matched a fenced code block or inline code span: leave it untouched.
             return match.group(0)
-        fragment = match.group("frag") or ""
+        fragment = match.group("frag") or match.group("frag_a") or ""
+        title = match.group("title")
         # path_part always starts with "../" (guaranteed by the link branch of _SCAN).
         target = (page_abs_path.parent / path_part).resolve()
         repo_path = _repo_relative(target=target, repo_root=repo_root)
@@ -141,6 +149,7 @@ def rewrite_repo_parent_links(
         )
         if url is None:
             return match.group(0)
-        return f"]({url}{fragment})"
+        title_suffix = f" {title}" if title else ""
+        return f"]({url}{fragment}{title_suffix})"
 
     return _SCAN.sub(repl, markdown)

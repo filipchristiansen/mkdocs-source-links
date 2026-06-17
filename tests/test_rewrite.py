@@ -228,6 +228,58 @@ def test_rewrite_real_link_with_adjacent_code(repo_tree: Path) -> None:
     assert f"[env]({REPO}/blob/main/env.example)" in out
 
 
+def test_rewrite_titled_link_preserves_title(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = '[env](../env.example "The env file").'
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        branch="main",
+    )
+    assert out == f'[env]({REPO}/blob/main/env.example "The env file").'
+
+
+def test_rewrite_titled_link_single_quotes(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[env](../env.example 'title')."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        branch="main",
+    )
+    assert out == f"[env]({REPO}/blob/main/env.example 'title')."
+
+
+def test_rewrite_angle_bracket_link(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[env](<../env.example>)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        branch="main",
+    )
+    assert out == f"[env]({REPO}/blob/main/env.example)."
+
+
+def test_rewrite_angle_bracket_link_with_fragment(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[env](<../env.example#section>)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        branch="main",
+    )
+    assert out == f"[env]({REPO}/blob/main/env.example#section)."
+
+
 def test_rewrite_uses_branch(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[env](../env.example)."

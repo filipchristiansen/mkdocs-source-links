@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in addition to GitHub. Public hosts and common self-hosted patterns (e.g. GitHub Enterprise) are
   autodetected.
 - `forge` config option to select the forge explicitly for self-hosted instances on custom domains.
+- Support titled links (`](../x "title")`) and angle-bracket destinations (`](<../x>)`), preserving
+  the title and fragment.
 - Documentation site (MkDocs Material) published to GitHub Pages, with an mkdocstrings API reference.
 - `py.typed` marker so downstream type checkers consume the bundled type hints (PEP 561).
 - `CHANGELOG.md`, `CONTRIBUTING.md`, and `SECURITY.md`.
