@@ -46,11 +46,19 @@ jobs:
         run: uv run pre-commit run --all-files --show-diff-on-failure
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        # Cover path handling (Path.resolve, as_posix, drive letters) on other OSes,
+        # against the newest supported Python only to keep the matrix small.
+        include:
+          - os: windows-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
     steps:
       - uses: actions/checkout@v6
 
@@ -66,15 +74,15 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev --frozen
 
-      # Coverage only on 3.10 (uploaded to Codecov); other versions run tests only.
+      # Coverage only on ubuntu 3.10 (uploaded to Codecov); other jobs run tests only.
       - name: Pytest
-        run: uv run pytest ${{ matrix.python-version == '3.10' && '--cov --cov-report=xml' || '' }}
+        run: uv run pytest ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && '--cov --cov-report=xml' || '' }}
 
       # Uses the token for pushes/same-repo PRs; falls back to tokenless uploads on fork PRs
       # (where secrets are unavailable). fail_ci_if_error stays false so an occasional
       # flaky/tokenless upload never blocks a merge.
       - name: Upload coverage to Codecov
-        if: ${{ matrix.python-version == '3.10' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
