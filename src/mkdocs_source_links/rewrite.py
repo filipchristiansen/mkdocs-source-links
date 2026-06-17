@@ -142,21 +142,19 @@ def rewrite_repo_parent_links(
         else:
             return match.group(0)
 
+        forge_name = forge or detect_forge(repo_url)
         url = repo_view_url(
             repo_url=repo_url,
             ref=view_ref.ref,
             ref_kind=view_ref.kind,
             repo_path=repo_path,
             is_dir=is_dir,
-            forge=forge,
+            forge=forge_name,
         )
         if url is None:
             return match.group(0)
-        forge_name = forge or detect_forge(repo_url)
         out_fragment = (
-            translate_line_fragment(fragment, forge=forge_name)
-            if forge_name is not None
-            else fragment
+            translate_line_fragment(fragment, forge=forge_name) if forge_name else fragment
         )
         title_suffix = f" {title}" if title else ""
         return f"]({url}{out_fragment}{title_suffix})"
