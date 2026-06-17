@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Run the CI test suite on Windows and macOS (newest supported Python) in addition to the Linux
+  Python matrix, to guard cross-platform path handling.
+
 ## [0.3.0] - 2026-06-17
 
 ### Added
