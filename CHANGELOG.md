@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Rewrite angle-bracket links whose destination contains spaces (`](<../my file.py>)`); the path is
+  percent-encoded in the resulting forge URL.
+
 ### Changed
 
 - Run the CI test suite on Windows and macOS (newest supported Python) in addition to the Linux
