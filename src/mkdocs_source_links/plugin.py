@@ -80,7 +80,7 @@ class SourceLinksPlugin(BasePlugin):
         *,
         page: Page,
         config: MkDocsConfig,
-        files: Files,  # noqa: ARG002  # required by MkDocs hook signature; unused here
+        files: Files,  # noqa: ARG002 (unused-method-argument) (required by MkDocs hook signature)
     ) -> str:
         """Rewrite ``](../…)`` links in page markdown to forge view URLs.
 
