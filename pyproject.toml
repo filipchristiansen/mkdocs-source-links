@@ -13,6 +13,7 @@ authors = [{ name = "Filip Christiansen" }]
 keywords = ["mkdocs", "plugin", "documentation", "links"]
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Framework :: MkDocs",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
