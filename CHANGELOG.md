@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Line-anchor translation: canonical `#L10` / `#L10-L20` fragments in rewritten links are converted
   to each forge's line-reference syntax. Non-line fragments pass through; Azure line anchors are
   omitted.
+- `enabled` config option (default `true`) to turn link rewriting off; supports `!ENV` for
+  per-environment toggling (e.g. during `mkdocs serve`).
+- `warn_on_missing` config option (default `true`) to warn when a `](../path)` link target does not
+  exist in the repository. Warnings count toward `mkdocs build --strict`.
 
 ### Changed
 

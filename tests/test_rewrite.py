@@ -80,6 +80,37 @@ def test_rewrite_outside_repo_unchanged(repo_tree: Path) -> None:
     )
 
 
+def test_report_missing_called_for_missing_target(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[gone](../does_not_exist.py)."
+    missing: list[str] = []
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_missing=missing.append,
+    )
+    assert out == md
+    assert missing == ["../does_not_exist.py"]
+
+
+def test_report_missing_not_called_outside_repo(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[etc](../../etc/does_not_exist)."
+    missing: list[str] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_missing=missing.append,
+    )
+    assert not missing
+
+
 def test_rewrite_leaves_in_doc_links(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "See [other](other.md#anchor)."
