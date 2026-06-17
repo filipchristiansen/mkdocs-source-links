@@ -1,5 +1,7 @@
 # MkDocs Source Links
 
+[![PyPI](https://img.shields.io/pypi/v/mkdocs-source-links?logo=pypi&logoColor=white)](https://pypi.org/project/mkdocs-source-links)
+
 MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML only**. Your
 source markdown keeps relative paths, so links still work on GitHub and in your IDE.
 

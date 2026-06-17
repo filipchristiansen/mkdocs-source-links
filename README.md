@@ -1,5 +1,6 @@
 # MkDocs Source Links
 
+[![PyPI](https://img.shields.io/pypi/v/mkdocs-source-links?logo=pypi&logoColor=white)](https://pypi.org/project/mkdocs-source-links)
 [![CI](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/filipchristiansen/mkdocs-source-links/graph/badge.svg)](https://codecov.io/gh/filipchristiansen/mkdocs-source-links)
 [![python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads)
