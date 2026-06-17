@@ -312,6 +312,34 @@ def test_rewrite_angle_bracket_link_with_fragment(repo_tree: Path) -> None:
     assert out == f"[env]({REPO}/blob/main/env.example#section)."
 
 
+def test_rewrite_angle_bracket_link_with_space(repo_tree: Path) -> None:
+    (repo_tree / "my file.py").write_text("X = 1\n")
+    page = repo_tree / "docs" / "page.md"
+    md = "[f](<../my file.py>)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[f]({REPO}/blob/main/my%20file.py)."
+
+
+def test_rewrite_angle_bracket_link_with_space_and_fragment(repo_tree: Path) -> None:
+    (repo_tree / "my file.py").write_text("X = 1\n")
+    page = repo_tree / "docs" / "page.md"
+    md = "[f](<../my file.py#L2>)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[f]({REPO}/blob/main/my%20file.py#L2)."
+
+
 def test_rewrite_uses_branch(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[env](../env.example)."

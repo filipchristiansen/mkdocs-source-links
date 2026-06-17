@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from typing import NamedTuple
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 from .ref import RefKind
 
@@ -152,7 +152,7 @@ def repo_view_url(
         base=repo_url.rstrip("/"),
         ref=ref,
         ref_kind=ref_kind,
-        repo_path=repo_path,
+        repo_path=quote(repo_path, safe="/"),
         is_dir=is_dir,
     )
     return _BUILDERS[forge_name](request)

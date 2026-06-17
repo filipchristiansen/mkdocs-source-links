@@ -24,7 +24,7 @@ _SCAN = re.compile(
     | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
     | \]\(\s*                                                  # the link: ](
         (?:
-            <(?P<path_a>\.\./[^>\s\#]+)(?P<frag_a>\#[^>]*)?>   # angle-bracket destination
+            <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?> # angle-bracket dest (allows spaces)
           | (?P<path>\.\./[^)\s\#]+)(?P<frag>\#[^)\s]*)?       # bare destination
         )
         (?:\s+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?           # optional title
