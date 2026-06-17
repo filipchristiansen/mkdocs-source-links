@@ -48,7 +48,7 @@ def resolve_view_ref(
     if pin != "commit" or _GIT is None:
         return ViewRef(branch, "branch")
     try:
-        result = subprocess.run(  # noqa: S603
+        result = subprocess.run(  # noqa: S603 (subprocess-without-shell-equals-true)
             [_GIT, "-C", str(repo_root), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
