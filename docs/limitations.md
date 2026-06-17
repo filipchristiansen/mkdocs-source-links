@@ -19,6 +19,13 @@ common self-hosted patterns are autodetected; an instance on an unrelated custom
 explicit [`forge`](configuration.md#options) setting, otherwise its links are left unchanged. See
 [Forges](forges.md).
 
+## Line anchors
+
+Canonical line fragments in links (`#L10`, `#L10-L20`) are translated to each forge's syntax when
+links are rewritten (GitHub/Gitea keep `#L` form, GitLab uses `#L10-20`, Bitbucket uses
+`#lines-10:20`). Non-line fragments (`#section`) pass through unchanged. Azure DevOps view URLs do
+not support hash-based line anchors; line fragments are omitted for that forge.
+
 ## Existing targets only
 
 A `../` link is only rewritten when its target resolves to a file or directory that exists on disk
