@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
 from mkdocs_source_links.ref import resolve_view_ref
+
+_GIT = shutil.which("git")
 
 
 def test_resolve_view_ref_branch_pin() -> None:
@@ -16,14 +19,16 @@ def test_resolve_view_ref_branch_pin() -> None:
 
 
 def test_resolve_view_ref_commit_pin(tmp_path: Path) -> None:
-    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "t@e.com"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "config", "user.name", "T"], cwd=tmp_path, check=True)
+    if _GIT is None:
+        return
+    subprocess.run([_GIT, "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run([_GIT, "config", "user.email", "t@e.com"], cwd=tmp_path, check=True)
+    subprocess.run([_GIT, "config", "user.name", "T"], cwd=tmp_path, check=True)
     (tmp_path / "f").write_text("x\n")
-    subprocess.run(["git", "add", "f"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True)
+    subprocess.run([_GIT, "add", "f"], cwd=tmp_path, check=True)
+    subprocess.run([_GIT, "commit", "-m", "init"], cwd=tmp_path, check=True)
     sha = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
+        [_GIT, "rev-parse", "HEAD"],
         cwd=tmp_path,
         capture_output=True,
         text=True,

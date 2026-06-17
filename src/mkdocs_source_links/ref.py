@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Literal, NamedTuple
 
 RefKind = Literal["branch", "commit"]
+
+_GIT = shutil.which("git")
 
 
 class ViewRef(NamedTuple):
@@ -41,11 +44,11 @@ def resolve_view_ref(
     tuple[str, RefKind]
         Ref string and kind (``branch`` or ``commit``) for URL building.
     """
-    if pin != "commit":
+    if pin != "commit" or _GIT is None:
         return branch, "branch"
     try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        result = subprocess.run(  # noqa: S603
+            [_GIT, "-C", str(repo_root), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             check=True,
