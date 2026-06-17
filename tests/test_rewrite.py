@@ -179,6 +179,55 @@ def test_rewrite_forge_override(repo_tree: Path) -> None:
     assert out == f"[cfg]({self_hosted}/-/blob/main/backend/src/config.py)."
 
 
+def test_rewrite_skips_fenced_code_block(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "```markdown\n[env](../env.example)\n```\n"
+    assert (
+        rewrite_repo_parent_links(
+            md,
+            page_abs_path=page,
+            repo_root=repo_tree,
+            repo_url=REPO,
+            branch="main",
+        )
+        == md
+    )
+
+
+def test_rewrite_skips_inline_code_span(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "Write `[env](../env.example)` to link a repo file."
+    assert (
+        rewrite_repo_parent_links(
+            md,
+            page_abs_path=page,
+            repo_root=repo_tree,
+            repo_url=REPO,
+            branch="main",
+        )
+        == md
+    )
+
+
+def test_rewrite_real_link_with_adjacent_code(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = (
+        "Example `](../x)` then real [env](../env.example) and:\n\n"
+        "```\n[env](../env.example)\n```\n"
+    )
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        branch="main",
+    )
+    # The inline span and the fenced block are untouched; only the real link is rewritten.
+    assert "`](../x)`" in out
+    assert "```\n[env](../env.example)\n```" in out
+    assert f"[env]({REPO}/blob/main/env.example)" in out
+
+
 def test_rewrite_uses_branch(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[env](../env.example)."
