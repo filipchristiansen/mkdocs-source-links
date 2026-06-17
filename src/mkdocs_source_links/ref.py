@@ -19,12 +19,7 @@ class ViewRef(NamedTuple):
     kind: RefKind
 
 
-def resolve_view_ref(
-    *,
-    pin: str,
-    repo_root: Path,
-    branch: str,
-) -> ViewRef:
+def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ViewRef:
     """Resolve the git ref and kind used in forge view URLs.
 
     When ``pin`` is ``commit``, the current HEAD SHA is resolved via ``git rev-parse``. If git is
