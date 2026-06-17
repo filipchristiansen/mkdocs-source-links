@@ -12,7 +12,7 @@
 plugins:
   - source-links:
       branch: develop
-      pin: commit      # permalink to HEAD SHA instead of branch name
+      pin: commit     # permalink to HEAD SHA instead of branch name
       forge: gitlab   # only needed when autodetection can't identify the host
 ```
 
