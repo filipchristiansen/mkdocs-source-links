@@ -24,11 +24,12 @@ def resolve_view_ref(
     pin: str,
     repo_root: Path,
     branch: str,
-) -> tuple[str, RefKind]:
+) -> ViewRef:
     """Resolve the git ref and kind used in forge view URLs.
 
     When ``pin`` is ``commit``, the current HEAD SHA is resolved via ``git rev-parse``. If git is
-    unavailable or ``repo_root`` is not a repository, the resolved branch is used instead.
+    unavailable, times out, or ``repo_root`` is not a repository, the resolved branch is used
+    instead.
 
     Parameters
     ----------
@@ -41,21 +42,22 @@ def resolve_view_ref(
 
     Returns
     -------
-    tuple[str, RefKind]
+    ViewRef
         Ref string and kind (``branch`` or ``commit``) for URL building.
     """
     if pin != "commit" or _GIT is None:
-        return branch, "branch"
+        return ViewRef(branch, "branch")
     try:
         result = subprocess.run(  # noqa: S603
             [_GIT, "-C", str(repo_root), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             check=True,
+            timeout=10,
         )
-    except (OSError, subprocess.CalledProcessError):
-        return branch, "branch"
+    except (OSError, subprocess.SubprocessError):
+        return ViewRef(branch, "branch")
     sha = result.stdout.strip()
     if not sha:
-        return branch, "branch"
-    return sha, "commit"
+        return ViewRef(branch, "branch")
+    return ViewRef(sha, "commit")

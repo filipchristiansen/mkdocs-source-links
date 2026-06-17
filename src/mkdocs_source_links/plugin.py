@@ -26,14 +26,15 @@ class SourceLinksPlugin(BasePlugin):
     Attributes
     ----------
     config_scheme : PlainConfigSchema
-        Plugin configuration schema. Supports an optional ``branch`` key to override the git branch
-        used in forge URLs, and an optional ``forge`` key to override forge autodetection (one of
-        ``github``, ``gitlab``, ``bitbucket``, ``gitea``, ``azure``).
+        Plugin configuration schema. Supports ``branch`` (override the git branch used in forge
+        URLs), ``forge`` (override forge autodetection: one of ``github``, ``gitlab``,
+        ``bitbucket``, ``gitea``, ``azure``), and ``pin`` (``branch`` or ``commit`` — embed the
+        current commit SHA instead of a branch name).
 
     Notes
     -----
     Requires ``repo_url`` in ``mkdocs.yml``. Pages without a backing file (virtual pages) are left
-    unchanged.
+    unchanged. The git view ref is resolved once per build in ``on_config``.
     """
 
     config_scheme: PlainConfigSchema = (
@@ -41,6 +42,36 @@ class SourceLinksPlugin(BasePlugin):
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
         ("pin", config_options.Choice(("branch", "commit"), default="branch")),
     )
+
+    _view_ref: ViewRef
+
+    def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
+        """Resolve the git view ref once per build and cache it.
+
+        Resolving here (rather than per page) avoids running ``git`` for every page when
+        ``pin: commit`` is set.
+
+        Parameters
+        ----------
+        config : MkDocsConfig
+            MkDocs site configuration.
+
+        Returns
+        -------
+        MkDocsConfig
+            The unmodified configuration.
+        """
+        branch = resolve_branch(
+            plugin_branch=self.config.get("branch"),
+            extra=config.extra or {},
+            edit_uri=config.edit_uri,
+        )
+        self._view_ref = resolve_view_ref(
+            pin=self.config.get("pin", "branch"),
+            repo_root=Path(config.config_file_path).parent,
+            branch=branch,
+        )
+        return config
 
     def on_page_markdown(
         self,
@@ -75,22 +106,11 @@ class SourceLinksPlugin(BasePlugin):
             return markdown
         if page.file.abs_src_path is None:
             return markdown
-        plugin_branch = self.config.get("branch")
-        branch = resolve_branch(
-            plugin_branch=plugin_branch,
-            extra=config.extra or {},
-            edit_uri=config.edit_uri,
-        )
-        ref, ref_kind = resolve_view_ref(
-            pin=self.config.get("pin", "branch"),
-            repo_root=Path(config.config_file_path).parent,
-            branch=branch,
-        )
         return rewrite_repo_parent_links(
             markdown,
             page_abs_path=Path(page.file.abs_src_path),
             repo_root=Path(config.config_file_path).parent,
             repo_url=config.repo_url,
-            view_ref=ViewRef(ref, ref_kind),
+            view_ref=self._view_ref,
             forge=self.config.get("forge"),
         )

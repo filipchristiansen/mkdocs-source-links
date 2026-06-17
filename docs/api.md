@@ -17,3 +17,7 @@ Auto-generated from the package's docstrings.
 ## Branch resolution
 
 ::: mkdocs_source_links.branch
+
+## Git ref resolution
+
+::: mkdocs_source_links.ref
