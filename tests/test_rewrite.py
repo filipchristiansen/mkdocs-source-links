@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import repo_relative_path, rewrite_repo_parent_links
 from mkdocs_source_links.urls import repo_view_url
 
@@ -73,7 +74,7 @@ def test_rewrite_outside_repo_unchanged(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=REPO,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -88,7 +89,7 @@ def test_rewrite_leaves_in_doc_links(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=REPO,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -102,7 +103,7 @@ def test_rewrite_file_link_to_blob(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == (f"[`config.py`]({REPO}/blob/main/backend/src/config.py).")
 
@@ -115,7 +116,7 @@ def test_rewrite_directory_link_to_tree(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="develop",
+        view_ref=ViewRef("develop", "branch"),
     )
     assert out == f"[scripts]({REPO}/tree/develop/scripts)."
 
@@ -128,7 +129,7 @@ def test_rewrite_link_with_fragment(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == f"[env]({REPO}/blob/main/env.example#section)."
 
@@ -142,7 +143,7 @@ def test_rewrite_missing_path_unchanged(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=REPO,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -158,7 +159,7 @@ def test_rewrite_unsupported_host_unchanged(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=unknown,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -173,7 +174,7 @@ def test_rewrite_forge_override(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=self_hosted,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
         forge="gitlab",
     )
     assert out == f"[cfg]({self_hosted}/-/blob/main/backend/src/config.py)."
@@ -188,7 +189,7 @@ def test_rewrite_skips_fenced_code_block(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=REPO,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -203,7 +204,7 @@ def test_rewrite_skips_inline_code_span(repo_tree: Path) -> None:
             page_abs_path=page,
             repo_root=repo_tree,
             repo_url=REPO,
-            branch="main",
+            view_ref=ViewRef("main", "branch"),
         )
         == md
     )
@@ -220,7 +221,7 @@ def test_rewrite_real_link_with_adjacent_code(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     # The inline span and the fenced block are untouched; only the real link is rewritten.
     assert "`](../x)`" in out
@@ -236,7 +237,7 @@ def test_rewrite_titled_link_preserves_title(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == f'[env]({REPO}/blob/main/env.example "The env file").'
 
@@ -249,7 +250,7 @@ def test_rewrite_titled_link_single_quotes(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == f"[env]({REPO}/blob/main/env.example 'title')."
 
@@ -262,7 +263,7 @@ def test_rewrite_angle_bracket_link(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == f"[env]({REPO}/blob/main/env.example)."
 
@@ -275,7 +276,7 @@ def test_rewrite_angle_bracket_link_with_fragment(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="main",
+        view_ref=ViewRef("main", "branch"),
     )
     assert out == f"[env]({REPO}/blob/main/env.example#section)."
 
@@ -288,7 +289,7 @@ def test_rewrite_uses_branch(repo_tree: Path) -> None:
         page_abs_path=page,
         repo_root=repo_tree,
         repo_url=REPO,
-        branch="master",
+        view_ref=ViewRef("master", "branch"),
     )
     assert "blob/master/env.example" in out
 
@@ -297,7 +298,8 @@ def test_repo_view_url_file() -> None:
     assert (
         repo_view_url(
             repo_url=REPO,
-            branch="main",
+            ref="main",
+            ref_kind="branch",
             repo_path="env.example",
             is_dir=False,
         )
@@ -309,7 +311,8 @@ def test_repo_view_url_directory() -> None:
     assert (
         repo_view_url(
             repo_url=REPO,
-            branch="main",
+            ref="main",
+            ref_kind="branch",
             repo_path="scripts",
             is_dir=True,
         )
@@ -321,7 +324,8 @@ def test_repo_view_url_unsupported_host() -> None:
     assert (
         repo_view_url(
             repo_url="https://example.com/org/repo",
-            branch="main",
+            ref="main",
+            ref_kind="branch",
             repo_path="foo.py",
             is_dir=False,
         )

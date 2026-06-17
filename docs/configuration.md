@@ -4,13 +4,15 @@
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `branch` | string | resolved (see below) | Git branch used in forge URLs. |
+| `pin` | string | `branch` | Pin forge URLs to a branch name (`branch`) or the current commit SHA (`commit`). When `commit`, falls back to the resolved branch if git is unavailable. |
+| `branch` | string | resolved (see below) | Git branch used in forge URLs when `pin` is `branch`, or as fallback when `pin` is `commit`. |
 | `forge` | string | autodetected | Forge type: `github`, `gitlab`, `bitbucket`, `gitea`, or `azure`. Overrides host autodetection. |
 
 ```yaml
 plugins:
   - source-links:
       branch: develop
+      pin: commit     # permalink to HEAD SHA instead of branch name
       forge: gitlab   # only needed when autodetection can't identify the host
 ```
 

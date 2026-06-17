@@ -79,5 +79,6 @@ def test_on_page_markdown_rewrites_links(tmp_path: Path) -> None:
     )
     files = cast(Files, SimpleNamespace())
 
+    plugin.on_config(config)
     out = plugin.on_page_markdown(markdown, page=page, config=config, files=files)
     assert out == f"[readme]({REPO}/blob/main/README.md)."

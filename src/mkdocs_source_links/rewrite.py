@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from .ref import ViewRef
 from .urls import repo_view_url
 
 # Single left-to-right scan matching, in order: a fenced code block, an inline code span, or a
@@ -83,7 +84,7 @@ def rewrite_repo_parent_links(
     page_abs_path: Path,
     repo_root: Path,
     repo_url: str,
-    branch: str,
+    view_ref: ViewRef,
     forge: str | None = None,
 ) -> str:
     """Replace ``](../…)`` markdown links with git-forge view URLs.
@@ -102,8 +103,8 @@ def rewrite_repo_parent_links(
         repo-relative paths for the forge URL.
     repo_url : str
         Forge repository URL from ``mkdocs.yml`` (for example a GitHub URL).
-    branch : str
-        Git branch name to embed in blob/tree URLs.
+    view_ref : ViewRef
+        Git branch name or commit SHA and its kind for blob/tree URLs.
     forge : str | None
         Explicit forge name; when ``None`` the forge is autodetected from ``repo_url``.
 
@@ -142,7 +143,8 @@ def rewrite_repo_parent_links(
 
         url = repo_view_url(
             repo_url=repo_url,
-            branch=branch,
+            ref=view_ref.ref,
+            ref_kind=view_ref.kind,
             repo_path=repo_path,
             is_dir=is_dir,
             forge=forge,
