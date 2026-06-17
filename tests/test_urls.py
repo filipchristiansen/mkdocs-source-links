@@ -122,7 +122,7 @@ def test_detect_forge(repo_url: str, expected: str | None) -> None:
 )
 def test_repo_view_url_per_forge(
     repo_url: str,
-    is_dir: bool,  # noqa: FBT001
+    is_dir: bool,  # noqa: FBT001 (boolean-type-hint-positional-argument)
     ref: str,
     ref_kind: str,
     expected: str,
