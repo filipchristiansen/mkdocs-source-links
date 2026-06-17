@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from mkdocs_source_links.ref import RefKind
 from mkdocs_source_links.urls import SUPPORTED_FORGES, detect_forge, repo_view_url
 
 
@@ -124,14 +125,14 @@ def test_repo_view_url_per_forge(
     repo_url: str,
     is_dir: bool,  # noqa: FBT001 (boolean-type-hint-positional-argument)
     ref: str,
-    ref_kind: str,
+    ref_kind: RefKind,
     expected: str,
 ) -> None:
     assert (
         repo_view_url(
             repo_url=repo_url,
             ref=ref,
-            ref_kind=ref_kind,  # type: ignore[arg-type]
+            ref_kind=ref_kind,
             repo_path="a/b.py",
             is_dir=is_dir,
         )
