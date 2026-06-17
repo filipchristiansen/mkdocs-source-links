@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 from mkdocs.config import config_options
 from mkdocs.config.base import PlainConfigSchema
 from mkdocs.config.defaults import MkDocsConfig
-from mkdocs.plugins import BasePlugin
+from mkdocs.plugins import BasePlugin, get_plugin_logger
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
@@ -15,6 +16,8 @@ from .branch import resolve_branch
 from .ref import ViewRef, resolve_view_ref
 from .rewrite import rewrite_repo_parent_links
 from .urls import SUPPORTED_FORGES
+
+log = get_plugin_logger(__name__)
 
 
 class SourceLinksPlugin(BasePlugin):
@@ -26,10 +29,11 @@ class SourceLinksPlugin(BasePlugin):
     Attributes
     ----------
     config_scheme : PlainConfigSchema
-        Plugin configuration schema. Supports ``branch`` (override the git branch used in forge
-        URLs), ``forge`` (override forge autodetection: one of ``github``, ``gitlab``,
-        ``bitbucket``, ``gitea``, ``azure``), and ``pin`` (``branch`` or ``commit`` — embed the
-        current commit SHA instead of a branch name).
+        Plugin configuration schema. Supports ``enabled`` (turn rewriting on or off),
+        ``branch`` (override the git branch used in forge URLs), ``forge`` (override forge
+        autodetection: one of ``github``, ``gitlab``, ``bitbucket``, ``gitea``, ``azure``),
+        ``pin`` (``branch`` or ``commit`` — embed the current commit SHA instead of a branch
+        name), and ``warn_on_missing`` (warn when a ``../`` link target does not exist).
 
     Notes
     -----
@@ -38,9 +42,11 @@ class SourceLinksPlugin(BasePlugin):
     """
 
     config_scheme: PlainConfigSchema = (
+        ("enabled", config_options.Type(bool, default=True)),
         ("pin", config_options.Choice(("branch", "commit"), default="branch")),
         ("branch", config_options.Optional(config_options.Type(str))),
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
+        ("warn_on_missing", config_options.Type(bool, default=True)),
     )
 
     _view_ref: ViewRef
@@ -61,6 +67,8 @@ class SourceLinksPlugin(BasePlugin):
         MkDocsConfig
             The unmodified configuration.
         """
+        if not self.config.get("enabled", True):
+            return config
         branch = resolve_branch(
             plugin_branch=self.config.get("branch"),
             extra=config.extra or {},
@@ -99,13 +107,25 @@ class SourceLinksPlugin(BasePlugin):
         Returns
         -------
         str
-            Markdown with parent-directory links rewritten, or the original ``markdown`` when
-            ``repo_url`` is missing or the page has no backing file.
+            Markdown with parent-directory links rewritten, or the original ``markdown`` when the
+            plugin is disabled, ``repo_url`` is missing, or the page has no backing file.
         """
+        if not self.config.get("enabled", True):
+            return markdown
         if not config.repo_url:
             return markdown
         if page.file.abs_src_path is None:
             return markdown
+
+        report_missing: Callable[[str], None] | None = None
+        if self.config.get("warn_on_missing", True):
+            src_path = page.file.src_path
+
+            def _warn(target: str) -> None:
+                log.warning("Link target does not exist: %s (in %s)", target, src_path)
+
+            report_missing = _warn
+
         return rewrite_repo_parent_links(
             markdown,
             page_abs_path=Path(page.file.abs_src_path),
@@ -113,4 +133,5 @@ class SourceLinksPlugin(BasePlugin):
             repo_url=config.repo_url,
             view_ref=self._view_ref,
             forge=self.config.get("forge"),
+            report_missing=report_missing,
         )

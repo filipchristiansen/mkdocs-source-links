@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 from .anchors import translate_line_fragment
@@ -87,6 +88,7 @@ def rewrite_repo_parent_links(
     repo_url: str,
     view_ref: ViewRef,
     forge: str | None = None,
+    report_missing: Callable[[str], None] | None = None,
 ) -> str:
     """Replace ``](../…)`` markdown links with git-forge view URLs.
 
@@ -108,6 +110,10 @@ def rewrite_repo_parent_links(
         Git branch name or commit SHA and its kind for blob/tree URLs.
     forge : str | None
         Explicit forge name; when ``None`` the forge is autodetected from ``repo_url``.
+    report_missing : Callable[[str], None] | None
+        Optional callback invoked with the link target (as written in the markdown) for each
+        ``../`` link that resolves inside ``repo_root`` but points at a path that does not exist
+        on disk. Links outside the repo are not reported.
 
     Returns
     -------
@@ -140,6 +146,8 @@ def rewrite_repo_parent_links(
         elif target.is_file():
             is_dir = False
         else:
+            if report_missing is not None:
+                report_missing(path_part)
             return match.group(0)
 
         forge_name = forge or detect_forge(repo_url)
