@@ -11,10 +11,13 @@ from collections.abc import Callable
 from typing import NamedTuple
 from urllib.parse import urlsplit
 
+from .ref import RefKind
+
 
 class _ForgeRequest(NamedTuple):
     base: str
-    branch: str
+    ref: str
+    ref_kind: RefKind
     repo_path: str
     is_dir: bool
 
@@ -22,28 +25,29 @@ class _ForgeRequest(NamedTuple):
 def _github_url(req: _ForgeRequest) -> str:
     """Build a GitHub blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/{kind}/{req.branch}/{req.repo_path}"
+    return f"{req.base}/{kind}/{req.ref}/{req.repo_path}"
 
 
 def _gitlab_url(req: _ForgeRequest) -> str:
     """Build a GitLab blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/-/{kind}/{req.branch}/{req.repo_path}"
+    return f"{req.base}/-/{kind}/{req.ref}/{req.repo_path}"
 
 
 def _bitbucket_url(req: _ForgeRequest) -> str:
     """Build a Bitbucket Cloud src URL (files and directories share the same path)."""
-    return f"{req.base}/src/{req.branch}/{req.repo_path}"
+    return f"{req.base}/src/{req.ref}/{req.repo_path}"
 
 
 def _gitea_url(req: _ForgeRequest) -> str:
     """Build a Gitea/Forgejo src/branch URL (files and directories share the same path)."""
-    return f"{req.base}/src/branch/{req.branch}/{req.repo_path}"
+    return f"{req.base}/src/branch/{req.ref}/{req.repo_path}"
 
 
 def _azure_url(req: _ForgeRequest) -> str:
     """Build an Azure DevOps view URL using the path/version query parameters."""
-    return f"{req.base}?path=/{req.repo_path}&version=GB{req.branch}"
+    version_prefix = "GC" if req.ref_kind == "commit" else "GB"
+    return f"{req.base}?path=/{req.repo_path}&version={version_prefix}{req.ref}"
 
 
 _BUILDERS: dict[str, Callable[[_ForgeRequest], str]] = {
@@ -110,7 +114,8 @@ def detect_forge(repo_url: str) -> str | None:
 def repo_view_url(
     *,
     repo_url: str,
-    branch: str,
+    ref: str,
+    ref_kind: RefKind,
     repo_path: str,
     is_dir: bool,
     forge: str | None = None,
@@ -121,8 +126,11 @@ def repo_view_url(
     ----------
     repo_url : str
         Forge repository URL from ``mkdocs.yml``.
-    branch : str
-        Git branch name to embed in the URL.
+    ref : str
+        Git branch name or commit SHA to embed in the URL.
+    ref_kind : RefKind
+        Whether ``ref`` is a branch name or a commit SHA. Azure DevOps uses different
+        version prefixes (``GB`` vs ``GC``) depending on this value.
     repo_path : str
         Repo-root-relative POSIX path to the target file or directory.
     is_dir : bool
@@ -142,7 +150,8 @@ def repo_view_url(
         return None
     request = _ForgeRequest(
         base=repo_url.rstrip("/"),
-        branch=branch,
+        ref=ref,
+        ref_kind=ref_kind,
         repo_path=repo_path,
         is_dir=is_dir,
     )

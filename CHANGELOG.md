@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `pin` config option (`branch` or `commit`, default `branch`) to embed the current commit SHA in
+  forge URLs instead of a branch name. Azure DevOps uses `version=GC<sha>` for commits.
+
 ### Changed
 
 - Add the `Framework :: MkDocs` trove classifier for PyPI discoverability.

@@ -32,28 +32,109 @@ def test_detect_forge(repo_url: str, expected: str | None) -> None:
 
 
 @pytest.mark.parametrize(
-    ("repo_url", "is_dir", "expected"),
+    ("repo_url", "is_dir", "ref", "ref_kind", "expected"),
     [
-        ("https://github.com/o/r", False, "https://github.com/o/r/blob/main/a/b.py"),
-        ("https://github.com/o/r", True, "https://github.com/o/r/tree/main/a/b.py"),
-        ("https://gitlab.com/o/r", False, "https://gitlab.com/o/r/-/blob/main/a/b.py"),
-        ("https://gitlab.com/o/r", True, "https://gitlab.com/o/r/-/tree/main/a/b.py"),
-        ("https://bitbucket.org/o/r", False, "https://bitbucket.org/o/r/src/main/a/b.py"),
-        ("https://codeberg.org/o/r", False, "https://codeberg.org/o/r/src/branch/main/a/b.py"),
+        (
+            "https://github.com/o/r",
+            False,
+            "main",
+            "branch",
+            "https://github.com/o/r/blob/main/a/b.py",
+        ),
+        (
+            "https://github.com/o/r",
+            True,
+            "main",
+            "branch",
+            "https://github.com/o/r/tree/main/a/b.py",
+        ),
+        (
+            "https://gitlab.com/o/r",
+            False,
+            "main",
+            "branch",
+            "https://gitlab.com/o/r/-/blob/main/a/b.py",
+        ),
+        (
+            "https://gitlab.com/o/r",
+            True,
+            "main",
+            "branch",
+            "https://gitlab.com/o/r/-/tree/main/a/b.py",
+        ),
+        (
+            "https://bitbucket.org/o/r",
+            False,
+            "main",
+            "branch",
+            "https://bitbucket.org/o/r/src/main/a/b.py",
+        ),
+        (
+            "https://codeberg.org/o/r",
+            False,
+            "main",
+            "branch",
+            "https://codeberg.org/o/r/src/branch/main/a/b.py",
+        ),
         (
             "https://dev.azure.com/o/p/_git/r",
             False,
+            "main",
+            "branch",
             "https://dev.azure.com/o/p/_git/r?path=/a/b.py&version=GBmain",
+        ),
+        (
+            "https://github.com/o/r",
+            False,
+            "abc123def",
+            "commit",
+            "https://github.com/o/r/blob/abc123def/a/b.py",
+        ),
+        (
+            "https://gitlab.com/o/r",
+            False,
+            "abc123def",
+            "commit",
+            "https://gitlab.com/o/r/-/blob/abc123def/a/b.py",
+        ),
+        (
+            "https://bitbucket.org/o/r",
+            False,
+            "abc123def",
+            "commit",
+            "https://bitbucket.org/o/r/src/abc123def/a/b.py",
+        ),
+        (
+            "https://codeberg.org/o/r",
+            False,
+            "abc123def",
+            "commit",
+            "https://codeberg.org/o/r/src/branch/abc123def/a/b.py",
+        ),
+        (
+            "https://dev.azure.com/o/p/_git/r",
+            False,
+            "abc123def",
+            "commit",
+            "https://dev.azure.com/o/p/_git/r?path=/a/b.py&version=GCabc123def",
         ),
     ],
 )
 def test_repo_view_url_per_forge(
     repo_url: str,
     is_dir: bool,  # noqa: FBT001
+    ref: str,
+    ref_kind: str,
     expected: str,
 ) -> None:
     assert (
-        repo_view_url(repo_url=repo_url, branch="main", repo_path="a/b.py", is_dir=is_dir)
+        repo_view_url(
+            repo_url=repo_url,
+            ref=ref,
+            ref_kind=ref_kind,  # type: ignore[arg-type]
+            repo_path="a/b.py",
+            is_dir=is_dir,
+        )
         == expected
     )
 
@@ -61,7 +142,11 @@ def test_repo_view_url_per_forge(
 def test_repo_view_url_trailing_slash_normalized() -> None:
     assert (
         repo_view_url(
-            repo_url="https://github.com/o/r/", branch="main", repo_path="x", is_dir=False
+            repo_url="https://github.com/o/r/",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
         )
         == "https://github.com/o/r/blob/main/x"
     )
@@ -72,7 +157,8 @@ def test_repo_view_url_explicit_forge_override() -> None:
     assert (
         repo_view_url(
             repo_url="https://scm.internal/o/r",
-            branch="dev",
+            ref="dev",
+            ref_kind="branch",
             repo_path="x.py",
             is_dir=False,
             forge="gitlab",
@@ -84,7 +170,11 @@ def test_repo_view_url_explicit_forge_override() -> None:
 def test_repo_view_url_unknown_host_returns_none() -> None:
     assert (
         repo_view_url(
-            repo_url="https://example.com/o/r", branch="main", repo_path="x", is_dir=False
+            repo_url="https://example.com/o/r",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
         )
         is None
     )

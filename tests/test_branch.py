@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from mkdocs_source_links.branch import resolve_branch
+from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import rewrite_repo_parent_links
 
 REPO = "https://github.com/example/example-repo"
@@ -71,10 +72,13 @@ def test_built_url_uses_resolved_branch(tmp_path: Path) -> None:
         page_abs_path=page,
         repo_root=tmp_path,
         repo_url=REPO,
-        branch=resolve_branch(
-            plugin_branch=None,
-            extra={},
-            edit_uri="blob/develop/docs/",
+        view_ref=ViewRef(
+            resolve_branch(
+                plugin_branch=None,
+                extra={},
+                edit_uri="blob/develop/docs/",
+            ),
+            "branch",
         ),
     )
     assert "blob/develop/README.md" in out

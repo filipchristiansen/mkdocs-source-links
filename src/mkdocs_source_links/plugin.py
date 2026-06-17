@@ -12,6 +12,7 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
 from .branch import resolve_branch
+from .ref import ViewRef, resolve_view_ref
 from .rewrite import rewrite_repo_parent_links
 from .urls import SUPPORTED_FORGES
 
@@ -38,6 +39,7 @@ class SourceLinksPlugin(BasePlugin):
     config_scheme: PlainConfigSchema = (
         ("branch", config_options.Optional(config_options.Type(str))),
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
+        ("pin", config_options.Choice(("branch", "commit"), default="branch")),
     )
 
     def on_page_markdown(
@@ -74,15 +76,21 @@ class SourceLinksPlugin(BasePlugin):
         if page.file.abs_src_path is None:
             return markdown
         plugin_branch = self.config.get("branch")
+        branch = resolve_branch(
+            plugin_branch=plugin_branch,
+            extra=config.extra or {},
+            edit_uri=config.edit_uri,
+        )
+        ref, ref_kind = resolve_view_ref(
+            pin=self.config.get("pin", "branch"),
+            repo_root=Path(config.config_file_path).parent,
+            branch=branch,
+        )
         return rewrite_repo_parent_links(
             markdown,
             page_abs_path=Path(page.file.abs_src_path),
             repo_root=Path(config.config_file_path).parent,
             repo_url=config.repo_url,
-            branch=resolve_branch(
-                plugin_branch=plugin_branch,
-                extra=config.extra or {},
-                edit_uri=config.edit_uri,
-            ),
+            view_ref=ViewRef(ref, ref_kind),
             forge=self.config.get("forge"),
         )
