@@ -3,17 +3,13 @@
 Known limitations of the current release. Several are tracked on the
 [issue tracker](https://github.com/filipchristiansen/mkdocs-source-links/issues).
 
-## Code blocks and inline code
-
-Rewriting is text-level (a regex over the page markdown), so a literal `](../path)` shown inside a
-fenced code block or inline code span is also rewritten. If you document link syntax verbatim, this
-can be surprising. Tracked in
-[issue #2](https://github.com/filipchristiansen/mkdocs-source-links/issues/2).
-
 ## Link syntax
 
 Only inline links of the form `](../path)` are matched. Reference-style links (`[x][ref]`), links
 with titles (`](../x "title")`), and angle-bracket links (`](<../x>)`) are not currently rewritten.
+
+Rewriting is text-level (a regex over the page markdown), but fenced code blocks and inline code
+spans are detected and skipped, so a literal `](../path)` shown as an example is left unchanged.
 
 ## Forge detection
 

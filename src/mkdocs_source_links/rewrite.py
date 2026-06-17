@@ -7,8 +7,22 @@ from pathlib import Path
 
 from .urls import repo_view_url
 
-# `](../path)` or `](../path#fragment)` — repo files outside docs/
-_REPO_PARENT_LINK = re.compile(r"\]\((\.\./[^)#]+)(#[^)]*)?\)")
+# Single left-to-right scan matching, in order: a fenced code block, an inline code span, or a
+# ``](../path)`` / ``](../path#fragment)`` link. Matching code regions first means links inside
+# code are consumed (and left untouched) before the link branch can see them.
+_SCAN = re.compile(
+    r"""
+    (?P<fence>                                  # fenced code block
+        ^[ \t]*(?P<fence_marker>`{3,}|~{3,})    # opening fence (``` or ~~~, optionally indented)
+        [^\n]*\n                                # info string + newline
+        [\s\S]*?                                # body (lazy, spans lines)
+        ^[ \t]*(?P=fence_marker)[ \t]*$         # closing fence (same marker)
+    )
+    | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))    # inline code span
+    | \]\((?P<path>\.\./[^)\#]+)(?P<frag>\#[^)]*)?\)         # the link
+    """,
+    re.MULTILINE | re.VERBOSE,
+)
 
 
 def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
@@ -95,13 +109,17 @@ def rewrite_repo_parent_links(
     Notes
     -----
     Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
-    distinguish them). URL fragments (``#anchor``) are preserved.
+    distinguish them). URL fragments (``#anchor``) are preserved. Links inside fenced code blocks
+    and inline code spans are left unchanged.
     """
 
     def repl(match: re.Match[str]) -> str:
-        path_part = match.group(1)
-        fragment = match.group(2) or ""
-        # path_part always starts with "../" (guaranteed by _REPO_PARENT_LINK).
+        path_part = match.group("path")
+        if path_part is None:
+            # Matched a fenced code block or inline code span: leave it untouched.
+            return match.group(0)
+        fragment = match.group("frag") or ""
+        # path_part always starts with "../" (guaranteed by the link branch of _SCAN).
         target = (page_abs_path.parent / path_part).resolve()
         repo_path = _repo_relative(target=target, repo_root=repo_root)
         if repo_path is None:
@@ -125,4 +143,4 @@ def rewrite_repo_parent_links(
             return match.group(0)
         return f"]({url}{fragment})"
 
-    return _REPO_PARENT_LINK.sub(repl, markdown)
+    return _SCAN.sub(repl, markdown)

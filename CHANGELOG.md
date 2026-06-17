@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub issue and pull request templates.
 - Dependabot configuration for GitHub Actions and uv dependencies.
 
+### Fixed
+
+- Do not rewrite `](../path)` links inside fenced code blocks or inline code spans
+  ([#2](https://github.com/filipchristiansen/mkdocs-source-links/issues/2)).
+
 ### Changed
 
 - Trim the source distribution to the package, tests, and metadata (exclude CI, tooling, and editor/agent configs).
