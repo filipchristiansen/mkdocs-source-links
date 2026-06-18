@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-06-18
+
 ### Fixed
 
 - Avoid `%(contents)` in the publish workflow (GitHub Actions workflow parser treats `%` as invalid).
@@ -138,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.6...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.7...HEAD
+[0.3.7]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.3...v0.3.4
