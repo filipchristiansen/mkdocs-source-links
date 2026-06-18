@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: install sync lint test docs ci release-prep release-tag
+.PHONY: install sync lint test docs ci release-prep release-tag verify-tag
 
 help:
 	@echo "Usage: make [target]"
@@ -17,6 +17,7 @@ help:
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
 	@echo "  release-tag    Signed tag + GitHub release after merge  (VERSION=X.Y.Z)"
+	@echo "  verify-tag     Preflight: verify signed tag on GitHub   (TAG=vX.Y.Z)"
 
 install:
 	uv python install 3.10
@@ -44,3 +45,7 @@ release-prep:
 release-tag:
 	@test -n "$(VERSION)" || { echo "usage: make release-tag VERSION=X.Y.Z"; exit 1; }
 	uv run python scripts/release.py tag $(VERSION)
+
+verify-tag:
+	@test -n "$(TAG)" || { echo "usage: make verify-tag TAG=vX.Y.Z"; exit 1; }
+	GITHUB_REPOSITORY=filipchristiansen/mkdocs-source-links TAG=$(TAG) bash .github/scripts/verify-release-tag.sh

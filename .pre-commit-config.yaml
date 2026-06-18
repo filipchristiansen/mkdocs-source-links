@@ -27,6 +27,14 @@ repos:
 
   - repo: local
     hooks:
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        files: ^\.github/scripts/.*\.sh$
+
+  - repo: local
+    hooks:
       - id: ruff-format
         name: ruff format
         entry: uv run ruff format
