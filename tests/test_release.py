@@ -183,6 +183,20 @@ def test_extract_notes_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) 
         release._extract_notes("9.9.9")
 
 
+# --- _compare_link --------------------------------------------------------
+
+
+def test_compare_link(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _setup(monkeypatch, tmp_path)
+    assert release._compare_link("0.3.0").endswith("/compare/v0.2.0...v0.3.0")
+
+
+def test_compare_link_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _setup(monkeypatch, tmp_path)
+    with pytest.raises(SystemExit):
+        release._compare_link("9.9.9")
+
+
 # --- _bump_pyproject ------------------------------------------------------
 
 
@@ -284,10 +298,11 @@ def test_cmd_prep_changelog_mismatch(
 
 
 def test_cmd_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    changelog = CHANGELOG_SAMPLE.replace("## [Unreleased]\n\n", "", 1).replace(
-        "## [0.3.0] - 2026-06-17",
-        "## [0.4.0] - 2026-06-18",
-        1,
+    base = "https://github.com/filipchristiansen/mkdocs-source-links/compare"
+    changelog = (
+        CHANGELOG_SAMPLE.replace("## [Unreleased]\n\n", "", 1)
+        .replace("## [0.3.0] - 2026-06-17", "## [0.4.0] - 2026-06-18", 1)
+        .replace(f"[0.3.0]: {base}/v0.2.0...v0.3.0", f"[0.4.0]: {base}/v0.3.0...v0.4.0", 1)
     )
     _setup(
         monkeypatch,
@@ -301,7 +316,9 @@ def test_cmd_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     release._cmd_tag("0.4.0")
 
     assert ("git", "tag", "-a", "v0.4.0", "-m", "v0.4.0") in calls
-    assert any(call[:3] == ("gh", "release", "create") for call in calls)
+    release_call = next(call for call in calls if call[:3] == ("gh", "release", "create"))
+    notes = release_call[-1]
+    assert f"**Full changelog:** {base}/v0.3.0...v0.4.0" in notes
 
 
 def test_cmd_tag_version_mismatch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

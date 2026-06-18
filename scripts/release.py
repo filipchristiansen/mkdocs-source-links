@@ -173,6 +173,26 @@ def _extract_notes(version: str) -> str:
     return match.group("body").strip()
 
 
+def _compare_link(version: str) -> str:
+    """Return the compare URL for a version from the changelog link footer.
+
+    Parameters
+    ----------
+    version : str
+        The version whose ``[version]: <url>`` link definition to read.
+
+    Returns
+    -------
+    str
+        The compare URL (e.g. ``.../compare/v0.3.0...v0.4.0``).
+    """
+    pattern = re.compile(rf"(?m)^\[{re.escape(version)}\]: (?P<url>.+)$")
+    match = pattern.search(CHANGELOG.read_text())
+    if match is None:
+        _fail(f"no compare link found for {version} in CHANGELOG.md")
+    return match.group("url").strip()
+
+
 def _bump_pyproject(version: str) -> None:
     """Set the project version in ``pyproject.toml``.
 
@@ -301,7 +321,7 @@ def _cmd_tag(version: str) -> None:
     _run("git", "tag", "-a", tag, "-m", tag)
     _run("git", "push", "origin", tag)
 
-    notes = _extract_notes(version)
+    notes = f"{_extract_notes(version)}\n\n**Full changelog:** {_compare_link(version)}"
     _run("gh", "release", "create", tag, "--title", tag, "--notes", notes)
     print(f"\ntagged and released {tag}. The Publish workflow will push to PyPI.")
 
