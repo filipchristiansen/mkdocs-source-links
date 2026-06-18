@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Restore SLSA `upload-assets: true` release flow compatible with GitHub Actions workflow validation.
+
 ## [0.3.8] - 2026-06-18
 
 ### Fixed
