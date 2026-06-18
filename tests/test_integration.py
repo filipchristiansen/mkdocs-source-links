@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+_GIT = shutil.which("git")
 PluginOption = bool | str
 
 
@@ -65,6 +67,22 @@ def _run_mkdocs_build(root: Path) -> str:
     return (site / "index.html").read_text()
 
 
+def _init_git_repo(root: Path) -> str:
+    assert _GIT is not None
+    subprocess.run([_GIT, "init"], cwd=root, check=True, capture_output=True)
+    subprocess.run([_GIT, "config", "user.email", "t@e.com"], cwd=root, check=True)
+    subprocess.run([_GIT, "config", "user.name", "T"], cwd=root, check=True)
+    subprocess.run([_GIT, "add", "-A"], cwd=root, check=True)
+    subprocess.run([_GIT, "commit", "-m", "init"], cwd=root, check=True)
+    return subprocess.run(
+        [_GIT, "rev-parse", "HEAD"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+
 @pytest.mark.parametrize(
     ("repo_url", "edit_uri", "file_url_fragment", "dir_url_fragment"),
     [
@@ -96,3 +114,15 @@ def test_mkdocs_build_rewrites_parent_links_by_forge(
 
     assert file_url_fragment in html
     assert dir_url_fragment in html
+
+
+@pytest.mark.skipif(_GIT is None, reason="git not available")
+def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    sha = _init_git_repo(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"pin": "commit"})
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert f"github.com/example/test-repo/blob/{sha}/backend/config.py" in html
+    assert f"github.com/example/test-repo/tree/{sha}/scripts" in html
