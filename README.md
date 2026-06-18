@@ -72,6 +72,10 @@ make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 make ci        # run the full pre-PR suite: lint, test, coverage
 ```
 
+Maintainers release with `make release-prep VERSION=X.Y.Z` (bump, roll the hand-written
+`CHANGELOG.md`, open the release PR) and, once merged, `make release-tag VERSION=X.Y.Z` (tag and
+publish to PyPI).
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for
 release notes. Security issues: see [SECURITY.md](SECURITY.md).
 

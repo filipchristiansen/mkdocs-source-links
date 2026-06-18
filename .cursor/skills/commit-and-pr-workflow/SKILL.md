@@ -20,24 +20,32 @@ When the user asks to **commit staged changes and create a PR** (or uses a short
 
 Infer branch name, commit message, and PR title/description from the staged changes and recent conversation. Do not include untracked or unstaged files unless the user explicitly asks.
 
-Before pushing, run `uv run ruff check .` and `uv run pytest -q` when the changes touch Python code or tests.
+Before pushing, run `make ci` (full lint, test, and coverage) when the changes touch Python code or tests.
 
 ---
 
 ## Release to PyPI
 
-When the user asks to **release**, **publish**, **ship a version**, *"tag a release"*, *"bump version"*, or similar, do the following:
+When the user asks to **release**, **publish**, **ship a version**, *"tag a release"*, *"bump version"*, or similar, use the two-step release helper at `scripts/release.py` (exposed as `make` targets). The changelog is hand-written: the user curates the `## [Unreleased]` section by hand; the script only handles the mechanics (version bump, promoting `[Unreleased]` to a dated section, compare-link footer, PR, tag, GitHub release). It never generates release-note prose.
 
 This repo publishes to PyPI when a **`v*`** tag is pushed (see `.github/workflows/publish.yml`). There is no `prod` branch.
 
-1. **Fetch**: Ensure branches and tags are up to date (`git fetch origin main --tags`).
-2. **Version**: Bump `version` in `pyproject.toml` (semver). Use the version the user requested, or infer the next patch/minor/major from context.
-3. **Changelog**: List commits since the last release tag (e.g. `git log $(git describe --tags --abbrev=0 2>/dev/null)..HEAD --pretty=format:"- %s (%h)"` or `git log v0.1.0..HEAD` if the last tag is known). Use this as **release notes**.
-4. **Commit**: Commit the version bump on **main** (or merge the release prep PR first). Message e.g. `chore: release v0.2.0`.
-5. **Tag**: Create an annotated tag matching the version: `v0.2.0` (must match `v*` for the publish workflow).
-6. **Push**: Push `main` and the tag: `git push origin main && git push origin v0.2.0`. The tag push triggers the Publish workflow.
-7. **GitHub release** (optional but preferred): Create a GitHub release for the tag with the changelog from step 3 (`gh release create v0.2.0 --notes "..."`).
+**Before running**, make sure the `## [Unreleased]` section of `CHANGELOG.md` is curated and complete for this release. Add/edit entries by hand if needed (do not auto-generate them from commit messages).
 
-If release prep is not yet on `main`, open a PR to **main** instead of pushing directly — title e.g. `release: v0.2.0`, label **release**, description with the changelog. Merge after CI passes, then tag and push from `main`.
+**Step 1 — open the release PR** (run from a clean tree):
 
-Use `gh` when available. If the user only wants a version bump without publishing yet, stop after step 4 and do not create or push a tag.
+```bash
+make release-prep VERSION=0.4.0
+```
+
+This bumps `pyproject.toml`, rolls `[Unreleased]` into `## [0.4.0] - <today>` with updated compare links off `origin/main`, runs `make ci` (full lint + tests + coverage), commits `chore: release v0.4.0` on `release/v0.4.0`, pushes, and opens a PR to **main** (title `release: v0.4.0`, label **release**, body = the new changelog section).
+
+**Step 2 — tag and publish** (after the PR is merged):
+
+```bash
+make release-tag VERSION=0.4.0
+```
+
+This checks out the latest `main`, verifies the bump landed, creates and pushes the annotated `v0.4.0` tag (which triggers the Publish workflow → PyPI), and creates the GitHub release with the changelog section as notes.
+
+If the user only wants a version bump / PR without publishing yet, run **only** Step 1 and stop. Prefer the `make` targets over performing these steps by hand; fall back to manual git/`gh` only if the script cannot run.

@@ -39,5 +39,11 @@ make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 
 ## Releases
 
-Releases are cut by maintainers: bump `version` in `pyproject.toml`, update `CHANGELOG.md`, then
-tag `vX.Y.Z`. Pushing the tag triggers the publish workflow, which builds and uploads to PyPI.
+Releases are cut by maintainers. First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
+hand (the tooling never generates release notes). Then:
+
+1. `make release-prep VERSION=X.Y.Z` — bumps `version` in `pyproject.toml`, rolls `[Unreleased]`
+   into a dated `## [X.Y.Z]` section with updated compare links, runs `make ci`, and opens the
+   release PR.
+2. After the PR is merged, `make release-tag VERSION=X.Y.Z` — tags `vX.Y.Z` and creates the GitHub
+   release. Pushing the tag triggers the publish workflow, which builds and uploads to PyPI.
