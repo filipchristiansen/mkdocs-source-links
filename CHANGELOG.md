@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid `%(contents)` in the publish workflow (GitHub Actions workflow parser treats `%` as invalid).
+
 ## [0.3.6] - 2026-06-18
 
 ### Fixed

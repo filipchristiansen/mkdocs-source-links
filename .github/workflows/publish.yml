@@ -111,7 +111,7 @@ jobs:
             echo "::error::Release ${TAG} already exists; delete it before re-publishing."
             exit 1
           fi
-          NOTES=$(git tag -l "$TAG" --format='%(contents)')
+          NOTES=$(git cat-file tag "$TAG" | awk 'flag { print } /^$/ { flag=1 }')
           gh release create "$TAG" \
             provenance/multiple.intoto.jsonl \
             dist/*.tar.gz \
