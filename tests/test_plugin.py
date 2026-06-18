@@ -12,6 +12,7 @@ from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
 from mkdocs_source_links.plugin import SourceLinksPlugin
+from mkdocs_source_links.ref import ViewRef
 
 if TYPE_CHECKING:
     import pytest
@@ -91,13 +92,17 @@ def test_on_page_markdown_rewrites_links(tmp_path: Path) -> None:
     assert out == f"[readme]({REPO}/blob/main/README.md)."
 
 
-def test_on_config_disabled_skips_resolution() -> None:
+def test_on_config_disabled_sets_branch_view_ref() -> None:
     plugin = SourceLinksPlugin()
     plugin.config = {"enabled": False}
-    config = _config(repo_url=REPO, config_file_path="/repo/mkdocs.yml")
+    config = _config(
+        repo_url=REPO,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="-/edit/develop/docs/",
+    )
 
     assert plugin.on_config(config) is config
-    assert not hasattr(plugin, "_view_ref")
+    assert plugin._view_ref == ViewRef("develop", "branch")  # pylint: disable=protected-access
 
 
 def test_on_page_markdown_disabled_leaves_markdown() -> None:
