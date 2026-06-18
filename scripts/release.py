@@ -252,7 +252,7 @@ def _cmd_prep(version: str) -> None:
 
     _run("make", "ci")
 
-    _run("git", "add", "pyproject.toml", "CHANGELOG.md")
+    _run("git", "add", "pyproject.toml", "CHANGELOG.md", "uv.lock")
     _run("git", "commit", "-m", f"chore: release v{version}")
     _run("git", "push", "-u", "origin", branch)
 

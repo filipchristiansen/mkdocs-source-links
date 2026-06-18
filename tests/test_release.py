@@ -257,6 +257,7 @@ def test_cmd_prep(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     assert 'version = "0.4.0"' in pyproject_path.read_text()
     assert "## [0.4.0] - " in changelog_path.read_text()
     assert ("make", "ci") in calls
+    assert ("git", "add", "pyproject.toml", "CHANGELOG.md", "uv.lock") in calls
     assert any(call[:3] == ("gh", "pr", "create") for call in calls)
     assert any(call[:2] == ("git", "push") for call in calls)
 
