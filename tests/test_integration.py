@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -69,18 +70,13 @@ def _run_mkdocs_build(root: Path) -> str:
 
 def _init_git_repo(root: Path) -> str:
     assert _GIT is not None
-    subprocess.run([_GIT, "init"], cwd=root, check=True, capture_output=True)
-    subprocess.run([_GIT, "config", "user.email", "t@e.com"], cwd=root, check=True)
-    subprocess.run([_GIT, "config", "user.name", "T"], cwd=root, check=True)
-    subprocess.run([_GIT, "add", "-A"], cwd=root, check=True)
-    subprocess.run([_GIT, "commit", "-m", "init"], cwd=root, check=True)
-    return subprocess.run(
-        [_GIT, "rev-parse", "HEAD"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
+    kwargs: dict[str, Any] = {"cwd": root, "capture_output": True, "text": True}
+    subprocess.run([_GIT, "init"], check=True, **kwargs)
+    subprocess.run([_GIT, "config", "user.email", "t@e.com"], check=True, **kwargs)
+    subprocess.run([_GIT, "config", "user.name", "T"], check=True, **kwargs)
+    subprocess.run([_GIT, "add", "-A"], check=True, **kwargs)
+    subprocess.run([_GIT, "commit", "-m", "init"], check=True, **kwargs)
+    return subprocess.run([_GIT, "rev-parse", "HEAD"], check=True, **kwargs).stdout.strip()
 
 
 @pytest.mark.parametrize(
