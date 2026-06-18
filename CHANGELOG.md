@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Attach SLSA provenance (`.intoto.jsonl`) and distribution archives to GitHub releases from the
+  publish workflow.
+
 ## [0.3.2] - 2026-06-18
 
 ### Fixed
