@@ -86,6 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
@@ -96,10 +97,9 @@ jobs:
           path: dist
 
       - name: Download SLSA provenance
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
-        with:
-          name: multiple.intoto.jsonl
-          path: provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}" -n multiple.intoto.jsonl
 
       - name: Create GitHub release with provenance and distributions
         env:
@@ -113,7 +113,7 @@ jobs:
           fi
           NOTES=$(git cat-file tag "$TAG" | awk 'flag { print } /^$/ { flag=1 }')
           gh release create "$TAG" \
-            provenance/multiple.intoto.jsonl \
+            multiple.intoto.jsonl/multiple.intoto.jsonl \
             dist/*.tar.gz \
             dist/*.whl \
             --title "$TAG" \

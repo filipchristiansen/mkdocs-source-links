@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Download SLSA provenance via `gh run download` instead of `actions/download-artifact` across reusable workflow jobs.
+
 ## [0.3.7] - 2026-06-18
 
 ### Fixed
