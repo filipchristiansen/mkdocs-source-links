@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.10] - 2026-06-18
+
 ### Fixed
 
 - Correct pinned `setup-uv` action SHA in the publish workflow (v0.3.9 tag pointed at an invalid commit).
@@ -156,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.9...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.10...HEAD
+[0.3.10]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.6...v0.3.7
