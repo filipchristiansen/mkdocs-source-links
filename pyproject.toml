@@ -126,6 +126,9 @@ select = [
 python_version = "3.10"
 files = ["src", "tests", "scripts"]
 
+[tool.pyright]
+extraPaths = ["scripts"]
+
 [tool.pylint.basic]
 no-docstring-rgx = "^(test_|_)"
 
