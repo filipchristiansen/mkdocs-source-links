@@ -4,7 +4,7 @@
 The changelog is always hand-written: you keep an ``## [Unreleased]`` section
 curated by hand. This script only handles the mechanics — version bump,
 promoting ``[Unreleased]`` to a dated section, maintaining the compare-link
-footer, opening the release PR, tagging, and creating the GitHub release. It
+footer, opening the release PR, creating a signed tag, and creating the GitHub release. It
 never generates release-note prose.
 
 Usage
@@ -12,7 +12,7 @@ Usage
     # Step 1 (before merge): open the release PR off the latest main.
     python scripts/release.py prep 0.4.0
 
-    # Step 2 (after the PR merges): tag, push, and create the GitHub release.
+    # Step 2 (after the PR merges): signed tag, push, and create the GitHub release.
     python scripts/release.py tag 0.4.0
 """
 
@@ -318,12 +318,12 @@ def _cmd_tag(version: str) -> None:
     if existing:
         _fail(f"tag {tag} already exists")
 
-    _run("git", "tag", "-a", tag, "-m", tag)
+    _run("git", "tag", "-s", tag, "-m", tag)
     _run("git", "push", "origin", tag)
 
     notes = f"{_extract_notes(version)}\n\n**Full changelog:** {_compare_link(version)}"
     _run("gh", "release", "create", tag, "--title", tag, "--notes", notes)
-    print(f"\ntagged and released {tag}. The Publish workflow will push to PyPI.")
+    print(f"\nsigned, tagged, and released {tag}. The Publish workflow will push to PyPI.")
 
 
 def main() -> None:
@@ -334,7 +334,7 @@ def main() -> None:
     prep = sub.add_parser("prep", help="bump, roll changelog, open release PR")
     prep.add_argument("version", type=_parse_version)
 
-    tag = sub.add_parser("tag", help="tag merged release and create GitHub release")
+    tag = sub.add_parser("tag", help="signed tag + GitHub release for merged version")
     tag.add_argument("version", type=_parse_version)
 
     args = parser.parse_args()

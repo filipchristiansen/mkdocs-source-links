@@ -52,6 +52,9 @@ This bumps `pyproject.toml`, rolls `[Unreleased]` into `## [0.4.0] - <today>` wi
 make release-tag VERSION=0.4.0
 ```
 
-This checks out the latest `main`, verifies the bump landed, creates and pushes the annotated `v0.4.0` tag (which triggers the Publish workflow → PyPI), and creates the GitHub release with the changelog section as notes.
+This checks out the latest `main`, verifies the bump landed, creates and pushes a signed annotated
+`v0.4.0` tag (which triggers the Publish workflow → PyPI), and creates the GitHub release with the
+changelog section as notes. Requires local GPG or SSH commit/tag signing configured and the public
+key added to GitHub.
 
 If the user only wants a version bump / PR without publishing yet, run **only** Step 1 and stop. Prefer the `make` targets over performing these steps by hand; fall back to manual git/`gh` only if the script cannot run.

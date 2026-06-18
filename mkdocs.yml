@@ -5,6 +5,8 @@ repo_url: https://github.com/filipchristiansen/mkdocs-source-links
 repo_name: filipchristiansen/mkdocs-source-links
 edit_uri: edit/main/docs/
 
+exclude_docs: snippets/*
+
 theme:
   name: material
   features:

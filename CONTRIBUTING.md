@@ -37,6 +37,12 @@ make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 - Public functions use NumPy-style docstrings.
 - These are all enforced by pre-commit and CI; running `make lint` before pushing avoids surprises.
 
+## Static analysis
+
+Before merge, CI runs pre-commit hooks including ruff (with bandit security rules), mypy, pylint,
+and pydoclint. See `Makefile`, `.pre-commit-config.yaml`, and `.github/workflows/ci.yml` in the
+repository.
+
 ## Releases
 
 Releases are cut by maintainers. First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
@@ -45,5 +51,15 @@ hand (the tooling never generates release notes). Then:
 1. `make release-prep VERSION=X.Y.Z` — bumps `version` in `pyproject.toml`, rolls `[Unreleased]`
    into a dated `## [X.Y.Z]` section with updated compare links, runs `make ci`, and opens the
    release PR.
-2. After the PR is merged, `make release-tag VERSION=X.Y.Z` — tags `vX.Y.Z` and creates the GitHub
-   release. Pushing the tag triggers the publish workflow, which builds and uploads to PyPI.
+2. After the PR is merged, `make release-tag VERSION=X.Y.Z` — creates a **signed** annotated tag
+   `vX.Y.Z`, pushes it, and creates the GitHub release. Pushing the tag triggers the publish
+   workflow, which verifies the tag signature via GitHub before building and uploading to PyPI.
+
+### Signed tags and commits
+
+`main` requires signed commits; release tags are created with `git tag -s`. The publish workflow
+rejects unsigned or unverified tags before PyPI upload. Configure commit/tag signing locally (GPG
+or SSH) and add the public key to your GitHub account so tags and merges show as **Verified**. See
+GitHub’s
+[commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification)
+guide.

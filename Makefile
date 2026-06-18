@@ -16,7 +16,7 @@ help:
 	@echo "  ci             Pre-PR checks (lint, test, coverage)"
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
-	@echo "  release-tag    Tag merged release + GitHub release     (VERSION=X.Y.Z)"
+	@echo "  release-tag    Signed tag + GitHub release after merge  (VERSION=X.Y.Z)"
 
 install:
 	uv python install 3.10
