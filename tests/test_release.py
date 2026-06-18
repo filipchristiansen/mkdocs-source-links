@@ -335,6 +335,12 @@ def test_cmd_tag_existing_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
         release._cmd_tag("0.4.0")
 
 
+def test_github_release_exists_missing_gh(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(release.shutil, "which", lambda _name: None)
+    with pytest.raises(SystemExit):
+        release._github_release_exists("v0.4.0")
+
+
 def test_cmd_tag_updates_existing_release(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     base = "https://github.com/filipchristiansen/mkdocs-source-links/compare"
     changelog = (
