@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.11] - 2026-06-19
+
 ### Fixed
 
 - Create immutable GitHub releases in one step with SLSA provenance and distribution archives (SLSA `upload-assets` is incompatible with immutable releases).
@@ -162,7 +164,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.10...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.11...HEAD
+[0.3.11]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.10...v0.3.11
 [0.3.10]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.7...v0.3.8
