@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: install sync lint test ci release-prep release-tag
+.PHONY: install sync lint test docs ci release-prep release-tag
 
 help:
 	@echo "Usage: make [target]"
@@ -12,6 +12,7 @@ help:
 	@echo "  ----------------- CI (local) --------------------"
 	@echo "  lint           Run lint (auto-fix where supported)"
 	@echo "  test           Run tests"
+	@echo "  docs           Build documentation site (strict)"
 	@echo "  ci             Pre-PR checks (lint, test, coverage)"
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
@@ -31,7 +32,10 @@ lint:
 test:
 	uv run pytest --cov
 
-ci: sync lint test
+docs:
+	uv run mkdocs build --strict
+
+ci: sync lint test docs
 
 release-prep:
 	@test -n "$(VERSION)" || { echo "usage: make release-prep VERSION=X.Y.Z"; exit 1; }
