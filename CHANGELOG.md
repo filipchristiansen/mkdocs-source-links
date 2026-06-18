@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Create immutable GitHub releases from the publish workflow in one step (provenance plus
+  distributions) instead of pre-creating an empty release in `release.py`.
+
 ## [0.3.4] - 2026-06-18
 
 ### Fixed

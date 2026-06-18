@@ -315,10 +315,11 @@ def test_cmd_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
     release._cmd_tag("0.4.0")
 
-    assert ("git", "tag", "-s", "v0.4.0", "-m", "v0.4.0") in calls
-    release_call = next(call for call in calls if call[:3] == ("gh", "release", "create"))
-    notes = release_call[-1]
+    tag_call = next(call for call in calls if call[:4] == ("git", "tag", "-s", "v0.4.0"))
+    notes = tag_call[-1]
+    assert "### Added" in notes
     assert f"**Full changelog:** {base}/v0.3.0...v0.4.0" in notes
+    assert not any(call[:3] == ("gh", "release", "create") for call in calls)
 
 
 def test_cmd_tag_version_mismatch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -333,34 +334,6 @@ def test_cmd_tag_existing_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
     monkeypatch.setattr(release, "_run", _recording_run([], tag_list="v0.4.0"))
     with pytest.raises(SystemExit):
         release._cmd_tag("0.4.0")
-
-
-def test_github_release_exists_missing_gh(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(release.shutil, "which", lambda _name: None)
-    with pytest.raises(SystemExit):
-        release._github_release_exists("v0.4.0")
-
-
-def test_cmd_tag_updates_existing_release(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    base = "https://github.com/filipchristiansen/mkdocs-source-links/compare"
-    changelog = (
-        CHANGELOG_SAMPLE.replace("## [Unreleased]\n\n", "", 1)
-        .replace("## [0.3.0] - 2026-06-17", "## [0.4.0] - 2026-06-18", 1)
-        .replace(f"[0.3.0]: {base}/v0.2.0...v0.3.0", f"[0.4.0]: {base}/v0.3.0...v0.4.0", 1)
-    )
-    _setup(
-        monkeypatch,
-        tmp_path,
-        pyproject='[project]\nname = "demo"\nversion = "0.4.0"\n',
-        changelog=changelog,
-    )
-    calls: list[tuple[str, ...]] = []
-    monkeypatch.setattr(release, "_run", _recording_run(calls))
-    monkeypatch.setattr(release, "_github_release_exists", lambda _tag: True)
-
-    release._cmd_tag("0.4.0")
-
-    assert calls[-1][:5] == ("gh", "release", "edit", "v0.4.0", "--notes")
 
 
 # --- main -----------------------------------------------------------------
