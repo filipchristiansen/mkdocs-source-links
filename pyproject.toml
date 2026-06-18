@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-source-links"
-version = "0.3.10"
+version = "0.3.11"
 description = "MkDocs plugin: rewrite ../ repo links to forge view URLs in built HTML"
 readme = "README.md"
 license = "MIT"
