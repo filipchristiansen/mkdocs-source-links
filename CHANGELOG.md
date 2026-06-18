@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Omit explicit SLSA `upload-assets: false` in the publish workflow (caused workflow startup failure).
+
 ## [0.3.5] - 2026-06-18
 
 ### Fixed
