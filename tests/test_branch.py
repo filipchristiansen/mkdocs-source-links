@@ -55,6 +55,28 @@ def test_edit_uri_blob_prefix() -> None:
     )
 
 
+def test_edit_uri_gitlab_edit_prefix() -> None:
+    assert (
+        resolve_branch(
+            plugin_branch=None,
+            extra={},
+            edit_uri="-/edit/main/docs/",
+        )
+        == "main"
+    )
+
+
+def test_edit_uri_gitlab_blob_prefix() -> None:
+    assert (
+        resolve_branch(
+            plugin_branch=None,
+            extra={},
+            edit_uri="-/blob/develop/docs/",
+        )
+        == "develop"
+    )
+
+
 def test_fallback_main() -> None:
     assert resolve_branch(plugin_branch=None, extra={}, edit_uri=None) == "main"
 

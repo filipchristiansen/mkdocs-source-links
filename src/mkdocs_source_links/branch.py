@@ -25,7 +25,7 @@ def resolve_branch(
         MkDocs ``extra`` mapping; ``git_branch`` is consulted when present.
     edit_uri : str | None
         MkDocs ``edit_uri``; the segment after ``edit/`` or ``blob/`` is used as the branch name
-        when present.
+        when present. GitLab-style ``-/edit/<branch>/…`` paths are supported.
 
     Returns
     -------
@@ -38,6 +38,8 @@ def resolve_branch(
         return str(branch)
     if edit_uri:
         parts = edit_uri.strip("/").split("/")
+        if len(parts) >= 3 and parts[0] == "-" and parts[1] in ("edit", "blob"):
+            return parts[2]
         if len(parts) >= 2 and parts[0] in ("edit", "blob"):
             return parts[1]
     return "main"
