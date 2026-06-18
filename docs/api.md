@@ -21,3 +21,7 @@ Auto-generated from the package's docstrings.
 ## Git ref resolution
 
 ::: mkdocs_source_links.ref
+
+## Line anchors
+
+::: mkdocs_source_links.anchors
