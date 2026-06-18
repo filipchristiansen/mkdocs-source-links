@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use the correct path for the SLSA provenance file after `gh run download`.
+
 ## [0.3.11] - 2026-06-19
 
 ### Fixed

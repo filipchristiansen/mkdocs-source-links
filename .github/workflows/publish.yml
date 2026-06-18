@@ -113,7 +113,7 @@ jobs:
           fi
           NOTES=$(git cat-file tag "$TAG" | awk 'flag { print } /^$/ { flag=1 }')
           gh release create "$TAG" \
-            multiple.intoto.jsonl/multiple.intoto.jsonl \
+            multiple.intoto.jsonl \
             dist/*.tar.gz \
             dist/*.whl \
             --title "$TAG" \
