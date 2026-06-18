@@ -22,6 +22,7 @@ jobs:
     steps:
       - name: Verify signed release tag
         env:
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
