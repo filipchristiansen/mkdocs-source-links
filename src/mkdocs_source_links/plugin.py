@@ -67,13 +67,14 @@ class SourceLinksPlugin(BasePlugin):
         MkDocsConfig
             The unmodified configuration.
         """
-        if not self.config.get("enabled", True):
-            return config
         branch = resolve_branch(
             plugin_branch=self.config.get("branch"),
             extra=config.extra or {},
             edit_uri=config.edit_uri,
         )
+        if not self.config.get("enabled", True):
+            self._view_ref = ViewRef(branch, "branch")
+            return config
         self._view_ref = resolve_view_ref(
             pin=self.config.get("pin", "branch"),
             repo_root=Path(config.config_file_path).parent,
