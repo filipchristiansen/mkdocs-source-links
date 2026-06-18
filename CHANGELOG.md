@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-06-18
+
 ### Fixed
 
 - Restore SLSA `upload-assets: true` release flow compatible with GitHub Actions workflow validation.
@@ -150,7 +152,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.8...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.9...HEAD
+[0.3.9]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.5...v0.3.6
