@@ -23,6 +23,8 @@ from mkdocs_source_links.urls import SUPPORTED_FORGES, detect_forge, repo_view_u
         ("https://gitea.example.com/org/repo", "gitea"),
         ("https://forgejo.example.com/org/repo", "gitea"),
         ("https://bitbucket.example.com/org/repo", "bitbucket"),
+        # Hostnames where the forge name is not a distinct label:
+        ("https://notgitlab.com/org/repo", None),
         # Unknown / ambiguous hosts:
         ("https://example.com/org/repo", None),
         ("not-a-url", None),
