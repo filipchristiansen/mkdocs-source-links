@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -148,6 +149,20 @@ def _ensure_clean_tree() -> None:
     """Abort unless the working tree is clean."""
     if _run("git", "status", "--porcelain", capture=True):
         _fail("working tree is not clean; commit or stash first")
+
+
+def _github_release_exists(tag: str) -> bool:
+    """Return whether *tag* already has a GitHub release."""
+    gh = shutil.which("gh")
+    if gh is None:
+        _fail("command not found: gh")
+    result = subprocess.run(
+        [gh, "release", "view", tag],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def _extract_notes(version: str) -> str:
@@ -322,8 +337,14 @@ def _cmd_tag(version: str) -> None:
     _run("git", "push", "origin", tag)
 
     notes = f"{_extract_notes(version)}\n\n**Full changelog:** {_compare_link(version)}"
-    _run("gh", "release", "create", tag, "--title", tag, "--notes", notes)
-    print(f"\nsigned, tagged, and released {tag}. The Publish workflow will push to PyPI.")
+    if _github_release_exists(tag):
+        _run("gh", "release", "edit", tag, "--notes", notes)
+    else:
+        _run("gh", "release", "create", tag, "--title", tag, "--notes", notes)
+    print(
+        f"\nsigned, tagged, and released {tag}. "
+        "The Publish workflow will push to PyPI and attach SLSA provenance."
+    )
 
 
 def main() -> None:

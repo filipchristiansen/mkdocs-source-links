@@ -10,9 +10,15 @@ permissions:
   id-token: write
 
 jobs:
-  publish:
+  build:
+    name: Build and publish
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
     steps:
       - name: Verify signed release tag
         env:
@@ -44,5 +50,59 @@ jobs:
       - name: Build
         run: uv build
 
+      - name: Generate provenance subjects
+        id: hash
+        run: |
+          cd dist
+          echo "hashes=$(sha256sum * | base64 -w0)" >> "$GITHUB_OUTPUT"
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
+
+      - name: Upload distribution archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 5
+
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      upload-assets: true
+
+  release-assets:
+    name: Upload GitHub release assets
+    needs: [build, provenance]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download distribution archives
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: dist
+          path: dist
+
+      - name: Upload distribution archives to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 20); do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release upload "$TAG" dist/* --clobber
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::GitHub release ${TAG} was not found after waiting."
+          exit 1

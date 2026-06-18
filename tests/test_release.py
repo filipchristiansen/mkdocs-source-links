@@ -335,6 +335,28 @@ def test_cmd_tag_existing_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
         release._cmd_tag("0.4.0")
 
 
+def test_cmd_tag_updates_existing_release(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    base = "https://github.com/filipchristiansen/mkdocs-source-links/compare"
+    changelog = (
+        CHANGELOG_SAMPLE.replace("## [Unreleased]\n\n", "", 1)
+        .replace("## [0.3.0] - 2026-06-17", "## [0.4.0] - 2026-06-18", 1)
+        .replace(f"[0.3.0]: {base}/v0.2.0...v0.3.0", f"[0.4.0]: {base}/v0.3.0...v0.4.0", 1)
+    )
+    _setup(
+        monkeypatch,
+        tmp_path,
+        pyproject='[project]\nname = "demo"\nversion = "0.4.0"\n',
+        changelog=changelog,
+    )
+    calls: list[tuple[str, ...]] = []
+    monkeypatch.setattr(release, "_run", _recording_run(calls))
+    monkeypatch.setattr(release, "_github_release_exists", lambda _tag: True)
+
+    release._cmd_tag("0.4.0")
+
+    assert calls[-1][:5] == ("gh", "release", "edit", "v0.4.0", "--notes")
+
+
 # --- main -----------------------------------------------------------------
 
 
