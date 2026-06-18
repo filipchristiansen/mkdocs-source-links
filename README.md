@@ -3,6 +3,7 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13299/badge)](https://www.bestpractices.dev/projects/13299)
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/13299/baseline)](https://www.bestpractices.dev/projects/13299)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/filipchristiansen/mkdocs-source-links/badge)](https://scorecard.dev/viewer/?uri=github.com/filipchristiansen/mkdocs-source-links)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://github.com/filipchristiansen/mkdocs-source-links/releases/latest)
 [![PyPI](https://img.shields.io/pypi/v/mkdocs-source-links?logo=pypi&logoColor=white)](https://pypi.org/project/mkdocs-source-links)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/LICENSE)
 [![CI](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml?query=branch%3Amain)
