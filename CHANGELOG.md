@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.12] - 2026-06-19
+
 ### Fixed
 
 - Use the correct path for the SLSA provenance file after `gh run download`.
@@ -168,7 +170,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.11...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.12...HEAD
+[0.3.12]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.11...v0.3.12
 [0.3.11]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.10...v0.3.11
 [0.3.10]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.8...v0.3.9
