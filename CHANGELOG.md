@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Create immutable GitHub releases in one step with SLSA provenance and distribution archives (SLSA `upload-assets` is incompatible with immutable releases).
+
 ## [0.3.10] - 2026-06-18
 
 ### Fixed
