@@ -22,6 +22,14 @@ class _ForgeRequest(NamedTuple):
     is_dir: bool
 
 
+def _normalize_repo_base(repo_url: str) -> str:
+    """Strip trailing slashes and a ``.git`` suffix from a repository URL."""
+    base = repo_url.rstrip("/")
+    if base.endswith(".git"):
+        return base[:-4]
+    return base
+
+
 def _github_url(req: _ForgeRequest) -> str:
     """Build a GitHub blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
@@ -149,7 +157,7 @@ def repo_view_url(
     if forge_name is None:
         return None
     request = _ForgeRequest(
-        base=repo_url.rstrip("/"),
+        base=_normalize_repo_base(repo_url),
         ref=ref,
         ref_kind=ref_kind,
         repo_path=quote(repo_path, safe="/"),

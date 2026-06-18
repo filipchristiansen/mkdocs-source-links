@@ -153,6 +153,19 @@ def test_repo_view_url_trailing_slash_normalized() -> None:
     )
 
 
+def test_repo_view_url_git_suffix_stripped() -> None:
+    assert (
+        repo_view_url(
+            repo_url="https://github.com/o/r.git",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+        )
+        == "https://github.com/o/r/blob/main/x"
+    )
+
+
 def test_repo_view_url_explicit_forge_override() -> None:
     # Unknown host, but the forge is forced.
     assert (
