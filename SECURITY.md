@@ -4,12 +4,21 @@
 
 Only the latest released version of mkdocs-source-links receives security fixes.
 
+## Security contacts
+
+Report vulnerabilities privately via GitHub's
+[private vulnerability reporting](https://github.com/filipchristiansen/mkdocs-source-links/security/advisories/new).
+Do not open a public issue for security problems.
+
 ## Reporting a vulnerability
 
-Please report security issues privately using GitHub's
-[private vulnerability reporting](https://github.com/filipchristiansen/mkdocs-source-links/security/advisories/new)
-rather than opening a public issue.
+Include a description of the issue, affected versions, and steps to reproduce if possible.
 
-Include a description of the issue, affected versions, and steps to reproduce if possible. You can
-expect an initial response within a reasonable timeframe, and a fix or mitigation will be released
-once the issue is confirmed.
+You can expect an **initial response within 14 days**. Once the issue is confirmed, a fix or
+mitigation will be released in a new version.
+
+## CI/CD hardening
+
+GitHub Actions workflows use least-privilege `permissions` (for example `contents: read` on CI).
+Release publishing uses a dedicated environment with OIDC to PyPI; no long-lived PyPI tokens are
+stored in the repository. The publish workflow accepts only GitHub-verified signed release tags.

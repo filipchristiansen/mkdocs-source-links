@@ -1,6 +1,9 @@
 # MkDocs Source Links
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13299/badge)](https://www.bestpractices.dev/projects/13299)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/filipchristiansen/mkdocs-source-links/badge)](https://scorecard.dev/viewer/?uri=github.com/filipchristiansen/mkdocs-source-links)
 [![PyPI](https://img.shields.io/pypi/v/mkdocs-source-links?logo=pypi&logoColor=white)](https://pypi.org/project/mkdocs-source-links)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/LICENSE)
 [![CI](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/filipchristiansen/mkdocs-source-links/graph/badge.svg)](https://codecov.io/gh/filipchristiansen/mkdocs-source-links)
 [![python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads)
@@ -79,8 +82,8 @@ make ci        # run the full pre-PR suite: lint, test, coverage
 ```
 
 Maintainers release with `make release-prep VERSION=X.Y.Z` (bump, roll the hand-written
-`CHANGELOG.md`, open the release PR) and, once merged, `make release-tag VERSION=X.Y.Z` (tag and
-publish to PyPI).
+`CHANGELOG.md`, open the release PR) and, once merged, `make release-tag VERSION=X.Y.Z` (signed tag
+and publish to PyPI).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for
 release notes. Security issues: see [SECURITY.md](SECURITY.md).
