@@ -126,3 +126,14 @@ def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
 
     assert f"github.com/example/test-repo/blob/{sha}/backend/config.py" in html
     assert f"github.com/example/test-repo/tree/{sha}/scripts" in html
+
+
+def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"enabled": False})
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "../backend/config.py" in html
+    assert "../scripts/" in html
+    assert "github.com/example/test-repo/blob" not in html
