@@ -44,6 +44,21 @@ plugins:
       branch: develop
 ```
 
+## Advanced options
+
+```yaml
+plugins:
+  - source-links:
+      pin: commit             # embed HEAD SHA instead of branch name
+      forge: gitlab           # override autodetection for custom domains
+      warn_on_missing: false  # silence missing-target warnings
+      enabled: !ENV [SOURCE_LINKS, true]  # disable per environment
+```
+
+Line fragments in links (`#L10`, `#L10-L20`) are translated to each forge's line-reference
+syntax. See the [configuration docs](https://filipchristiansen.github.io/mkdocs-source-links/configuration/)
+for all options.
+
 ## Link conventions
 
 | Target | Source markdown | Built HTML |
