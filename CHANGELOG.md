@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Set `GH_TOKEN` in the publish workflow so signed-tag verification works in GitHub Actions.
+
 ## [0.3.3] - 2026-06-18
 
 ### Changed
