@@ -79,6 +79,7 @@ jobs:
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.hashes }}"
+      provenance-name: mkdocs-source-links.intoto.jsonl
 
   release-assets:
     name: Create GitHub release with assets
@@ -99,12 +100,14 @@ jobs:
       - name: Download SLSA provenance
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh run download "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}" -n multiple.intoto.jsonl
+          PROVENANCE: ${{ needs.provenance.outputs.provenance-name }}
+        run: gh run download "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}" -n "$PROVENANCE"
 
       - name: Create GitHub release with provenance and distributions
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
+          PROVENANCE: ${{ needs.provenance.outputs.provenance-name }}
         run: |
           set -euo pipefail
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -122,7 +125,7 @@ jobs:
             exit 1
           fi
           gh release create "$TAG" \
-            multiple.intoto.jsonl \
+            "$PROVENANCE" \
             dist/*.tar.gz \
             dist/*.whl \
             --title "$TAG" \

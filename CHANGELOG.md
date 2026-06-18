@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- SLSA Level 3 provenance (`.intoto.jsonl`) on GitHub releases.
+- SLSA Level 3 provenance (`mkdocs-source-links.intoto.jsonl`) on GitHub releases.
 - Post-release `slsa-verifier` check in the publish workflow.
 
 ### Changed
