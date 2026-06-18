@@ -137,3 +137,18 @@ def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> No
     assert "../backend/config.py" in html
     assert "../scripts/" in html
     assert "github.com/example/test-repo/blob" not in html
+
+
+def test_mkdocs_build_forge_override_on_custom_host(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(
+        tmp_path,
+        repo_url="https://scm.internal.example/org/test-repo",
+        edit_uri="-/edit/main/docs/",
+        plugin_options={"forge": "gitlab"},
+    )
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "scm.internal.example/org/test-repo/-/blob/main/backend/config.py" in html
+    assert "scm.internal.example/org/test-repo/-/tree/main/scripts" in html
