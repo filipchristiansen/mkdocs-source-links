@@ -1,6 +1,7 @@
 # MkDocs Source Links
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13299/badge)](https://www.bestpractices.dev/projects/13299)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/13299/baseline)](https://www.bestpractices.dev/projects/13299)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/filipchristiansen/mkdocs-source-links/badge)](https://scorecard.dev/viewer/?uri=github.com/filipchristiansen/mkdocs-source-links)
 [![PyPI](https://img.shields.io/pypi/v/mkdocs-source-links?logo=pypi&logoColor=white)](https://pypi.org/project/mkdocs-source-links)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/LICENSE)
