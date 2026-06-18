@@ -89,12 +89,24 @@ _HOST_HINTS = (
 )
 
 
+def _host_matches_hint(host: str, needle: str) -> bool:
+    """Return whether ``needle`` appears as a hostname label in ``host``."""
+    return (
+        host == needle
+        or host.startswith(f"{needle}.")
+        or host.endswith((f".{needle}", f"-{needle}"))
+        or f".{needle}." in host
+        or f"-{needle}." in host
+        or f".{needle}-" in host
+    )
+
+
 def detect_forge(repo_url: str) -> str | None:
     """Identify the git forge that hosts a repository URL.
 
-    Detection first matches well-known public hosts exactly, then falls back to substring hints on
-    the hostname so self-hosted instances (for example GitHub Enterprise at ``github.example.com``)
-    are recognized. Ambiguous custom domains return ``None`` and should be configured explicitly.
+    Detection first matches well-known public hosts exactly, then falls back to hostname-label
+    hints so self-hosted instances (for example GitHub Enterprise at ``github.example.com``) are
+    recognized. Ambiguous custom domains return ``None`` and should be configured explicitly.
 
     Parameters
     ----------
@@ -114,7 +126,7 @@ def detect_forge(repo_url: str) -> str | None:
     if host.endswith(".visualstudio.com"):
         return "azure"
     for needle, forge in _HOST_HINTS:
-        if needle in host:
+        if _host_matches_hint(host, needle):
             return forge
     return None
 
