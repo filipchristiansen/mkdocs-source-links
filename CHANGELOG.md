@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Run the CI test suite on Windows and macOS (newest supported Python) in addition to the Linux
   Python matrix, to guard cross-platform path handling.
+- Add a two-step release helper (`make release-prep` / `make release-tag`) that bumps the version,
+  rolls the hand-written `[Unreleased]` changelog section into a dated release, and opens the
+  release PR, tags, and publishes — without ever generating release notes.
+- Lint and format TOML via pre-commit (`check-toml` plus the `taplo-format` formatter), keeping
+  `pyproject.toml` consistently styled.
 
 ## [0.3.0] - 2026-06-17
 

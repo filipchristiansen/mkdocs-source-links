@@ -55,19 +55,18 @@ dev = [
     "pydoclint>=0.8.6",
     "pylint>=4.0.6",
 ]
-docs = [
-    "mkdocs-material>=9.5",
-    "mkdocstrings[python]>=0.27",
-]
+docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.27"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["scripts"]
 
 [tool.coverage.run]
-source = ["src/mkdocs_source_links"]
+source = ["src", "scripts"]
 
 [tool.coverage.report]
 fail_under = 100
+exclude_also = ['if __name__ == "__main__":']
 
 [tool.ruff]
 target-version = "py310"
@@ -76,51 +75,56 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = [
-  # Style & format
-  "E",   # pycodestyle errors
-  "W",   # pycodestyle warnings
-  "I",   # isort
-  "Q",   # flake8-quotes
-  "UP",  # pyupgrade
-  "ISC", # flake8-implicit-str-concat
-  "TID", # flake8-tidy-imports
-  # Correctness & bugs
-  "F",   # pyflakes
-  "B",   # flake8-bugbear
-  "BLE", # flake8-blind-except
-  "TRY", # tryceratops (exception handling)
-  "EM",  # flake8-errmsg
-  "RSE", # flake8-raise
-  "SLF", # flake8-self
-  # Simplify & modernize
-  "C4",  # flake8-comprehensions
-  "SIM", # flake8-simplify
-  "PTH", # flake8-use-pathlib
-  "ERA", # eradicate (commented-out code)
-  "T10", # flake8-debugger
-  "T20", # flake8-print
-  "PIE", # flake8-pie
-  "RET", # flake8-return
-  "YTT", # flake8-2020 (version checks)
-  "FLY", # flynt (f-strings)
-  "RUF", # Ruff-specific
-  # Type hints & API
-  "ANN", # flake8-annotations
-  "ARG", # flake8-unused-arguments
-  "FBT", # flake8-boolean-trap
-  # Security
-  "S",   # flake8-bandit
+    # -- Style & format --
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+    "ISC", # flake8-implicit-str-concat
+    "TID", # flake8-tidy-imports
+    # -- Correctness & bugs --
+    "F",   # pyflakes
+    "B",   # flake8-bugbear
+    "BLE", # flake8-blind-except
+    "TRY", # tryceratops (exception handling)
+    "EM",  # flake8-errmsg
+    "RSE", # flake8-raise
+    "SLF", # flake8-self
+    # -- Simplify & modernize --
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+    "ERA", # eradicate (commented-out code)
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "PIE", # flake8-pie
+    "RET", # flake8-return
+    "YTT", # flake8-2020 (version checks)
+    "FLY", # flynt (f-strings)
+    "RUF", # Ruff-specific
+    # -- Type hints & API --
+    "ANN", # flake8-annotations
+    "ARG", # flake8-unused-arguments
+    "FBT", # flake8-boolean-trap
+    # -- Security --
+    "S", # flake8-bandit
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
-    "S101",  # assert — standard in pytest
-    "S603",  # subprocess — used in integration tests with fixed argv
+    "S101",   # assert — standard in pytest
+    "S603",   # subprocess — used in integration tests with fixed argv
+    "SLF001", # access private helpers of the module under test
+]
+"scripts/**/*.py" = [
+    "S603", # subprocess — release CLI runs fixed git/gh/uv argv
+    "T201", # print — CLI progress output is intentional
 ]
 
 [tool.mypy]
 python_version = "3.10"
-files = ["src", "tests"]
+files = ["src", "tests", "scripts"]
 
 [tool.pylint.basic]
 no-docstring-rgx = "^(test_|_)"
