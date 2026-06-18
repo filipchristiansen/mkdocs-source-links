@@ -112,7 +112,7 @@ def test_detect_forge(repo_url: str, expected: str | None) -> None:
             False,
             "abc123def",
             "commit",
-            "https://codeberg.org/o/r/src/branch/abc123def/a/b.py",
+            "https://codeberg.org/o/r/src/commit/abc123def/a/b.py",
         ),
         (
             "https://dev.azure.com/o/p/_git/r",
