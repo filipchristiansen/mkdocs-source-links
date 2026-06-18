@@ -19,3 +19,6 @@ htmlcov/
 # MkDocs
 site/
 mkdocs.log
+
+# Cursor (local agent plans)
+.cursor/plans/
