@@ -318,12 +318,14 @@ def _cmd_tag(version: str) -> None:
     if existing:
         _fail(f"tag {tag} already exists")
 
-    _run("git", "tag", "-s", tag, "-m", tag)
-    _run("git", "push", "origin", tag)
-
     notes = f"{_extract_notes(version)}\n\n**Full changelog:** {_compare_link(version)}"
-    _run("gh", "release", "create", tag, "--title", tag, "--notes", notes)
-    print(f"\nsigned, tagged, and released {tag}. The Publish workflow will push to PyPI.")
+    _run("git", "tag", "-s", tag, "-m", notes)
+    _run("git", "push", "origin", tag)
+    print(
+        f"\nsigned and pushed {tag}. "
+        "The Publish workflow will push to PyPI and create the GitHub release "
+        "with SLSA provenance and distribution archives."
+    )
 
 
 def main() -> None:

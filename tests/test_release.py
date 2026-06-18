@@ -315,10 +315,11 @@ def test_cmd_tag(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
     release._cmd_tag("0.4.0")
 
-    assert ("git", "tag", "-s", "v0.4.0", "-m", "v0.4.0") in calls
-    release_call = next(call for call in calls if call[:3] == ("gh", "release", "create"))
-    notes = release_call[-1]
+    tag_call = next(call for call in calls if call[:4] == ("git", "tag", "-s", "v0.4.0"))
+    notes = tag_call[-1]
+    assert "### Added" in notes
     assert f"**Full changelog:** {base}/v0.3.0...v0.4.0" in notes
+    assert not any(call[:3] == ("gh", "release", "create") for call in calls)
 
 
 def test_cmd_tag_version_mismatch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

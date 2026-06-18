@@ -10,12 +10,19 @@ permissions:
   id-token: write
 
 jobs:
-  publish:
+  build:
+    name: Build and publish
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
     steps:
       - name: Verify signed release tag
         env:
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
@@ -44,5 +51,128 @@ jobs:
       - name: Build
         run: uv build
 
+      - name: Generate provenance subjects
+        id: hash
+        run: |
+          cd dist
+          echo "hashes=$(sha256sum *.tar.gz *.whl | base64 -w0)" >> "$GITHUB_OUTPUT"
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
+
+      - name: Upload distribution archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: dist
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
+          if-no-files-found: error
+          retention-days: 5
+
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
+
+  release-assets:
+    name: Create GitHub release with assets
+    needs: [build, provenance]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Download distribution archives
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: dist
+          path: dist
+
+      - name: Download SLSA provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}" -n multiple.intoto.jsonl
+
+      - name: Create GitHub release with provenance and distributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release ${TAG} already exists; delete it before re-publishing."
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          NOTES=$(awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md)
+          if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "::error::No CHANGELOG section found for ${VERSION}."
+            exit 1
+          fi
+          gh release create "$TAG" \
+            multiple.intoto.jsonl \
+            dist/*.tar.gz \
+            dist/*.whl \
+            --title "$TAG" \
+            --notes "$NOTES"
+
+  slsa-verifier:
+    name: Verify SLSA provenance
+    needs: [build, provenance, release-assets]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install slsa-verifier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh -R slsa-framework/slsa-verifier release download v2.7.1 -p "slsa-verifier-linux-amd64"
+          chmod ug+x slsa-verifier-linux-amd64
+          COMPUTED_HASH=$(sha256sum slsa-verifier-linux-amd64 | cut -d ' ' -f1)
+          EXPECTED_HASH="946dbec729094195e88ef78e1734324a27869f03e2c6bd2f61cbc06bd5350339"
+          if [ "$EXPECTED_HASH" != "$COMPUTED_HASH" ]; then
+            echo "::error::slsa-verifier checksum mismatch (expected ${EXPECTED_HASH}, got ${COMPUTED_HASH})."
+            exit 1
+          fi
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE: ${{ needs.provenance.outputs.provenance-name }}
+        run: |
+          set -euo pipefail
+          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.tar.gz"
+          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "*.whl"
+          gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "$PROVENANCE"
+
+      - name: Verify provenance
+        env:
+          CHECKSUMS: ${{ needs.build.outputs.hashes }}
+          PROVENANCE: ${{ needs.provenance.outputs.provenance-name }}
+        run: |
+          set -euo pipefail
+          checksums=$(echo "$CHECKSUMS" | base64 -d)
+          while read -r line; do
+            [ -z "$line" ] && continue
+            fn=$(echo "$line" | awk '{print $2}')
+            echo "Verifying ${fn}"
+            ./slsa-verifier-linux-amd64 \
+              -artifact-path "$fn" \
+              -provenance "$PROVENANCE" \
+              -source "github.com/${GITHUB_REPOSITORY}" \
+              -tag "$GITHUB_REF_NAME"
+          done <<< "$checksums"
