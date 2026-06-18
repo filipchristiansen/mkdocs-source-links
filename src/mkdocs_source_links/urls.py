@@ -48,8 +48,9 @@ def _bitbucket_url(req: _ForgeRequest) -> str:
 
 
 def _gitea_url(req: _ForgeRequest) -> str:
-    """Build a Gitea/Forgejo src/branch URL (files and directories share the same path)."""
-    return f"{req.base}/src/branch/{req.ref}/{req.repo_path}"
+    """Build a Gitea/Forgejo src URL (files and directories share the same path)."""
+    kind = "commit" if req.ref_kind == "commit" else "branch"
+    return f"{req.base}/src/{kind}/{req.ref}/{req.repo_path}"
 
 
 def _azure_url(req: _ForgeRequest) -> str:
