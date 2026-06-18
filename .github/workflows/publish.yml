@@ -55,7 +55,7 @@ jobs:
         id: hash
         run: |
           cd dist
-          echo "hashes=$(sha256sum * | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hashes=$(sha256sum *.tar.gz *.whl | base64 -w0)" >> "$GITHUB_OUTPUT"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
@@ -64,7 +64,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dist
-          path: dist/*
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
           if-no-files-found: error
           retention-days: 5
 
@@ -73,37 +75,47 @@ jobs:
     permissions:
       actions: read
       id-token: write
-      contents: write
+      contents: read
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.hashes }}"
-      upload-assets: true
+      upload-assets: false
 
   release-assets:
-    name: Upload GitHub release assets
+    name: Create GitHub release with assets
     needs: [build, provenance]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
       - name: Download distribution archives
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: dist
           path: dist
 
-      - name: Upload distribution archives to GitHub release
+      - name: Download SLSA provenance
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: multiple.intoto.jsonl
+          path: provenance
+
+      - name: Create GitHub release with provenance and distributions
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          for _ in $(seq 1 20); do
-            if gh release view "$TAG" >/dev/null 2>&1; then
-              gh release upload "$TAG" dist/* --clobber
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "::error::GitHub release ${TAG} was not found after waiting."
-          exit 1
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release ${TAG} already exists; delete it before re-publishing."
+            exit 1
+          fi
+          NOTES=$(git tag -l "$TAG" --format='%(contents)')
+          gh release create "$TAG" \
+            provenance/multiple.intoto.jsonl \
+            dist/*.tar.gz \
+            dist/*.whl \
+            --title "$TAG" \
+            --notes "$NOTES"
