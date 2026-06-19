@@ -135,6 +135,19 @@ def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> No
     assert "github.com/example/test-repo/blob" not in html
 
 
+def test_mkdocs_build_rewrites_reference_definitions(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    (tmp_path / "docs" / "index.md").write_text(
+        "See [config][cfg].\n\n[cfg]: ../backend/config.py\n"
+    )
+    _write_mkdocs_yml(tmp_path)
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "github.com/example/test-repo/blob/main/backend/config.py" in html
+    assert "../backend/config.py" not in html
+
+
 def test_mkdocs_build_forge_override_on_custom_host(tmp_path: Path) -> None:
     _setup_doc_site(tmp_path)
     _write_mkdocs_yml(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 from .anchors import translate_line_fragment
@@ -32,6 +33,33 @@ _SCAN = re.compile(
     """,
     re.MULTILINE | re.VERBOSE,
 )
+
+# Reference-style link definitions: ``[label]: ../path`` (up to 3 spaces indent, optional title).
+_REF_DEF = re.compile(
+    r"""
+    ^[ \t]{0,3}
+    \[(?P<label>[^\]]+)\]:[ \t]+
+    (?:
+        <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?>
+      | (?P<path>\.\./[^\s\#]+)(?P<frag>\#[^\s]*)?
+    )
+    (?:[ \t]+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?
+    [ \t]*$
+    """,
+    re.MULTILINE | re.VERBOSE,
+)
+
+_FENCE_OPEN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<rest>.*)$")
+
+
+@dataclass(frozen=True)
+class _RewriteContext:
+    page_abs_path: Path
+    repo_root: Path
+    repo_url: str
+    view_ref: ViewRef
+    forge: str | None
+    report_missing: Callable[[str], None] | None
 
 
 def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
@@ -80,6 +108,103 @@ def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> st
     return _repo_relative(target=target, repo_root=repo_root)
 
 
+def _parent_link_forge_url(
+    path_part: str,
+    fragment: str,
+    ctx: _RewriteContext,
+) -> str | None:
+    """Build a forge view URL for a ``../`` path, or return ``None`` to leave the link unchanged."""
+    target = (ctx.page_abs_path.parent / path_part).resolve()
+    repo_path = _repo_relative(target=target, repo_root=ctx.repo_root)
+    if repo_path is None:
+        return None
+
+    if target.is_dir():
+        is_dir = True
+    elif target.is_file():
+        is_dir = False
+    else:
+        if ctx.report_missing is not None:
+            ctx.report_missing(path_part)
+        return None
+
+    forge_name = ctx.forge or detect_forge(ctx.repo_url)
+    url = repo_view_url(
+        repo_url=ctx.repo_url,
+        ref=ctx.view_ref.ref,
+        ref_kind=ctx.view_ref.kind,
+        repo_path=repo_path,
+        is_dir=is_dir,
+        forge=forge_name,
+    )
+    if url is None:
+        return None
+    out_fragment = translate_line_fragment(fragment, forge=forge_name) if forge_name else fragment
+    return f"{url}{out_fragment}"
+
+
+def _fence_closes_on_same_line(*, marker: str, rest: str) -> bool:
+    """Return whether a fence opener and closer appear on the same line."""
+    if not rest.strip():
+        return False
+    char = marker[0]
+    min_len = len(marker)
+    trailing = re.search(rf"({re.escape(char)}{{{min_len},}})\s*$", rest)
+    return trailing is not None
+
+
+def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
+    """Return a rewritten reference-definition line, or ``None`` if unchanged."""
+    ref_m = _REF_DEF.match(body)
+    if ref_m is None:
+        return None
+    path_part = ref_m.group("path") or ref_m.group("path_a")
+    fragment = ref_m.group("frag") or ref_m.group("frag_a") or ""
+    title = ref_m.group("title")
+    url = _parent_link_forge_url(path_part, fragment, ctx)
+    if url is None:
+        return None
+    label = ref_m.group("label")
+    title_suffix = f" {title}" if title else ""
+    return f"[{label}]: {url}{title_suffix}"
+
+
+def _rewrite_reference_definitions(markdown: str, ctx: _RewriteContext) -> str:
+    """Rewrite ``[label]: ../path`` reference definitions to forge URLs."""
+    out: list[str] = []
+    in_fence = False
+    fence_marker = ""
+
+    for raw_line in markdown.splitlines(keepends=True):
+        body = raw_line.rstrip("\r\n")
+        suffix = raw_line[len(body) :]
+
+        if in_fence:
+            if re.match(rf"^[ \t]*{re.escape(fence_marker)}[ \t]*$", body):
+                in_fence = False
+                fence_marker = ""
+            out.append(raw_line)
+            continue
+
+        open_m = _FENCE_OPEN.match(body)
+        if open_m:
+            marker = open_m.group("marker")
+            if not _fence_closes_on_same_line(marker=marker, rest=open_m.group("rest")):
+                in_fence = True
+                fence_marker = marker
+            out.append(raw_line)
+            continue
+
+        rewritten = _rewrite_ref_def_line(body, ctx)
+        if rewritten is not None:
+            out.append(f"{rewritten}{suffix}")
+            continue
+
+        out.append(raw_line)
+
+    return "".join(out)
+
+
 def rewrite_repo_parent_links(
     markdown: str,
     *,
@@ -90,7 +215,7 @@ def rewrite_repo_parent_links(
     forge: str | None = None,
     report_missing: Callable[[str], None] | None = None,
 ) -> str:
-    """Replace ``](../…)`` markdown links with git-forge view URLs.
+    """Replace ``](../…)`` and ``[ref]: ../…`` markdown links with git-forge view URLs.
 
     Only links whose target resolves to an existing file or directory inside ``repo_root`` are
     rewritten. Unsupported hosts, paths outside the repo, and missing targets are left unchanged.
@@ -125,8 +250,18 @@ def rewrite_repo_parent_links(
     Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
     distinguish them). URL fragments (``#anchor``) and link titles are preserved, and
     angle-bracket destinations (``](<../x>)``) are supported. Links inside fenced code blocks
-    and inline code spans are left unchanged.
+    and inline code spans are left unchanged. Reference-style definitions (``[ref]: ../path``)
+    are rewritten when not inside a fenced code block.
     """
+
+    ctx = _RewriteContext(
+        page_abs_path=page_abs_path,
+        repo_root=repo_root,
+        repo_url=repo_url,
+        view_ref=view_ref,
+        forge=forge,
+        report_missing=report_missing,
+    )
 
     def repl(match: re.Match[str]) -> str:
         path_part = match.group("path") or match.group("path_a")
@@ -135,36 +270,11 @@ def rewrite_repo_parent_links(
             return match.group(0)
         fragment = match.group("frag") or match.group("frag_a") or ""
         title = match.group("title")
-        # path_part always starts with "../" (guaranteed by the link branch of _SCAN).
-        target = (page_abs_path.parent / path_part).resolve()
-        repo_path = _repo_relative(target=target, repo_root=repo_root)
-        if repo_path is None:
-            return match.group(0)
-
-        if target.is_dir():
-            is_dir = True
-        elif target.is_file():
-            is_dir = False
-        else:
-            if report_missing is not None:
-                report_missing(path_part)
-            return match.group(0)
-
-        forge_name = forge or detect_forge(repo_url)
-        url = repo_view_url(
-            repo_url=repo_url,
-            ref=view_ref.ref,
-            ref_kind=view_ref.kind,
-            repo_path=repo_path,
-            is_dir=is_dir,
-            forge=forge_name,
-        )
+        url = _parent_link_forge_url(path_part, fragment, ctx)
         if url is None:
             return match.group(0)
-        out_fragment = (
-            translate_line_fragment(fragment, forge=forge_name) if forge_name else fragment
-        )
         title_suffix = f" {title}" if title else ""
-        return f"]({url}{out_fragment}{title_suffix})"
+        return f"]({url}{title_suffix})"
 
-    return _SCAN.sub(repl, markdown)
+    rewritten = _SCAN.sub(repl, markdown)
+    return _rewrite_reference_definitions(rewritten, ctx)

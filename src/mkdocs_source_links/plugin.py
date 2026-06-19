@@ -23,8 +23,9 @@ log = get_plugin_logger(__name__)
 class SourceLinksPlugin(BasePlugin):
     """MkDocs plugin that rewrites parent-directory markdown links to forge URLs.
 
-    During ``mkdocs build``, ``](../path)`` links in each page's markdown are replaced with GitHub
-    blob/tree view URLs. Source files on disk are not modified.
+    During ``mkdocs build``, ``](../path)`` inline links and ``[ref]: ../path`` reference
+    definitions in each page's markdown are replaced with GitHub blob/tree view URLs. Source files
+    on disk are not modified.
 
     Attributes
     ----------
@@ -91,7 +92,7 @@ class SourceLinksPlugin(BasePlugin):
         config: MkDocsConfig,
         files: Files,  # noqa: ARG002 (unused-method-argument) (required by MkDocs hook signature)
     ) -> str:
-        """Rewrite ``](../…)`` links in page markdown to forge view URLs.
+        """Rewrite ``](../…)`` and ``[ref]: ../…`` links in page markdown to forge view URLs.
 
         Parameters
         ----------
