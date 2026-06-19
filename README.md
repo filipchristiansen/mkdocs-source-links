@@ -88,8 +88,9 @@ Maintainers release with `make release-prep VERSION=X.Y.Z` (bump, roll the hand-
 and publish to PyPI).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for
-release notes. Maintainers and governance: [MAINTAINERS.md](MAINTAINERS.md). Security issues:
-see [SECURITY.md](SECURITY.md).
+release notes. Maintainers and governance: [MAINTAINERS.md](MAINTAINERS.md). Support:
+[SUPPORT.md](SUPPORT.md). Security reporting: [SECURITY.md](SECURITY.md). Release verification:
+[Security docs](https://filipchristiansen.github.io/mkdocs-source-links/security/).
 
 ## License
 

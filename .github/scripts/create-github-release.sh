@@ -47,6 +47,7 @@ fi
 
 gh release create "$TAG" \
   "$PROVENANCE" \
+  dist/*.cdx.json \
   dist/*.tar.gz \
   dist/*.whl \
   --title "$TAG" \

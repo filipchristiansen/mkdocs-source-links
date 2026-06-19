@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: install sync lint test docs ci release-prep release-tag verify-tag
+.PHONY: install sync lint audit test docs ci release-prep release-tag verify-tag
 
 help:
 	@echo "Usage: make [target]"
@@ -11,9 +11,10 @@ help:
 	@echo "  sync           Sync all dependency groups"
 	@echo "  ----------------- CI (local) --------------------"
 	@echo "  lint           Run lint (auto-fix where supported)"
+	@echo "  audit          Scan dependencies for known vulnerabilities"
 	@echo "  test           Run tests"
 	@echo "  docs           Build documentation site (strict)"
-	@echo "  ci             Pre-PR checks (lint, test, coverage)"
+	@echo "  ci             Pre-PR checks (lint, audit, test, coverage, docs)"
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
 	@echo "  release-tag    Signed tag + GitHub release after merge  (VERSION=X.Y.Z)"
@@ -30,13 +31,17 @@ sync:
 lint:
 	uv run pre-commit run --all-files
 
+audit:
+	uv sync --all-groups --frozen
+	uv run pip-audit -l --desc on
+
 test:
 	uv run pytest --cov
 
 docs:
 	uv run mkdocs build --strict
 
-ci: sync lint test docs
+ci: sync lint audit test docs
 
 release-prep:
 	@test -n "$(VERSION)" || { echo "usage: make release-prep VERSION=X.Y.Z"; exit 1; }
