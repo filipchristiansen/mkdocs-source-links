@@ -12,9 +12,11 @@ from .anchors import translate_line_fragment
 from .ref import ViewRef
 from .urls import detect_forge, repo_view_url
 
-# Left-to-right scan outside fenced code blocks: an inline code span, an inline image with a
-# ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link. Fenced regions are
-# skipped by a line-based pass that shares fence rules with the reference-definition rewriter.
+# Left-to-right scan on markdown outside fenced code blocks: an inline code span, an inline image
+# with a ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link. Fenced regions
+# are skipped via :func:`_iter_fence_runs`; a regex scan (not line-based rewriting) is required
+# here because inline links, images, and backtick spans can share a line. Reference definitions use
+# a line pass instead because each ``[label]: ../path`` occupies its own line.
 _SCAN = re.compile(
     r"""
     (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
@@ -106,6 +108,22 @@ def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
         return None
 
 
+def _resolve_parent_href(
+    *, page_abs_path: Path, href: str, repo_root: Path
+) -> tuple[str, Path] | None:
+    """Resolve a ``../`` href to a repo-relative POSIX path and absolute target path."""
+    if not href.startswith("../"):
+        return None
+    root = repo_root.resolve()
+    resolved = (page_abs_path.parent / href).resolve()
+    if _repo_relative(target=resolved, repo_root=repo_root) is None:
+        return None
+    rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
+    if rel.startswith(".."):
+        return None
+    return Path(rel).as_posix(), resolved
+
+
 def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> str | None:
     """Resolve a ``../`` link from a doc page to a repo-root-relative POSIX path.
 
@@ -128,28 +146,20 @@ def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> st
         Repo-root-relative POSIX path, or ``None`` if ``href`` is not a ``../`` link or resolves
         outside ``repo_root``.
     """
-    if not href.startswith("../"):
-        return None
-    root = repo_root.resolve()
-    resolved = (page_abs_path.parent / href).resolve()
-    if _repo_relative(target=resolved, repo_root=repo_root) is None:
-        return None
-    rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
-    if rel.startswith(".."):
-        return None
-    return Path(rel).as_posix()
+    resolved = _resolve_parent_href(page_abs_path=page_abs_path, href=href, repo_root=repo_root)
+    return resolved[0] if resolved is not None else None
 
 
 def _parent_link_forge_url(path_part: str, fragment: str, ctx: _RewriteContext) -> str | None:
     """Build a forge view URL for a ``../`` path, or return ``None`` to leave the link unchanged."""
-    resolved = (ctx.page_abs_path.parent / path_part).resolve()
-    repo_path = repo_relative_path(
+    resolved_pair = _resolve_parent_href(
         page_abs_path=ctx.page_abs_path,
         href=path_part,
         repo_root=ctx.repo_root,
     )
-    if repo_path is None:
+    if resolved_pair is None:
         return None
+    repo_path, resolved = resolved_pair
 
     if resolved.is_dir():
         is_dir = True
