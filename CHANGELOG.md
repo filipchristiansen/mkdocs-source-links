@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README links to governance, roadmap, and code of conduct.
 - `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
 - `make test` and CI use branch coverage.
+- Publish workflow verifies tag↔`pyproject.toml` version and runs `mkdocs build --strict` before PyPI upload.
+- Removed duplicate `repo_view_url` tests from `test_rewrite.py` (`test_urls.py` remains the spec).
 
 ## [0.4.1] - 2026-06-19
 

@@ -34,6 +34,17 @@ jobs:
           version: "latest"
           python-version: "3.10"
 
+      - name: Verify tag matches pyproject version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash .github/scripts/verify-tag-version.sh
+
+      - name: Install dependencies
+        run: uv sync --all-groups --frozen
+
+      - name: Build documentation
+        run: uv run mkdocs build --strict
+
       - name: Build
         run: uv build
 

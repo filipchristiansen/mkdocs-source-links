@@ -8,7 +8,6 @@ import pytest
 
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import repo_relative_path, rewrite_repo_parent_links
-from mkdocs_source_links.urls import repo_view_url
 
 REPO = "https://github.com/example/example-repo"
 
@@ -351,42 +350,3 @@ def test_rewrite_uses_branch(repo_tree: Path) -> None:
         view_ref=ViewRef("master", "branch"),
     )
     assert "blob/master/env.example" in out
-
-
-def test_repo_view_url_file() -> None:
-    assert (
-        repo_view_url(
-            repo_url=REPO,
-            ref="main",
-            ref_kind="branch",
-            repo_path="env.example",
-            is_dir=False,
-        )
-        == f"{REPO}/blob/main/env.example"
-    )
-
-
-def test_repo_view_url_directory() -> None:
-    assert (
-        repo_view_url(
-            repo_url=REPO,
-            ref="main",
-            ref_kind="branch",
-            repo_path="scripts",
-            is_dir=True,
-        )
-        == f"{REPO}/tree/main/scripts"
-    )
-
-
-def test_repo_view_url_unsupported_host() -> None:
-    assert (
-        repo_view_url(
-            repo_url="https://example.com/org/repo",
-            ref="main",
-            ref_kind="branch",
-            repo_path="foo.py",
-            is_dir=False,
-        )
-        is None
-    )
