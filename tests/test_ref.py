@@ -123,6 +123,24 @@ def test_resolve_view_ref_tag_pin_fallback_when_git_fails(tmp_path: Path) -> Non
     assert resolved.used_fallback is True
 
 
+def test_git_run_returns_none_on_timeout(tmp_path: Path) -> None:
+    with patch(
+        "mkdocs_source_links.ref.subprocess.run",
+        side_effect=subprocess.TimeoutExpired(cmd="git", timeout=10),
+    ):
+        assert _git_run(tmp_path, "rev-parse", "HEAD") is None
+
+
+def test_resolve_view_ref_commit_fallback_on_git_timeout(tmp_path: Path) -> None:
+    with patch(
+        "mkdocs_source_links.ref.subprocess.run",
+        side_effect=subprocess.TimeoutExpired(cmd="git", timeout=10),
+    ):
+        resolved = resolve_view_ref(pin="commit", repo_root=tmp_path, branch="main")
+    assert resolved.view_ref == ViewRef("main", "branch")
+    assert resolved.used_fallback is True
+
+
 def test_git_run_returns_none_when_git_unavailable(tmp_path: Path) -> None:
     with patch("mkdocs_source_links.ref._GIT", None):
         assert _git_run(tmp_path, "rev-parse", "HEAD") is None

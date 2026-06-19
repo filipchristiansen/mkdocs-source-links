@@ -14,6 +14,26 @@ def test_rewrite_empty_markdown_unchanged(repo_tree: Path) -> None:
     assert rewrite_on_docs_page(repo_tree, "") == ""
 
 
+def test_rewrite_skips_link_in_tilde_fence(repo_tree: Path) -> None:
+    md = "~~~\n[env](../env.example)\n~~~\n\n[cfg](../backend/src/config.py).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert "[env](../env.example)" in out
+    assert f"[cfg]({REPO}/blob/main/backend/src/config.py)" in out
+
+
+def test_rewrite_skips_link_in_tilde_fence_closed_with_longer_marker(repo_tree: Path) -> None:
+    md = "~~~\n[env](../env.example)\n~~~~\n\n[cfg](../backend/src/config.py).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert "[env](../env.example)" in out
+    assert f"[cfg]({REPO}/blob/main/backend/src/config.py)" in out
+
+
+def test_indented_code_block_rewrites_parent_link(repo_tree: Path) -> None:
+    md = "    [cfg](../env.example).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"    [cfg]({REPO}/blob/main/env.example).\n"
+
+
 def test_rewrite_skips_link_in_fence_closed_with_longer_marker(repo_tree: Path) -> None:
     md = "```\n[env](../env.example)\n````\n\n[cfg](../backend/src/config.py).\n"
     out = rewrite_on_docs_page(repo_tree, md)
