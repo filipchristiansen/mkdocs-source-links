@@ -40,6 +40,19 @@ def test_rewrite_reference_definition_directory(repo_tree: Path) -> None:
     )
 
 
+def test_rewrite_reference_definition_directory_without_trailing_slash(
+    repo_tree: Path,
+) -> None:
+    assert (
+        rewrite_on_docs_page(
+            repo_tree,
+            "[scripts]: ../scripts\n",
+            view_ref=ViewRef("develop", "branch"),
+        )
+        == f"[scripts]: {REPO}/tree/develop/scripts\n"
+    )
+
+
 def test_rewrite_reference_definition_angle_bracket(repo_tree: Path) -> None:
     assert (
         rewrite_on_docs_page(repo_tree, "[env]: <../env.example#section>\n")

@@ -32,6 +32,8 @@ not support hash-based line anchors; line fragments are omitted for that forge.
 ## Existing targets only
 
 A `../` link is only rewritten when its target resolves to a file or directory that exists on disk
-inside the repository. Missing targets are left unchanged; by default a warning is emitted (which
+inside the repository. Directory targets rewrite to forge tree URLs with or without a trailing slash
+in the markdown (`../scripts` and `../scripts/` are equivalent when `scripts` is a directory). Missing
+targets are left unchanged; by default a warning is emitted (which
 fails `mkdocs build --strict`). Set [`warn_on_missing: false`](configuration.md#options) to silence
 it. Targets that resolve outside the repository are never reported.

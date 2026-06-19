@@ -133,6 +133,19 @@ def test_rewrite_directory_link_to_tree(repo_tree: Path) -> None:
     assert out == f"[scripts]({REPO}/tree/develop/scripts)."
 
 
+def test_rewrite_directory_link_without_trailing_slash(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[scripts](../scripts)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("develop", "branch"),
+    )
+    assert out == f"[scripts]({REPO}/tree/develop/scripts)."
+
+
 def test_rewrite_link_with_fragment(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[env](../env.example#section)."
