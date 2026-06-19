@@ -25,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- PyPI development status graduated from Beta to Production/Stable.
 - Documentation site navigation grouped into Guide, Configuration, Reference, Project, and Community sections.
-
 - README and root governance docs link to docs-site pages where published; root-only files (`MAINTAINERS.md`, `SECURITY.md`) link to GitHub blob URLs.
 - `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
 - `make test` and CI use branch coverage.

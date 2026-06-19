@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [{ name = "Filip Christiansen" }]
 keywords = ["mkdocs", "plugin", "documentation", "links"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Framework :: MkDocs",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
