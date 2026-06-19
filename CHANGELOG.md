@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-19
+
 ### Added
 
 - `MAINTAINERS.md` (maintainer roles, sensitive-resource access, escalated-permissions policy).
@@ -138,7 +140,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.0...v0.3.1
