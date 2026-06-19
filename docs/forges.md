@@ -23,6 +23,9 @@ explicitly.
 
 ## Self-hosted instances
 
+For a full `mkdocs.yml` example on a neutral hostname (e.g. GitLab at `scm.internal.example`), see
+[Configuration recipes](recipes.md#self-hosted-gitlab-on-a-neutral-hostname).
+
 Public hosts and common self-hosted patterns (for example GitHub Enterprise at
 `github.example.com`) are detected automatically via hostname labels. For an instance on a domain
 that does not contain the forge name as a label, set the forge explicitly:

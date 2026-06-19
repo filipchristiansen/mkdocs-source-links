@@ -42,20 +42,25 @@ plugins:
             separate_signature: true
 
 nav:
-  - Home: index.md
-  - Usage: usage.md
-  - Configuration: configuration.md
-  - Forges: forges.md
-  - Limitations: limitations.md
-  - Security: security.md
+  - Guide:
+      - Home: index.md
+      - Usage: usage.md
+      - Recipes: recipes.md
+  - Configuration:
+      - Options: configuration.md
+      - Forges: forges.md
+  - Reference:
+      - Limitations: limitations.md
+      - API reference: api.md
   - Project:
       - Roadmap: roadmap.md
       - Support: support.md
+      - Security: security.md
       - Governance: governance.md
       - Code of conduct: code-of-conduct.md
-  - Contributing: contributing.md
-  - Changelog: changelog.md
-  - API reference: api.md
+  - Community:
+      - Contributing: contributing.md
+      - Changelog: changelog.md
 
 markdown_extensions:
   - admonition

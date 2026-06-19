@@ -17,8 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-links in shared governance docs use docs-site URLs for published pages and GitHub blob URLs for root-only files.
 - Reference-style link definitions (`[ref]: ../path`) rewrite to forge URLs; `[text][ref]` usages resolve at build time ([#28](https://github.com/filipchristiansen/mkdocs-source-links/issues/28)).
 - `pin: tag` uses an exact tag at `HEAD` in forge URLs when building from a release tag checkout.
+- Configuration recipes guide (`docs/recipes.md`) with prerequisites, link conventions, worked
+  `mkdocs.yml` examples (monorepo, self-hosted, release builds), and a configuration decision tree.
+- `make docs-serve` for local documentation preview (`strict` build, then `mkdocs serve`).
 
 ### Changed
+
+- Documentation site navigation grouped into Guide, Configuration, Reference, Project, and Community sections.
 
 - README and root governance docs link to docs-site pages where published; root-only files (`MAINTAINERS.md`, `SECURITY.md`) link to GitHub blob URLs.
 - `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
