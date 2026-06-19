@@ -20,6 +20,14 @@ class ViewRef(NamedTuple):
     kind: RefKind
 
 
+class ResolvedViewRef(NamedTuple):
+    """Result of resolving ``pin`` to a :class:`ViewRef`, with fallback diagnostics."""
+
+    view_ref: ViewRef
+    used_fallback: bool
+    requested_pin: str
+
+
 def _git_run(repo_root: Path, *args: str) -> str | None:
     """Run a git command in ``repo_root`` and return stripped stdout, or ``None`` on failure."""
     if _GIT is None:
@@ -48,7 +56,7 @@ def _git_exact_tag(repo_root: Path) -> str | None:
     return _git_run(repo_root, "describe", "--tags", "--exact-match")
 
 
-def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ViewRef:
+def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ResolvedViewRef:
     """Resolve the git ref and kind used in forge view URLs.
 
     When ``pin`` is ``commit``, the current HEAD SHA is resolved via ``git rev-parse``. When
@@ -68,17 +76,32 @@ def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ViewRef:
 
     Returns
     -------
-    ViewRef
-        Ref string and kind (``branch``, ``commit``, or ``tag``) for URL building.
+    ResolvedViewRef
+        Resolved ref and kind for URL building, plus whether a ``commit``/``tag`` pin fell back to
+        the branch.
     """
-    if pin == "branch" or _GIT is None:
-        return ViewRef(branch, "branch")
+    if pin == "branch":
+        return ResolvedViewRef(ViewRef(branch, "branch"), used_fallback=False, requested_pin=pin)
+    if _GIT is None:
+        return ResolvedViewRef(
+            ViewRef(branch, "branch"),
+            used_fallback=True,
+            requested_pin=pin,
+        )
     if pin == "tag":
         tag = _git_exact_tag(repo_root)
         if tag is not None:
-            return ViewRef(tag, "tag")
-        return ViewRef(branch, "branch")
+            return ResolvedViewRef(ViewRef(tag, "tag"), used_fallback=False, requested_pin=pin)
+        return ResolvedViewRef(
+            ViewRef(branch, "branch"),
+            used_fallback=True,
+            requested_pin=pin,
+        )
     sha = _git_head_sha(repo_root)
     if sha is not None:
-        return ViewRef(sha, "commit")
-    return ViewRef(branch, "branch")
+        return ResolvedViewRef(ViewRef(sha, "commit"), used_fallback=False, requested_pin=pin)
+    return ResolvedViewRef(
+        ViewRef(branch, "branch"),
+        used_fallback=True,
+        requested_pin=pin,
+    )

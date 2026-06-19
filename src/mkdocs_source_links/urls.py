@@ -189,10 +189,18 @@ def repo_view_url(
     -------
     str | None
         Forge view URL, or ``None`` if the forge could not be determined.
+
+    Raises
+    ------
+    ValueError
+        If ``forge`` is set to a name that is not in :data:`SUPPORTED_FORGES`.
     """
     forge_name = forge or detect_forge(repo_url)
     if forge_name is None:
         return None
+    if forge_name not in _BUILDERS:
+        msg = f"unsupported forge {forge_name!r}; expected one of {SUPPORTED_FORGES}"
+        raise ValueError(msg)
     request = _ForgeRequest(
         base=_normalize_repo_base(repo_url),
         ref=ref,
