@@ -22,7 +22,7 @@ from mkdocs_source_links.urls import SUPPORTED_FORGES, detect_forge, repo_view_u
         ("https://gitlab.example.com/org/repo", "gitlab"),
         ("https://gitea.example.com/org/repo", "gitea"),
         ("https://forgejo.example.com/org/repo", "gitea"),
-        ("https://bitbucket.example.com/org/repo", "bitbucket"),
+        ("https://bitbucket.example.com/org/repo", None),
         # Hostnames where the forge name is not a distinct label:
         ("https://notgitlab.com/org/repo", None),
         # Unknown / ambiguous hosts:
@@ -113,6 +113,20 @@ def test_detect_forge(repo_url: str, expected: str | None) -> None:
             "abc123def",
             "commit",
             "https://codeberg.org/o/r/src/commit/abc123def/a/b.py",
+        ),
+        (
+            "https://codeberg.org/o/r",
+            False,
+            "v1.0.0",
+            "tag",
+            "https://codeberg.org/o/r/src/tag/v1.0.0/a/b.py",
+        ),
+        (
+            "https://dev.azure.com/o/p/_git/r",
+            False,
+            "v1.0.0",
+            "tag",
+            "https://dev.azure.com/o/p/_git/r?path=/a/b.py&version=GTv1.0.0",
         ),
         (
             "https://dev.azure.com/o/p/_git/r",

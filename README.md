@@ -16,9 +16,10 @@
 
 MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML only**. Source markdown keeps relative paths so GitHub and your IDE still work.
 
-- **Files** → `https://…/blob/<branch>/<path>`
-- **Directories** → `https://…/tree/<branch>/<path>`
-- **Forges:** GitHub, GitLab, Bitbucket, Gitea/Forgejo, Azure DevOps (autodetected; self-hosted via `forge:`)
+- **Files** → `https://…/blob/<ref>/<path>` (GitHub/GitLab; forge-specific paths on Gitea, Bitbucket, Azure)
+- **Directories** → `https://…/tree/<ref>/<path>` where the forge distinguishes files from directories
+- **Pin ref:** `pin: branch` (default), `pin: commit` (HEAD SHA), or `pin: tag` (exact tag at `HEAD`; Gitea uses `/src/tag/…`, Azure uses `GT…`)
+- **Forges:** GitHub, GitLab, Bitbucket Cloud, Gitea/Forgejo, Azure DevOps (autodetected; self-hosted via `forge:`)
 
 **Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links/>
 

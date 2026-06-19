@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Image links (`![alt](../path)` and image reference definitions) are no longer rewritten to forge blob URLs, which broke `<img>` rendering in built sites.
+- Gitea/Codeberg tag URLs use `/src/tag/<tag>/…` when `pin: tag` resolves an exact tag (not `/src/branch/…`).
+- Azure DevOps tag URLs use `version=GT…` when `pin: tag`; query parameters are encoded without double-encoding paths.
+- Bitbucket Cloud autodetection is limited to `bitbucket.org`; self-hosted hostnames containing `bitbucket` are no longer misdetected as Cloud.
+
+### Changed
+
+- Plugin and rewrite docstrings describe multi-forge URLs and tag ref kind consistently with user docs.
+
 ## [0.5.0] - 2026-06-19
 
 ### Added

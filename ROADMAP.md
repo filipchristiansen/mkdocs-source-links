@@ -10,7 +10,7 @@ for concrete work see the [issue tracker](https://github.com/filipchristiansen/m
 - **Fix bugs** and edge cases reported via GitHub Issues.
 - **Keep docs and tests current** with each release.
 - **Improve forge handling** on a best-effort basis when users report self-hosted or autodetection gaps.
-- **Consider small features** only when there is clear demand (for example `pin: tag` for release doc builds, or broader `../` link patterns in monorepos).
+- **Consider small features** only when there is clear demand (for example broader `../` link patterns in monorepos).
 
 No major rewrite or version 1.0 feature push is planned unless adoption and feedback justify it.
 

@@ -18,6 +18,12 @@ is left unchanged.
 Raw HTML links (`<a href="../...">`) are not rewritten; only markdown inline and reference-style
 `../` links are.
 
+**Images** are intentionally not rewritten. Inline images (`![alt](../path)`) and image reference
+definitions (`![alt][ref]` with `[ref]: ../path`) are left unchanged because forge blob/tree URLs
+are HTML pages, not raw image assets — rewriting them would break `<img>` rendering in the built
+site. If a reference label is used by both a normal link and an image, the definition is skipped
+so the image keeps working (the normal link usage is left unrevised).
+
 MkDocs **virtual pages** (generated content with no markdown file on disk) are left unchanged —
 the plugin needs `page.file.abs_src_path` to resolve `../` paths from the page location.
 
@@ -50,9 +56,11 @@ and work in the built site as written.
 
 A `../` link is only rewritten when its target resolves to a file or directory that **exists in
 the working tree at build time** inside the repository. The plugin does not run `git` to check
-whether a path existed at the commit or branch embedded in the forge URL; [`pin: commit`](configuration.md#options)
-only sets that ref in the link. Build from the checkout you want reflected (for example a release
-tag) so on-disk paths match the URLs you publish. Directory targets rewrite to forge tree URLs with or without a trailing slash
+whether a path existed at the commit, tag, or branch embedded in the forge URL;
+[`pin: commit`](configuration.md#options) and [`pin: tag`](configuration.md#options) only set that
+ref in the link (Gitea/Codeberg use `/src/tag/…` for tags; Azure DevOps uses `version=GT…`).
+Build from the checkout you want reflected (for example a release tag) so on-disk paths match the
+URLs you publish. Directory targets rewrite to forge tree URLs with or without a trailing slash
 in the markdown (`../scripts` and `../scripts/` are equivalent when `scripts` is a directory). Missing
 targets are left unchanged; by default a warning is emitted (which
 fails `mkdocs build --strict`). Set [`warn_on_missing: false`](configuration.md#options) to silence

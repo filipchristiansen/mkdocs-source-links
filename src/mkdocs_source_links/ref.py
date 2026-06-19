@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Literal, NamedTuple
 
-RefKind = Literal["branch", "commit"]
+RefKind = Literal["branch", "commit", "tag"]
 
 _GIT = shutil.which("git")
 _GIT_TIMEOUT = 10
@@ -69,14 +69,14 @@ def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ViewRef:
     Returns
     -------
     ViewRef
-        Ref string and kind (``branch`` or ``commit``) for URL building.
+        Ref string and kind (``branch``, ``commit``, or ``tag``) for URL building.
     """
     if pin == "branch" or _GIT is None:
         return ViewRef(branch, "branch")
     if pin == "tag":
         tag = _git_exact_tag(repo_root)
         if tag is not None:
-            return ViewRef(tag, "branch")
+            return ViewRef(tag, "tag")
         return ViewRef(branch, "branch")
     sha = _git_head_sha(repo_root)
     if sha is not None:

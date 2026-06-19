@@ -11,9 +11,9 @@ from .anchors import translate_line_fragment
 from .ref import ViewRef
 from .urls import detect_forge, repo_view_url
 
-# Single left-to-right scan matching, in order: a fenced code block, an inline code span, or a
-# ``](../path)`` / ``](../path#fragment)`` link. Matching code regions first means links inside
-# code are consumed (and left untouched) before the link branch can see them.
+# Single left-to-right scan matching, in order: a fenced code block, an inline code span, an
+# inline image with a ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link.
+# Matching code regions and images first means links inside them are left untouched.
 _SCAN = re.compile(
     r"""
     (?P<fence>                                  # fenced code block
@@ -23,6 +23,13 @@ _SCAN = re.compile(
         ^[ \t]*(?P=fence_marker)[ \t]*$         # closing fence (same marker)
     )
     | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
+    | (?P<image>!\[[^\]]*\]\(\s*                               # inline image with ../ dest
+        (?:
+            <(?P<img_path_a>\.\./[^>\#\n]+)(?P<img_frag_a>\#[^>\n]*)?>
+          | (?P<img_path>\.\./[^)\s\#]+)(?P<img_frag>\#[^)\s]*)?
+        )
+        (?:\s+(?P<img_title>"[^"]*"|'[^']*'|\([^)]*\)))?
+      \s*\))
     | \]\(\s*                                                  # the link: ](
         (?:
             <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?> # angle-bracket dest (allows spaces)
@@ -51,6 +58,25 @@ _REF_DEF = re.compile(
 
 _FENCE_OPEN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<rest>.*)$")
 
+# Image reference usages (definitions are ``[label]: ../path`` without a leading ``!``).
+_IMAGE_REF_FULL = re.compile(r"!\[[^\]]*\]\[([^\]]+)\]")
+_IMAGE_REF_COLLAPSED = re.compile(r"!\[([^\]]+)\]\[\]")
+_IMAGE_REF_SHORTCUT = re.compile(r"!\[([^\]]+)\](?!\()")
+
+
+def _normalize_ref_label(label: str) -> str:
+    """Normalize a reference label (case-fold, collapse whitespace)."""
+    return re.sub(r"\s+", " ", label.strip()).casefold()
+
+
+def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
+    """Return normalized labels used by image reference usages in ``markdown``."""
+    labels: set[str] = set()
+    for pattern in (_IMAGE_REF_FULL, _IMAGE_REF_COLLAPSED, _IMAGE_REF_SHORTCUT):
+        for match in pattern.finditer(markdown):
+            labels.add(_normalize_ref_label(match.group(1)))
+    return frozenset(labels)
+
 
 @dataclass(frozen=True)
 class _RewriteContext:
@@ -60,6 +86,7 @@ class _RewriteContext:
     view_ref: ViewRef
     forge: str | None
     report_missing: Callable[[str], None] | None
+    image_ref_labels: frozenset[str]
 
 
 def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
@@ -158,13 +185,15 @@ def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
     ref_m = _REF_DEF.match(body)
     if ref_m is None:
         return None
+    label = ref_m.group("label")
+    if _normalize_ref_label(label) in ctx.image_ref_labels:
+        return None
     path_part = ref_m.group("path") or ref_m.group("path_a")
     fragment = ref_m.group("frag") or ref_m.group("frag_a") or ""
     title = ref_m.group("title")
     url = _parent_link_forge_url(path_part, fragment, ctx)
     if url is None:
         return None
-    label = ref_m.group("label")
     title_suffix = f" {title}" if title else ""
     return f"[{label}]: {url}{title_suffix}"
 
@@ -232,7 +261,8 @@ def rewrite_repo_parent_links(
     repo_url : str
         Forge repository URL from ``mkdocs.yml`` (for example a GitHub URL).
     view_ref : ViewRef
-        Git branch name or commit SHA and its kind for blob/tree URLs.
+        Git branch name, tag name, or commit SHA and its kind (``branch``, ``commit``, or
+        ``tag``) for forge view URLs.
     forge : str | None
         Explicit forge name; when ``None`` the forge is autodetected from ``repo_url``.
     report_missing : Callable[[str], None] | None
@@ -249,11 +279,14 @@ def rewrite_repo_parent_links(
     -----
     Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
     distinguish them). URL fragments (``#anchor``) and link titles are preserved, and
-    angle-bracket destinations (``](<../x>)``) are supported. Links inside fenced code blocks
-    and inline code spans are left unchanged. Reference-style definitions (``[ref]: ../path``)
-    are rewritten when not inside a fenced code block.
+    angle-bracket destinations (``](<../x>)``) are supported. Inline images (``![alt](../path)``)
+    and image reference definitions are left unchanged because forge blob URLs are HTML pages, not
+    raw image assets. Links inside fenced code blocks and inline code spans are left unchanged.
+    Reference-style definitions (``[ref]: ../path``) are rewritten when not inside a fenced code
+    block and not used as an image reference label.
     """
 
+    image_ref_labels = _collect_image_reference_labels(markdown)
     ctx = _RewriteContext(
         page_abs_path=page_abs_path,
         repo_root=repo_root,
@@ -261,9 +294,12 @@ def rewrite_repo_parent_links(
         view_ref=view_ref,
         forge=forge,
         report_missing=report_missing,
+        image_ref_labels=image_ref_labels,
     )
 
     def repl(match: re.Match[str]) -> str:
+        if match.group("image") is not None:
+            return match.group(0)
         path_part = match.group("path") or match.group("path_a")
         if path_part is None:
             # Matched a fenced code block or inline code span: leave it untouched.

@@ -11,13 +11,12 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
+from conftest import REPO
 from mkdocs_source_links.plugin import SourceLinksPlugin
 from mkdocs_source_links.ref import ViewRef
 
 if TYPE_CHECKING:
     import pytest
-
-REPO = "https://github.com/example/example-repo"
 
 
 def _page(abs_src_path: str | None, *, src_path: str = "page.md") -> Page:

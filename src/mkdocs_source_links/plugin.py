@@ -24,8 +24,8 @@ class SourceLinksPlugin(BasePlugin):
     """MkDocs plugin that rewrites parent-directory markdown links to forge URLs.
 
     During ``mkdocs build``, ``](../path)`` inline links and ``[ref]: ../path`` reference
-    definitions in each page's markdown are replaced with GitHub blob/tree view URLs. Source files
-    on disk are not modified.
+    definitions in each page's markdown are replaced with git-forge blob/tree/view URLs. Source
+    files on disk are not modified.
 
     Attributes
     ----------

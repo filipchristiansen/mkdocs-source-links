@@ -13,8 +13,10 @@ MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML
 source markdown keeps relative paths, so links stay **clickable in your IDE and on GitHub** while
 the published site points readers at the right blob/tree URL on your forge.
 
-- **Files** -> `https://.../blob/<branch>/<path>`
-- **Directories** -> `https://.../tree/<branch>/<path>`
+- **Files** -> `https://.../blob/<ref>/<path>` (GitHub/GitLab; other forges use their own URL shapes)
+- **Directories** -> `https://.../tree/<ref>/<path>` where the forge distinguishes files from directories
+
+Use [`pin`](configuration.md#options) to embed a branch name (default), commit SHA (`commit`), or exact tag at `HEAD` (`tag`). On Gitea/Codeberg, tags use `/src/tag/…`; on Azure DevOps, `version=GT…`.
 
 ## Why
 
