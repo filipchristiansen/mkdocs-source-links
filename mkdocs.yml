@@ -46,6 +46,7 @@ nav:
   - Configuration: configuration.md
   - Forges: forges.md
   - Limitations: limitations.md
+  - Security: security.md
   - Contributing: contributing.md
   - Changelog: changelog.md
   - API reference: api.md

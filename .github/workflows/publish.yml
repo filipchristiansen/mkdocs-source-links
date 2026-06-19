@@ -37,6 +37,15 @@ jobs:
       - name: Build
         run: uv build
 
+      - name: Generate SBOM
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          uv export --format cyclonedx1.5 --frozen --no-dev \
+            --preview-features sbom-export \
+            -o "dist/mkdocs-source-links-${VERSION}.cdx.json"
+
       - name: Generate provenance subjects
         id: hash
         run: |
@@ -53,6 +62,7 @@ jobs:
           path: |
             dist/*.tar.gz
             dist/*.whl
+            dist/*.cdx.json
           if-no-files-found: error
           retention-days: 5
 

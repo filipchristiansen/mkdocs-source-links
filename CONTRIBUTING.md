@@ -36,13 +36,14 @@ and for GitHub Actions. Maintainers review and merge after CI passes.
 3. Run the full pre-PR suite locally:
 
    ```bash
-   make ci      # lint (pre-commit) + tests with coverage
+   make ci      # lint, audit, tests with coverage, docs
    ```
 
    Individual targets are also available:
 
    ```bash
    make lint    # pre-commit hooks (ruff, mypy, pydoclint, pylint, markdownlint, ...)
+   make audit   # pip-audit dependency vulnerability scan
    make test    # pytest with coverage
    ```
 
