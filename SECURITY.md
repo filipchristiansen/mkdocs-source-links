@@ -52,7 +52,6 @@ output.
   protect against a compromised docs source tree.
 - Built HTML links point at third-party forges; their availability and content are outside this
   project.
-- Reference-style markdown links are not rewritten (see [limitations](docs/limitations.md)).
 
 ## CI/CD hardening
 
