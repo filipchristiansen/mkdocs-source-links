@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-06-19
+
 ### Fixed
 
 - CommonMark fenced code blocks now close when the closing fence uses **more** markers than the opener (for example ` ``` ` opened, ` ```` ` closed); reference definitions after such blocks are rewritten correctly.
@@ -193,7 +195,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.0...v0.4.1
