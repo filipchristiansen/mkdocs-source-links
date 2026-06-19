@@ -4,27 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
+from conftest import REPO
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import repo_relative_path, rewrite_repo_parent_links
-
-REPO = "https://github.com/example/example-repo"
-
-
-@pytest.fixture(name="repo_tree")
-def _repo_tree(tmp_path: Path) -> Path:
-    """Minimal repo: docs/page.md, env.example, backend/, scripts/."""
-    docs = tmp_path / "docs"
-    docs.mkdir()
-    (docs / "page.md").write_text("# Page\n")
-    (tmp_path / "env.example").write_text("FOO=bar\n")
-    backend = tmp_path / "backend" / "src"
-    backend.mkdir(parents=True)
-    (backend / "config.py").write_text("X = 1\n")
-    scripts = tmp_path / "scripts"
-    scripts.mkdir()
-    return tmp_path
 
 
 def test_repo_relative_path_from_docs(repo_tree: Path) -> None:

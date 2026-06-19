@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Regression test for unrecognized `edit_uri` branch fallback in `branch.py`.
 - Documentation site pages for roadmap, support, governance, and code of conduct (snippet includes from root files).
 - Cross-links in shared governance docs use docs-site URLs for published pages and GitHub blob URLs for root-only files.
+- Reference-style link definitions (`[ref]: ../path`) rewrite to forge URLs; `[text][ref]` usages resolve at build time ([#28](https://github.com/filipchristiansen/mkdocs-source-links/issues/28)).
 
 ### Changed
 

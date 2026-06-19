@@ -7,11 +7,13 @@ Known limitations of the current release. Several are tracked on the
 
 Inline links are matched, including titled links (`](../x "title")`) and angle-bracket
 destinations (`](<../x>)`, which may contain spaces); the title and fragment are preserved, and
-spaces are percent-encoded in the resulting URL. Reference-style links (`[x][ref]` with a separate
-`[ref]: ../path` definition) are not yet rewritten.
+spaces are percent-encoded in the resulting URL. Reference-style definitions (`[ref]: ../path`,
+optional title) are rewritten the same way; usages such as `[text][ref]` pick up the forge URL
+when the markdown processor resolves the reference.
 
 Rewriting is text-level (a regex over the page markdown), but fenced code blocks and inline code
-spans are detected and skipped, so a literal `](../path)` shown as an example is left unchanged.
+spans are detected and skipped, so a literal `](../path)` or `[ref]: ../path` shown as an example
+is left unchanged.
 
 ## Forge detection
 

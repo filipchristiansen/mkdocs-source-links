@@ -1,5 +1,6 @@
 site_name: MkDocs Source Links
-site_description: MkDocs plugin that rewrites ../ repo links to git-forge view URLs in built HTML.
+site_description: MkDocs plugin that rewrites ../ markdown links (inline and reference-style) to forge view URLs in built HTML.
+
 site_url: https://filipchristiansen.github.io/mkdocs-source-links/
 repo_url: https://github.com/filipchristiansen/mkdocs-source-links
 repo_name: filipchristiansen/mkdocs-source-links
