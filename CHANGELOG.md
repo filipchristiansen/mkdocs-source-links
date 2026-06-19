@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Sync stale release-verification examples; document `make ci` steps, commit/tag pin URL shapes per forge, indented-code limitation, and `on_page_markdown` rewrite stage wording.
+
 ## [0.5.2] - 2026-06-19
 
 ### Fixed

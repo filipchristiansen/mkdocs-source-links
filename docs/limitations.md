@@ -11,9 +11,13 @@ spaces are percent-encoded in the resulting URL. Reference-style definitions (`[
 optional title) are rewritten the same way; usages such as `[text][ref]` pick up the forge URL
 when the markdown processor resolves the reference.
 
-Rewriting is text-level (a regex over the page markdown), but fenced code blocks and inline code
-spans are detected and skipped, so a literal `](../path)` or `[ref]: ../path` shown as an example
-is left unchanged.
+Rewriting is text-level (a regex over the page markdown), but fenced code blocks (backtick or
+tilde fences) and inline code spans are detected and skipped, so a literal `](../path)` or
+`[ref]: ../path` shown as an example is left unchanged.
+
+**Indented code blocks** (four-space or tab-indented paragraphs) are **not** skipped. A literal
+`](../path)` inside an indented block **will be rewritten**. Use fenced code blocks for examples
+that must stay literal.
 
 Raw HTML links (`<a href="../...">`) are not rewritten; only markdown inline and reference-style
 `../` links are.
