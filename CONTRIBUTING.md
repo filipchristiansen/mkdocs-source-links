@@ -2,7 +2,7 @@
 
 Thanks for your interest in improving mkdocs-source-links!
 
-This project follows the [Contributor Covenant Code of Conduct](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/CODE_OF_CONDUCT.md). By
+This project follows the [Code of conduct](https://filipchristiansen.github.io/mkdocs-source-links/code-of-conduct/). By
 participating, you agree to uphold it.
 
 ## Development setup
@@ -71,7 +71,7 @@ repository.
 
 ## Releases
 
-Releases are cut by maintainers (see `MAINTAINERS.md`). First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
+Releases are cut by maintainers (see [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md)). First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
 hand (the tooling never generates release notes). Then:
 
 1. `make release-prep VERSION=X.Y.Z` — bumps `version` in `pyproject.toml`, rolls `[Unreleased]`

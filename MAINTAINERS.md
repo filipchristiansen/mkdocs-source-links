@@ -15,19 +15,19 @@ This is a single-maintainer project. No other accounts have admin, environment, 
 - Merge pull requests after review and passing CI
 - Cut releases (`make release-prep`, signed `make release-tag`)
 - Triage issues and security reports
-- Respond to private vulnerability reports (see [SECURITY.md](SECURITY.md))
+- Respond to private vulnerability reports (see [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md))
 - Manage Dependabot and dependency update PRs
 
 ### Contributor
 
-Anyone may open issues or pull requests. Contributors follow [CONTRIBUTING.md](CONTRIBUTING.md):
+Anyone may open issues or pull requests. Contributors follow [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/):
 tests at 100% coverage, pre-commit/CI clean, conventional PR titles. Maintainers review and merge.
 
 ### Security contact
 
 The maintainer listed above receives private vulnerability reports via GitHub Security Advisories
-and coordinates fixes and disclosure per [SECURITY.md](SECURITY.md). The same maintainer receives
-private [Code of Conduct](CODE_OF_CONDUCT.md) reports; do not use public issues for either.
+and coordinates fixes and disclosure per [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md). The same maintainer receives
+private [Code of conduct](https://filipchristiansen.github.io/mkdocs-source-links/code-of-conduct/) reports; do not use public issues for either.
 
 ## Escalated permissions policy
 
@@ -46,7 +46,7 @@ To grant escalated permissions to a new maintainer:
 4. **Merge** a pull request updating this file; do not grant access before the PR is merged.
 
 Until a contributor is listed in the maintainers table, only the current maintainer holds sensitive
-access. Contributors may open pull requests and issues under the [CONTRIBUTING.md](CONTRIBUTING.md)
+access. Contributors may open pull requests and issues under the [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/)
 workflow without elevated permissions.
 
 ## Continuity of access
@@ -71,7 +71,7 @@ minimal interruption to issue triage, pull request review, and releases.
 - **PyPI publishing:** Add the backup maintainer as a trusted publisher admin on the `pypi`
   GitHub Environment; OIDC trusted publishing requires no token handoff.
 - **Release signing keys:** Generate a new GPG or SSH signing key for the incoming maintainer;
-  register the public key on GitHub. Retire lost keys per [SECURITY.md](SECURITY.md#secrets-and-credentials).
+  register the public key on GitHub. Retire lost keys per [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md#secrets-and-credentials).
 - **GitHub Actions secrets:** Repository admins rotate `CODECOV_TOKEN` and `SCORECARD_TOKEN` if
   the outgoing maintainer had access.
 
@@ -91,4 +91,4 @@ Maintainers configure `main` with:
 - At least one approving pull request review
 - **Require approval from someone other than the author** when a co-maintainer is listed
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE.md](GOVERNANCE.md).
+See [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/) and [Governance](https://filipchristiansen.github.io/mkdocs-source-links/governance/).

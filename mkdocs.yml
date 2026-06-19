@@ -47,6 +47,11 @@ nav:
   - Forges: forges.md
   - Limitations: limitations.md
   - Security: security.md
+  - Project:
+      - Roadmap: roadmap.md
+      - Support: support.md
+      - Governance: governance.md
+      - Code of conduct: code-of-conduct.md
   - Contributing: contributing.md
   - Changelog: changelog.md
   - API reference: api.md
