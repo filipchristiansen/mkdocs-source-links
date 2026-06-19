@@ -13,7 +13,7 @@ This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-comm
 make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 ```
 
-When editing [`.github/scripts/`](.github/scripts/): install [ShellCheck](https://www.shellcheck.net) locally — `brew install shellcheck` (macOS) or `sudo apt install shellcheck` (Linux). CI installs it automatically.
+When editing [`.github/scripts/`](https://github.com/filipchristiansen/mkdocs-source-links/tree/main/.github/scripts/): install [ShellCheck](https://www.shellcheck.net) locally — `brew install shellcheck` (macOS) or `sudo apt install shellcheck` (Linux). CI installs it automatically.
 
 ## Dependencies
 

@@ -33,8 +33,8 @@ class SourceLinksPlugin(BasePlugin):
         Plugin configuration schema. Supports ``enabled`` (turn rewriting on or off),
         ``branch`` (override the git branch used in forge URLs), ``forge`` (override forge
         autodetection: one of ``github``, ``gitlab``, ``bitbucket``, ``gitea``, ``azure``),
-        ``pin`` (``branch`` or ``commit`` — embed the current commit SHA instead of a branch
-        name), and ``warn_on_missing`` (warn when a ``../`` link target does not exist).
+        ``pin`` (``branch``, ``commit``, or ``tag`` — embed HEAD SHA or an exact tag name when
+        set), and ``warn_on_missing`` (warn when a ``../`` link target does not exist).
 
     Notes
     -----
@@ -44,7 +44,7 @@ class SourceLinksPlugin(BasePlugin):
 
     config_scheme: PlainConfigSchema = (
         ("enabled", config_options.Type(bool, default=True)),
-        ("pin", config_options.Choice(("branch", "commit"), default="branch")),
+        ("pin", config_options.Choice(("branch", "commit", "tag"), default="branch")),
         ("branch", config_options.Optional(config_options.Type(str))),
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
         ("warn_on_missing", config_options.Type(bool, default=True)),
@@ -56,7 +56,7 @@ class SourceLinksPlugin(BasePlugin):
         """Resolve the git view ref once per build and cache it.
 
         Resolving here (rather than per page) avoids running ``git`` for every page when
-        ``pin: commit`` is set.
+        ``pin: commit`` or ``pin: tag`` is set.
 
         Parameters
         ----------
