@@ -2,8 +2,8 @@
 
 How to verify release integrity, author identity, and obtain the software bill of materials (SBOM).
 
-For vulnerability reporting and supported versions, see the repository
-[SECURITY.md](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md).
+For vulnerability reporting and supported versions, see
+[SECURITY.md](../SECURITY.md).
 
 ## Release assets
 
