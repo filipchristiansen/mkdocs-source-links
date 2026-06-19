@@ -37,15 +37,6 @@ jobs:
       - name: Build
         run: uv build
 
-      - name: Generate SBOM
-        env:
-          TAG: ${{ github.ref_name }}
-        run: |
-          VERSION="${TAG#v}"
-          uv export --format cyclonedx1.5 --frozen --no-dev \
-            --preview-features sbom-export \
-            -o "dist/mkdocs-source-links-${VERSION}.cdx.json"
-
       - name: Generate provenance subjects
         id: hash
         run: |
@@ -55,6 +46,16 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
 
+      - name: Generate SBOM
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          mkdir -p sbom
+          uv export --format cyclonedx1.5 --frozen --no-dev \
+            --preview-features sbom-export \
+            -o "sbom/mkdocs-source-links-${VERSION}.cdx.json"
+
       - name: Upload distribution archives
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -62,7 +63,7 @@ jobs:
           path: |
             dist/*.tar.gz
             dist/*.whl
-            dist/*.cdx.json
+            sbom/*.cdx.json
           if-no-files-found: error
           retention-days: 5
 
@@ -91,7 +92,7 @@ jobs:
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: dist
-          path: dist
+          path: .
 
       - name: Download SLSA provenance
         env:
