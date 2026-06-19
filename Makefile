@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: install sync lint audit test docs ci release-prep release-tag verify-tag
+.PHONY: install sync lint audit test docs docs-serve ci release-prep release-tag verify-tag
 
 help:
 	@echo "Usage: make [target]"
@@ -14,6 +14,7 @@ help:
 	@echo "  audit          Scan dependencies for known vulnerabilities"
 	@echo "  test           Run tests"
 	@echo "  docs           Build documentation site (strict)"
+	@echo "  docs-serve     Build docs, then serve locally (mkdocs serve)"
 	@echo "  ci             Pre-PR checks (lint, audit, test, coverage, docs)"
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
@@ -40,6 +41,9 @@ test:
 
 docs:
 	uv run mkdocs build --strict
+
+docs-serve: docs
+	uv run mkdocs serve
 
 ci: sync lint audit test docs
 

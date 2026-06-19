@@ -1,5 +1,8 @@
 # Configuration
 
+For scenario-based setup (monorepos, release builds, self-hosted forges), see
+[Configuration recipes](recipes.md). The table below is a quick reference.
+
 ## Options
 
 | Option | Type | Default | Description |

@@ -49,7 +49,8 @@ plugins:
   - source-links
 ```
 
-See [Usage](usage.md) for link conventions and [Configuration](configuration.md) for options.
+See [Usage](usage.md) for link conventions, [Configuration](configuration.md) for the options table,
+and [Configuration recipes](recipes.md) for worked setups.
 
 ## Get involved
 
