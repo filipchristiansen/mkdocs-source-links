@@ -68,6 +68,23 @@ def _run_mkdocs_build(root: Path) -> str:
     return (site / "index.html").read_text()
 
 
+def _run_mkdocs_build_stderr(root: Path, *, quiet: bool = False) -> str:
+    site = root / "site"
+    cmd = [sys.executable, "-m", "mkdocs", "build"]
+    if quiet:
+        cmd.append("-q")
+    cmd.extend(["-d", str(site)])
+    result = subprocess.run(
+        cmd,
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stderr
+
+
 def _init_git_repo(root: Path) -> str:
     assert _GIT is not None
     kwargs: dict[str, Any] = {"cwd": root, "capture_output": True, "text": True}
@@ -228,3 +245,46 @@ def test_mkdocs_build_forge_override_on_custom_host(tmp_path: Path) -> None:
 
     assert "scm.internal.example/org/test-repo/-/blob/main/backend/config.py" in html
     assert "scm.internal.example/org/test-repo/-/tree/main/scripts" in html
+
+
+def test_mkdocs_build_log_rewrites_summary(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"log_rewrites": "summary"})
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "Rewrote 2 ../ links across 1 page" in stderr
+
+
+def test_mkdocs_build_log_rewrites_verbose(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"log_rewrites": "verbose"})
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "index.md: rewrote 2 links" in stderr
+    assert "Rewrote 2 ../ links across 1 page" in stderr
+
+
+def test_mkdocs_build_log_rewrites_silent_with_quiet_flag(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"log_rewrites": "summary"})
+
+    stderr = _run_mkdocs_build_stderr(tmp_path, quiet=True)
+
+    assert "Rewrote" not in stderr
+
+
+def test_mkdocs_build_log_rewrites_silent_without_repo_url(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    (tmp_path / "mkdocs.yml").write_text(
+        """site_name: test
+plugins:
+  - source-links:
+      log_rewrites: summary
+"""
+    )
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "Rewrote" not in stderr

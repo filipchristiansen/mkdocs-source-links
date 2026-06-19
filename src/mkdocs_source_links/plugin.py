@@ -20,6 +20,11 @@ from .urls import SUPPORTED_FORGES
 log = get_plugin_logger(__name__)
 
 
+def _plural(count: int, noun: str) -> str:
+    """Return ``noun`` or ``noun`` + ``s`` for log message wording."""
+    return noun if count == 1 else f"{noun}s"
+
+
 class SourceLinksPlugin(BasePlugin):
     """MkDocs plugin that rewrites parent-directory markdown links to forge URLs.
 
@@ -34,7 +39,9 @@ class SourceLinksPlugin(BasePlugin):
         ``branch`` (override the git branch used in forge URLs), ``forge`` (override forge
         autodetection: one of ``github``, ``gitlab``, ``bitbucket``, ``gitea``, ``azure``),
         ``pin`` (``branch``, ``commit``, or ``tag`` — embed HEAD SHA or an exact tag name when
-        set), and ``warn_on_missing`` (warn when a ``../`` link target does not exist).
+        set), ``warn_on_missing`` (warn when a ``../`` link target does not exist), and
+        ``log_rewrites`` (opt-in INFO logging of successful rewrites: ``false``, ``summary``, or
+        ``verbose``).
 
     Notes
     -----
@@ -49,9 +56,16 @@ class SourceLinksPlugin(BasePlugin):
         ("branch", config_options.Optional(config_options.Type(str))),
         ("forge", config_options.Optional(config_options.Choice(SUPPORTED_FORGES))),
         ("warn_on_missing", config_options.Type(bool, default=True)),
+        ("log_rewrites", config_options.Choice((False, "summary", "verbose"), default=False)),
     )
 
     _view_ref: ViewRef = ViewRef("", "branch")
+    _rewrite_total: int = 0
+    _rewrite_by_page: dict[str, int]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._rewrite_by_page = {}
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Resolve the git view ref once per build and cache it.
@@ -69,6 +83,8 @@ class SourceLinksPlugin(BasePlugin):
         MkDocsConfig
             The unmodified configuration.
         """
+        self._rewrite_total = 0
+        self._rewrite_by_page = {}
         branch = resolve_branch(
             plugin_branch=self.config.get("branch"),
             extra=config.extra or {},
@@ -101,7 +117,7 @@ class SourceLinksPlugin(BasePlugin):
         *,
         page: Page,
         config: MkDocsConfig,
-        files: Files,  # noqa: ARG002 (unused-method-argument) (required by MkDocs hook signature)
+        files: Files,
     ) -> str:
         """Rewrite ``](../…)`` and ``[ref]: ../…`` links in page markdown to forge view URLs.
 
@@ -123,6 +139,7 @@ class SourceLinksPlugin(BasePlugin):
             Markdown with parent-directory links rewritten, or the original ``markdown`` when the
             plugin is disabled, ``repo_url`` is missing, or the page has no backing file.
         """
+        _ = files
         if not self.config.get("enabled", True):
             return markdown
         if not config.repo_url:
@@ -139,7 +156,18 @@ class SourceLinksPlugin(BasePlugin):
 
             report_missing = _warn
 
-        return rewrite_repo_parent_links(
+        log_mode = self.config.get("log_rewrites", False)
+        report_rewrite: Callable[[], None] | None = None
+        page_rewrites = 0
+        if log_mode:
+
+            def _count_rewrite() -> None:
+                nonlocal page_rewrites
+                page_rewrites += 1
+
+            report_rewrite = _count_rewrite
+
+        result = rewrite_repo_parent_links(
             markdown,
             page_abs_path=Path(page.file.abs_src_path),
             repo_root=Path(config.config_file_path).parent,
@@ -147,4 +175,54 @@ class SourceLinksPlugin(BasePlugin):
             view_ref=self._view_ref,
             forge=self.config.get("forge"),
             report_missing=report_missing,
+            report_rewrite=report_rewrite,
+        )
+        if page_rewrites:
+            src_path = page.file.src_path
+            self._rewrite_total += page_rewrites
+            self._rewrite_by_page[src_path] = self._rewrite_by_page.get(src_path, 0) + page_rewrites
+        return result
+
+    def on_post_build(
+        self,
+        *,
+        config: MkDocsConfig,
+        **kwargs: object,
+    ) -> None:
+        """Log rewrite statistics when ``log_rewrites`` is enabled.
+
+        Parameters
+        ----------
+        config : MkDocsConfig
+            MkDocs site configuration; ``repo_url`` must be set for rewrite statistics.
+        **kwargs : object
+            Additional keyword arguments passed by MkDocs (unused; reserved for hook
+            compatibility).
+        """
+        _ = kwargs
+        if not self.config.get("enabled", True):
+            return
+        if not config.repo_url:
+            return
+        log_mode = self.config.get("log_rewrites", False)
+        if not log_mode:
+            return
+
+        if log_mode == "verbose":
+            for src_path in sorted(self._rewrite_by_page):
+                count = self._rewrite_by_page[src_path]
+                log.info(
+                    "%s: rewrote %d %s",
+                    src_path,
+                    count,
+                    _plural(count, "link"),
+                )
+
+        page_count = len(self._rewrite_by_page)
+        log.info(
+            "Rewrote %d ../ %s across %d %s",
+            self._rewrite_total,
+            _plural(self._rewrite_total, "link"),
+            page_count,
+            _plural(page_count, "page"),
         )

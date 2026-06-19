@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `log_rewrites` config option (`false`, `summary`, `verbose`) for opt-in rewrite statistics at INFO level.
+
 ### Documentation
 
 - Sync stale release-verification examples; document `make ci` steps, commit/tag pin URL shapes per forge, indented-code limitation, and `on_page_markdown` rewrite stage wording.
