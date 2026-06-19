@@ -14,7 +14,7 @@
 [![mypy](https://img.shields.io/badge/mypy-checked-039dfc?logo=mypy&logoColor=white)](https://mypy-lang.org)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML only**. Source markdown keeps relative paths so GitHub and your IDE still work.
+MkDocs plugin that rewrites `](../path)` links to your git forge during **`on_page_markdown`** (before HTML is built). Source markdown on disk is unchanged; forge URLs appear in the built site.
 
 - **Files** → `https://…/blob/<ref>/<path>` (GitHub/GitLab; forge-specific paths on Gitea, Bitbucket, Azure)
 - **Directories** → `https://…/tree/<ref>/<path>` where the forge distinguishes files from directories
@@ -82,7 +82,7 @@ This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-comm
 
 ```bash
 make install   # install Python 3.10, sync all groups, set up pre-commit hooks
-make ci        # run the full pre-PR suite: lint, test, coverage
+make ci        # pre-PR checks: lint, audit, test (with coverage), docs build
 ```
 
 Maintainers release with `make release-prep VERSION=X.Y.Z` (bump, roll the hand-written

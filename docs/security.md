@@ -7,7 +7,7 @@ For vulnerability reporting and supported versions, see
 
 ## Release assets
 
-Each GitHub Release (for example [v0.4.0](https://github.com/filipchristiansen/mkdocs-source-links/releases/tag/v0.4.0))
+Each GitHub Release (for example [v0.5.1](https://github.com/filipchristiansen/mkdocs-source-links/releases/tag/v0.5.1))
 includes:
 
 | Asset | Purpose |
@@ -20,21 +20,21 @@ includes:
 Download assets from the release page or with:
 
 ```bash
-gh release download v0.4.0 -R filipchristiansen/mkdocs-source-links
+gh release download vX.Y.Z -R filipchristiansen/mkdocs-source-links
 ```
 
 ## Verify integrity and authenticity
 
 Install [slsa-verifier](https://github.com/slsa-framework/slsa-verifier#installation) (v2.7+).
 
-From the directory containing the downloaded files:
+From the directory containing the downloaded files (replace `X.Y.Z` with the release version):
 
 ```bash
 slsa-verifier verify-artifact \
   --provenance-path mkdocs-source-links.intoto.jsonl \
   --source-uri github.com/filipchristiansen/mkdocs-source-links \
-  --source-tag v0.4.0 \
-  mkdocs_source_links-0.4.0-py3-none-any.whl mkdocs_source_links-0.4.0.tar.gz
+  --source-tag vX.Y.Z \
+  mkdocs_source_links-X.Y.Z-py3-none-any.whl mkdocs_source_links-X.Y.Z.tar.gz
 ```
 
 **Expected output:** verification succeeds (for example `PASSED: Verified signature on` followed by
@@ -47,10 +47,10 @@ Release tags must be **signed annotated tags** verified by GitHub before publish
 
 ```bash
 # Expect "tag" (not "commit")
-gh api repos/filipchristiansen/mkdocs-source-links/git/ref/tags/v0.4.0 --jq '.object.type'
+gh api repos/filipchristiansen/mkdocs-source-links/git/ref/tags/vX.Y.Z --jq '.object.type'
 
 # Expect verified == true
-SHA=$(gh api repos/filipchristiansen/mkdocs-source-links/git/ref/tags/v0.4.0 --jq '.object.sha')
+SHA=$(gh api repos/filipchristiansen/mkdocs-source-links/git/ref/tags/vX.Y.Z --jq '.object.sha')
 gh api "repos/filipchristiansen/mkdocs-source-links/git/tags/${SHA}" \
   --jq '{verified: .verification.verified, reason: .verification.reason}'
 ```
@@ -78,7 +78,7 @@ dependencies from `uv.lock` at build time. Use it to inspect pinned packages shi
 released wheel/sdist.
 
 ```bash
-python3 -m json.tool mkdocs-source-links-0.4.0.cdx.json | head
+python3 -m json.tool mkdocs-source-links-X.Y.Z.cdx.json | head
 ```
 
 The SBOM is also listed as a release asset on GitHub alongside the wheel, sdist, and provenance.

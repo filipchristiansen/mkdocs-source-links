@@ -420,7 +420,7 @@ Summary of behavior that does not change with configuration. Details in [Limitat
 | Topic | Behavior |
 | ----- | -------- |
 | Rewrite stage | `on_page_markdown` — markdown only, not HTML (`on_page_content` is not used). |
-| Code blocks | Fenced code blocks and inline code spans are skipped; literal `](../path)` in examples stays literal. |
+| Code blocks | Fenced blocks (`` ``` `` or `~~~`) and inline code spans are skipped; **indented** (4-space) code blocks are not — use fences for literal examples. |
 | Virtual pages | Pages without a backing markdown file are unchanged. |
 | Line anchors | `#L10`, `#L10-L20` translated per forge; Azure DevOps omits line fragments. |
 | Targets | Only existing files/directories under the plugin root at build time; directory targets treat trailing slash as optional. |

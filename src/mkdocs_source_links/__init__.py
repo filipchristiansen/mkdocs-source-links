@@ -1,4 +1,4 @@
-"""MkDocs plugin: rewrite ../ repo links to forge view URLs in built HTML."""
+"""MkDocs plugin: rewrite ../ repo links to forge view URLs during on_page_markdown."""
 
 from importlib.metadata import PackageNotFoundError, version
 

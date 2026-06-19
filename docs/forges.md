@@ -4,15 +4,38 @@ The plugin builds forge view URLs based on `repo_url`. Public forge hosts are de
 automatically. Hosts that cannot be identified are left unchanged (links are passed through
 verbatim) unless you set [`forge`](configuration.md#options) explicitly.
 
+A trailing `.git` suffix on `repo_url` is stripped when building view URLs.
+
 ## Support matrix
 
 | Forge | Autodetected hosts | URL style |
 | ----- | ------------------ | --------- |
-| GitHub (incl. Enterprise) | `github.com`, `github.*` | `/blob/<branch>/<path>`, `/tree/...` |
-| GitLab (incl. self-hosted) | `gitlab.com`, `gitlab.*` | `/-/blob/<branch>/<path>`, `/-/tree/...` |
-| Bitbucket Cloud | `bitbucket.org` only | `/src/<branch>/<path>` |
-| Gitea / Forgejo / Codeberg | `codeberg.org`, `gitea.*`, `forgejo.*` | `/src/branch/<branch>/<path>`, `/src/tag/<tag>/<path>`, `/src/commit/<sha>/<path>` |
-| Azure DevOps | `dev.azure.com`, `*.visualstudio.com` | ``?path=/<path>&version=GB<branch>`` (``GT`` for tags, ``GC`` for commits) |
+| GitHub (incl. Enterprise) | `github.com`, `github.*` | `/blob/<ref>/<path>`, `/tree/…` |
+| GitLab (incl. self-hosted) | `gitlab.com`, `gitlab.*` | `/-/blob/<ref>/<path>`, `/-/tree/…` |
+| Bitbucket Cloud | `bitbucket.org` only | `/src/<ref>/<path>` |
+| Gitea / Forgejo / Codeberg | `codeberg.org`, `gitea.*`, `forgejo.*` | `/src/branch/<ref>/…`, `/src/tag/<ref>/…`, `/src/commit/<ref>/…` |
+| Azure DevOps | `dev.azure.com`, `*.visualstudio.com` | `?path=/<path>&version=GB{branch}` (`GT{tag}`, `GC{sha}`) |
+
+`<ref>` is the branch name, commit SHA, or tag name from [`pin`](configuration.md#options) and
+[`branch`](configuration.md#options) resolution.
+
+## Pin modes and URL shape
+
+Every rewritten link uses the same ref for the build. With [`pin: branch`](configuration.md#options)
+(default), URLs embed the resolved branch name. With `pin: commit`, the current `HEAD` SHA is
+embedded. With `pin: tag`, an exact tag at `HEAD` is embedded (otherwise the resolved branch is
+used and a warning is emitted).
+
+| Forge | Branch (`pin: branch`) | Commit (`pin: commit`) | Tag (`pin: tag`) |
+| ----- | ---------------------- | ---------------------- | ---------------- |
+| GitHub | `/blob/<branch>/…` or `/tree/…` | `/blob/<sha>/…` | `/blob/<tag>/…` |
+| GitLab | `/-/blob/<branch>/…` | `/-/blob/<sha>/…` | `/-/blob/<tag>/…` |
+| Bitbucket Cloud | `/src/<branch>/…` | `/src/<sha>/…` | `/src/<tag>/…` |
+| Gitea / Forgejo | `/src/branch/<branch>/…` | `/src/commit/<sha>/…` | `/src/tag/<tag>/…` |
+| Azure DevOps | `version=GB{branch}` | `version=GC{sha}` | `version=GT{tag}` |
+
+Azure uses the same `?path=/<path>` query for all pin modes; only the `version=` prefix changes.
+Bitbucket and GitHub/GitLab use the same path pattern for branch names, tags, and commit SHAs.
 
 ## Autodetection limits
 
