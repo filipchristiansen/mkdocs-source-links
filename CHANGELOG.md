@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `MAINTAINERS.md` (maintainer roles, sensitive-resource access, escalated-permissions policy).
+- `SUPPORT.md` (support scope and duration per release).
+- Security assessment, secrets policy, and dependency vulnerability policy in `SECURITY.md`.
+- Published [release verification docs](https://filipchristiansen.github.io/mkdocs-source-links/security/)
+  (SLSA provenance, signed-tag checks, SBOM).
+- `pip-audit` dependency scanning in CI and `make audit` (included in `make ci`).
+- CycloneDX SBOM (`mkdocs-source-links-X.Y.Z.cdx.json`) on GitHub releases.
+- Dependencies section in `CONTRIBUTING.md`.
+
+### Changed
+
+- Publish workflow steps moved to `.github/scripts/`; tag verification and release creation extracted.
+- `CONTRIBUTING.md` documents `make audit` and the expanded `make ci` suite.
+- README links to governance, support, and release verification docs.
+
 ## [0.4.0] - 2026-06-18
 
 ### Added
