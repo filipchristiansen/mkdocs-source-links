@@ -6,7 +6,7 @@ Only the latest released version of mkdocs-source-links receives security fixes.
 
 ## Security contacts
 
-See [MAINTAINERS.md](MAINTAINERS.md) for who handles security reports. Report vulnerabilities
+See [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md) for who handles security reports. Report vulnerabilities
 privately via GitHub's
 [private vulnerability reporting](https://github.com/filipchristiansen/mkdocs-source-links/security/advisories/new).
 Do not open a public issue for security problems.
@@ -59,7 +59,7 @@ output.
   commit `.env` files, tokens, or private keys. Pre-commit hooks include `check-added-large-files`
   and all changes are reviewed before merge.
 - **GitHub Actions secrets:** `CODECOV_TOKEN` and `SCORECARD_TOKEN` are stored as encrypted
-  repository secrets. Only repository admins (see [MAINTAINERS.md](MAINTAINERS.md)) can read or
+  repository secrets. Only repository admins (see [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md)) can read or
   rotate them via GitHub repository settings.
 - **PyPI publishing:** Uses OIDC trusted publishing through the `pypi` GitHub Environment. No
   long-lived PyPI API tokens are stored in the repository or in workflow files.
@@ -67,12 +67,12 @@ output.
   held locally by the maintainer. Public keys are registered on GitHub. To rotate, generate a new key,
   register it on GitHub, and retire the old key.
 - **Access control:** Escalated access to secrets and environments is limited to listed maintainers
-  per [MAINTAINERS.md](MAINTAINERS.md#escalated-permissions-policy).
+  per [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md#escalated-permissions-policy).
 
 ## Dependency vulnerability policy
 
 This project scans dependencies for known vulnerabilities and tracks updates via Dependabot. See
-[CONTRIBUTING.md](CONTRIBUTING.md#dependencies) for how dependencies are declared and updated.
+[Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/#dependencies) for how dependencies are declared and updated.
 
 ### Remediation threshold
 

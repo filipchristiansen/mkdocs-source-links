@@ -20,7 +20,7 @@ MkDocs plugin that rewrites `](../path)` links to your git forge in **built HTML
 - **Directories** → `https://…/tree/<branch>/<path>`
 - **Forges:** GitHub, GitLab, Bitbucket, Gitea/Forgejo, Azure DevOps (autodetected; self-hosted via `forge:`)
 
-**Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links>
+**Documentation:** <https://filipchristiansen.github.io/mkdocs-source-links/>
 
 ## Install
 
@@ -87,11 +87,8 @@ Maintainers release with `make release-prep VERSION=X.Y.Z` (bump, roll the hand-
 `CHANGELOG.md`, open the release PR) and, once merged, `make release-tag VERSION=X.Y.Z` (signed tag
 and publish to PyPI).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [CHANGELOG.md](CHANGELOG.md) for
-release notes. Governance: [GOVERNANCE.md](GOVERNANCE.md). Maintainers: [MAINTAINERS.md](MAINTAINERS.md).
-Roadmap: [ROADMAP.md](ROADMAP.md). Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Support:
-[SUPPORT.md](SUPPORT.md). Security reporting: [SECURITY.md](SECURITY.md). Release verification:
-[Security docs](https://filipchristiansen.github.io/mkdocs-source-links/security/).
+See [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/) for the full workflow and [Changelog](https://filipchristiansen.github.io/mkdocs-source-links/changelog/) for
+release notes. Further reading: [Governance](https://filipchristiansen.github.io/mkdocs-source-links/governance/), [Roadmap](https://filipchristiansen.github.io/mkdocs-source-links/roadmap/), [Support](https://filipchristiansen.github.io/mkdocs-source-links/support/), [Code of conduct](https://filipchristiansen.github.io/mkdocs-source-links/code-of-conduct/), [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md), [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md), and [Release verification](https://filipchristiansen.github.io/mkdocs-source-links/security/).
 
 ## License
 

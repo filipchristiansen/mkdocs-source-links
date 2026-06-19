@@ -59,7 +59,7 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported **privately** to the maintainer listed in [MAINTAINERS.md](MAINTAINERS.md)
+reported **privately** to the maintainer listed in [Maintainers](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/MAINTAINERS.md)
 (see the GitHub profile linked there for contact options). **Do not** use public
 GitHub Issues for Code of Conduct reports.
 All complaints will be reviewed and investigated promptly and fairly.

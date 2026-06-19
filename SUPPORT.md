@@ -7,15 +7,15 @@
 | Latest released version | Best effort via GitHub Issues | Yes | Yes |
 | Older releases | No | No | No |
 
-Only the [latest released version](https://pypi.org/project/mkdocs-source-links/) is supported.
-Security fixes follow the policy in [SECURITY.md](SECURITY.md#supported-versions).
+Only the [latest released version](https://pypi.org/project/mkdocs-source-links) is supported.
+Security fixes follow the policy in [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md#supported-versions).
 
 ## How to get help
 
 - **Bug reports and feature requests:**
   [GitHub Issues](https://github.com/filipchristiansen/mkdocs-source-links/issues)
-- **Security issues:** [SECURITY.md](SECURITY.md) — do not use public issues
-- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Security issues:** [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md) — do not use public issues
+- **Contributing:** [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/)
 
 ## Platform support
 
@@ -23,4 +23,4 @@ Security fixes follow the policy in [SECURITY.md](SECURITY.md#supported-versions
 - **MkDocs:** 1.5 and newer (runtime dependency)
 
 There is no commercial support, SLA, or guaranteed response time for general issues. Security
-reports receive an initial response within 14 days per [SECURITY.md](SECURITY.md).
+reports receive an initial response within 14 days per [Security policy](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/SECURITY.md).

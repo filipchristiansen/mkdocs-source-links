@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Continuity-of-access plan and 2FA policy in `MAINTAINERS.md`.
 - `DCO1.1.md` and `Signed-off-by` requirement in `CONTRIBUTING.md`.
 - Regression test for unrecognized `edit_uri` branch fallback in `branch.py`.
+- Documentation site pages for roadmap, support, governance, and code of conduct (snippet includes from root files).
+- Cross-links in shared governance docs use docs-site URLs for published pages and GitHub blob URLs for root-only files.
 
 ### Changed
 
-- README links to governance, roadmap, and code of conduct.
+- README and root governance docs link to docs-site pages where published; root-only files (`MAINTAINERS.md`, `SECURITY.md`) link to GitHub blob URLs.
 - `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
 - `make test` and CI use branch coverage.
 - Publish workflow verifies tag↔`pyproject.toml` version and runs `mkdocs build --strict` before PyPI upload.

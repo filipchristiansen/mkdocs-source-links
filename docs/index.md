@@ -56,3 +56,4 @@ See [Usage](usage.md) for link conventions and [Configuration](configuration.md)
 - **Obtain:** install from [PyPI](https://pypi.org/project/mkdocs-source-links) (`pip install mkdocs-source-links`) or clone the [repository](https://github.com/filipchristiansen/mkdocs-source-links).
 - **Feedback:** open a [bug report](https://github.com/filipchristiansen/mkdocs-source-links/issues/new?template=bug_report.md) or [feature request](https://github.com/filipchristiansen/mkdocs-source-links/issues/new?template=feature_request.md) on GitHub Issues.
 - **Contribute:** see [Contributing](contributing.md) for setup, coding standards, and the pull request workflow.
+- **Project:** [Roadmap](roadmap.md) · [Support](support.md) · [Governance](governance.md) · [Code of conduct](code-of-conduct.md)

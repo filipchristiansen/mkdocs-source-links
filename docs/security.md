@@ -3,7 +3,7 @@
 How to verify release integrity, author identity, and obtain the software bill of materials (SBOM).
 
 For vulnerability reporting and supported versions, see
-[SECURITY.md](../SECURITY.md).
+[Security policy](../SECURITY.md).
 
 ## Release assets
 
