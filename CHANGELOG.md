@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-20
+
 ### Added
 
 - `log_rewrites` config option (`false`, `summary`, `verbose`) for opt-in rewrite statistics at INFO level.
@@ -203,7 +205,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.1...v0.5.0
