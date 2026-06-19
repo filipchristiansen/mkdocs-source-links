@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from conftest import REPO
 from mkdocs_source_links.branch import resolve_branch
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import rewrite_repo_parent_links
-
-REPO = "https://github.com/example/example-repo"
 
 
 def test_plugin_branch_wins() -> None:

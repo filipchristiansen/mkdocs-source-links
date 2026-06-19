@@ -10,16 +10,17 @@ verbatim) unless you set [`forge`](configuration.md#options) explicitly.
 | ----- | ------------------ | --------- |
 | GitHub (incl. Enterprise) | `github.com`, `github.*` | `/blob/<branch>/<path>`, `/tree/...` |
 | GitLab (incl. self-hosted) | `gitlab.com`, `gitlab.*` | `/-/blob/<branch>/<path>`, `/-/tree/...` |
-| Bitbucket Cloud | `bitbucket.org`, `bitbucket.*` | `/src/<branch>/<path>` |
-| Gitea / Forgejo / Codeberg | `codeberg.org`, `gitea.*`, `forgejo.*` | `/src/branch/<branch>/<path>`, `/src/commit/<sha>/<path>` |
-| Azure DevOps | `dev.azure.com`, `*.visualstudio.com` | `?path=/<path>&version=GB<branch>` |
+| Bitbucket Cloud | `bitbucket.org` only | `/src/<branch>/<path>` |
+| Gitea / Forgejo / Codeberg | `codeberg.org`, `gitea.*`, `forgejo.*` | `/src/branch/<branch>/<path>`, `/src/tag/<tag>/<path>`, `/src/commit/<sha>/<path>` |
+| Azure DevOps | `dev.azure.com`, `*.visualstudio.com` | ``?path=/<path>&version=GB<branch>`` (``GT`` for tags, ``GC`` for commits) |
 
 ## Autodetection limits
 
 Self-hosted detection matches forge names as **hostname labels** (for example `gitlab.example.com`
 or `github-internal.corp`), not arbitrary substrings. A host like `notgitlab.com` is not treated
-as GitLab. When autodetection cannot identify your forge, set [`forge`](configuration.md#options)
-explicitly.
+as GitLab. **Bitbucket Cloud** is only autodetected at `bitbucket.org`; self-hosted Bitbucket
+Server/Data Center hostnames are not matched (see [unsupported forges](#unsupported-forges)). When
+autodetection cannot identify your forge, set [`forge`](configuration.md#options) explicitly.
 
 ## Self-hosted instances
 

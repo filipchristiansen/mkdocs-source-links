@@ -30,33 +30,57 @@ def _normalize_repo_base(repo_url: str) -> str:
     return base
 
 
+def _quoted_repo_path(repo_path: str) -> str:
+    """Percent-encode a repo-root-relative path for URL path segments."""
+    return quote(repo_path, safe="/")
+
+
 def _github_url(req: _ForgeRequest) -> str:
     """Build a GitHub blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/{kind}/{req.ref}/{req.repo_path}"
+    return f"{req.base}/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
 
 
 def _gitlab_url(req: _ForgeRequest) -> str:
     """Build a GitLab blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/-/{kind}/{req.ref}/{req.repo_path}"
+    return f"{req.base}/-/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
 
 
 def _bitbucket_url(req: _ForgeRequest) -> str:
     """Build a Bitbucket Cloud src URL (files and directories share the same path)."""
-    return f"{req.base}/src/{req.ref}/{req.repo_path}"
+    return f"{req.base}/src/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+
+
+def _gitea_ref_segment(ref_kind: RefKind) -> str:
+    """Return the Gitea/Forgejo ``src/`` path segment for a ref kind."""
+    if ref_kind == "commit":
+        return "commit"
+    if ref_kind == "tag":
+        return "tag"
+    return "branch"
 
 
 def _gitea_url(req: _ForgeRequest) -> str:
     """Build a Gitea/Forgejo src URL (files and directories share the same path)."""
-    kind = "commit" if req.ref_kind == "commit" else "branch"
-    return f"{req.base}/src/{kind}/{req.ref}/{req.repo_path}"
+    kind = _gitea_ref_segment(req.ref_kind)
+    return f"{req.base}/src/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+
+
+def _azure_version_prefix(ref_kind: RefKind) -> str:
+    """Return the Azure DevOps version query prefix for a ref kind."""
+    if ref_kind == "commit":
+        return "GC"
+    if ref_kind == "tag":
+        return "GT"
+    return "GB"
 
 
 def _azure_url(req: _ForgeRequest) -> str:
     """Build an Azure DevOps view URL using the path/version query parameters."""
-    version_prefix = "GC" if req.ref_kind == "commit" else "GB"
-    return f"{req.base}?path=/{req.repo_path}&version={version_prefix}{req.ref}"
+    path_param = quote(f"/{req.repo_path}", safe="/")
+    version_param = quote(f"{_azure_version_prefix(req.ref_kind)}{req.ref}", safe="")
+    return f"{req.base}?path={path_param}&version={version_param}"
 
 
 _BUILDERS: dict[str, Callable[[_ForgeRequest], str]] = {
@@ -80,13 +104,13 @@ _KNOWN_HOSTS = {
 }
 
 # Substring hints for self-hosted instances (used only when the host is not a known public host).
+# Bitbucket Cloud is only at bitbucket.org; self-hosted Bitbucket Server/DC is not supported.
 _HOST_HINTS = (
     ("github", "github"),
     ("gitlab", "gitlab"),
     ("gitea", "gitea"),
     ("forgejo", "gitea"),
     ("codeberg", "gitea"),
-    ("bitbucket", "bitbucket"),
 )
 
 
@@ -148,10 +172,10 @@ def repo_view_url(
     repo_url : str
         Forge repository URL from ``mkdocs.yml``.
     ref : str
-        Git branch name or commit SHA to embed in the URL.
+        Git branch name, tag name, or commit SHA to embed in the URL.
     ref_kind : RefKind
-        Whether ``ref`` is a branch name or a commit SHA. Azure DevOps uses different
-        version prefixes (``GB`` vs ``GC``) depending on this value.
+        Whether ``ref`` is a branch name, tag name, or commit SHA. Azure DevOps uses different
+        version prefixes (``GB``, ``GT``, and ``GC``) depending on this value.
     repo_path : str
         Repo-root-relative POSIX path to the target file or directory.
     is_dir : bool
@@ -173,7 +197,7 @@ def repo_view_url(
         base=_normalize_repo_base(repo_url),
         ref=ref,
         ref_kind=ref_kind,
-        repo_path=quote(repo_path, safe="/"),
+        repo_path=repo_path,
         is_dir=is_dir,
     )
     return _BUILDERS[forge_name](request)

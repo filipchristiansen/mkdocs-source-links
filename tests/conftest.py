@@ -15,16 +15,18 @@ REPO = "https://github.com/example/example-repo"
 
 @pytest.fixture(name="repo_tree")
 def _repo_tree(tmp_path: Path) -> Path:
-    """Minimal repo: docs/page.md, env.example, backend/, scripts/."""
+    """Minimal repo layout shared by rewrite tests."""
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "page.md").write_text("# Page\n")
     (tmp_path / "env.example").write_text("FOO=bar\n")
+    (tmp_path / "src.py").write_text("line1\nline2\n")
+    (tmp_path / "img.png").write_bytes(b"\x89PNG\r\n")
+    (tmp_path / "wide img.png").write_bytes(b"\x89PNG\r\n")
     backend = tmp_path / "backend" / "src"
     backend.mkdir(parents=True)
     (backend / "config.py").write_text("X = 1\n")
-    scripts = tmp_path / "scripts"
-    scripts.mkdir()
+    (tmp_path / "scripts").mkdir()
     return tmp_path
 
 

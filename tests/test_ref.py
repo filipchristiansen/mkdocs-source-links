@@ -93,7 +93,7 @@ def test_resolve_view_ref_tag_pin_at_exact_tag(tmp_path: Path) -> None:
 
     ref, kind = resolve_view_ref(pin="tag", repo_root=tmp_path, branch="main")
     assert ref == "v1.0.0"
-    assert kind == "branch"
+    assert kind == "tag"
 
 
 def test_resolve_view_ref_tag_pin_fallback_when_not_on_tag(tmp_path: Path) -> None:

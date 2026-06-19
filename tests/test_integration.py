@@ -138,6 +138,59 @@ def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path) -> None:
     assert "github.com/example/test-repo/tree/v1.0.0/scripts" in html
 
 
+@pytest.mark.skipif(_GIT is None, reason="git not available")
+def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _init_git_repo(tmp_path)
+    assert _GIT is not None
+    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    _write_mkdocs_yml(
+        tmp_path,
+        repo_url="https://codeberg.org/example/test-repo",
+        edit_uri="main/docs/",
+        plugin_options={"pin": "tag"},
+    )
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "codeberg.org/example/test-repo/src/tag/v1.0.0/backend/config.py" in html
+    assert "codeberg.org/example/test-repo/src/tag/v1.0.0/scripts" in html
+
+
+def test_mkdocs_build_azure_branch_uses_gb_version(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(
+        tmp_path,
+        repo_url="https://dev.azure.com/org/project/_git/test-repo",
+        plugin_options={"branch": "main", "forge": "azure"},
+    )
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert (
+        "dev.azure.com/org/project/_git/test-repo?path=/backend/config.py&amp;version=GBmain"
+        in html
+    )
+
+
+@pytest.mark.skipif(_GIT is None, reason="git not available")
+def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _init_git_repo(tmp_path)
+    assert _GIT is not None
+    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    _write_mkdocs_yml(
+        tmp_path,
+        repo_url="https://dev.azure.com/org/project/_git/test-repo",
+        plugin_options={"pin": "tag", "forge": "azure"},
+    )
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "version=GTv1.0.0" in html
+    assert "path=/backend/config.py" in html
+
+
 def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> None:
     _setup_doc_site(tmp_path)
     _write_mkdocs_yml(tmp_path, plugin_options={"enabled": False})

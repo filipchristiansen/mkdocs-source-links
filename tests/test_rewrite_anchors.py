@@ -6,19 +6,9 @@ from pathlib import Path
 
 import pytest
 
+from conftest import REPO
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import rewrite_repo_parent_links
-
-REPO = "https://github.com/example/example-repo"
-
-
-@pytest.fixture(name="repo_tree")
-def _repo_tree(tmp_path: Path) -> Path:
-    docs = tmp_path / "docs"
-    docs.mkdir()
-    (docs / "page.md").write_text("# Page\n")
-    (tmp_path / "src.py").write_text("line1\nline2\n")
-    return tmp_path
 
 
 @pytest.mark.parametrize(
