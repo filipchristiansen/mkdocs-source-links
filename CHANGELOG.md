@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-19
+
 ### Added
 
 - `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1), `GOVERNANCE.md`, and `ROADMAP.md`.
@@ -23,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- PyPI development status graduated from Beta to Production/Stable.
 - Documentation site navigation grouped into Guide, Configuration, Reference, Project, and Community sections.
-
 - README and root governance docs link to docs-site pages where published; root-only files (`MAINTAINERS.md`, `SECURITY.md`) link to GitHub blob URLs.
 - `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
 - `make test` and CI use branch coverage.
@@ -164,7 +166,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.3.1...v0.3.2
