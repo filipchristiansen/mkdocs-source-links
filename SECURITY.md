@@ -6,7 +6,8 @@ Only the latest released version of mkdocs-source-links receives security fixes.
 
 ## Security contacts
 
-Report vulnerabilities privately via GitHub's
+See [MAINTAINERS.md](MAINTAINERS.md) for who handles security reports. Report vulnerabilities
+privately via GitHub's
 [private vulnerability reporting](https://github.com/filipchristiansen/mkdocs-source-links/security/advisories/new).
 Do not open a public issue for security problems.
 
@@ -16,6 +17,42 @@ Include a description of the issue, affected versions, and steps to reproduce if
 
 You can expect an **initial response within 14 days**. Once the issue is confirmed, a fix or
 mitigation will be released in a new version.
+
+## Security assessment
+
+mkdocs-source-links is a **build-time MkDocs plugin**. It rewrites markdown links in documentation
+pages during `mkdocs build`; it does not serve HTTP, store secrets, or make network requests at
+runtime.
+
+### Scope and trust boundaries
+
+| Actor | Trust | Interaction |
+| ----- | ----- | ----------- |
+| Documentation author | Trusted | Writes markdown and `mkdocs.yml` in the repo |
+| MkDocs build | Trusted runner | Invokes the plugin on each page |
+| Plugin | This software | Reads local repo paths and `mkdocs.yml`; emits rewritten markdown URLs |
+| Git forge (GitHub, etc.) | External | Receives URLs in built HTML; not contacted during the build |
+
+The plugin reads the local filesystem (to check link targets exist) and git metadata (branch/SHA).
+It does not execute user-supplied code, deserialize untrusted formats, or write outside the build
+output.
+
+### Likely threats and mitigations
+
+| Threat | Impact | Mitigation |
+| ------ | ------ | ---------- |
+| Path handling bugs (incorrect resolution of `../` links) | Broken or misleading forge URLs in docs | Strict path normalization; tests across OSes; missing targets left unchanged with warnings |
+| Incorrect URL generation for a forge | Users follow wrong links | Forge-specific URL builders with integration tests; explicit `forge` override |
+| Supply-chain compromise (dependency or PyPI package) | Malicious code in plugin | Minimal runtime deps; lockfile + `uv sync --frozen` in CI; Dependabot; SLSA provenance on releases; signed tags |
+| Malicious contribution | Backdoor in plugin source | Required PR review, CI (incl. bandit via ruff), signed commits on `main` |
+
+### Residual risks
+
+- The plugin trusts the repository contents and MkDocs configuration it is built with; it cannot
+  protect against a compromised docs source tree.
+- Built HTML links point at third-party forges; their availability and content are outside this
+  project.
+- Reference-style markdown links are not rewritten (see [limitations](docs/limitations.md)).
 
 ## CI/CD hardening
 

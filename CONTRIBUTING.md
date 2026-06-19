@@ -12,6 +12,23 @@ make install   # install Python 3.10, sync all groups, set up pre-commit hooks
 
 When editing [`.github/scripts/`](.github/scripts/): install [ShellCheck](https://www.shellcheck.net) locally — `brew install shellcheck` (macOS) or `sudo apt install shellcheck` (Linux). CI installs it automatically.
 
+## Dependencies
+
+Runtime dependencies are declared in `pyproject.toml` under `[project]`.
+Development and documentation dependencies live in `[dependency-groups]` (`dev`, `docs`).
+
+Dependencies are resolved and pinned in `uv.lock` using [uv](https://docs.astral.sh/uv).
+Install them with `make sync` or `uv sync --all-groups`. CI and publish workflows use
+`uv sync --frozen` so builds always match the lockfile.
+
+**Selection:** Prefer well-maintained packages with permissive licenses. Runtime dependencies
+are kept minimal (currently MkDocs only). Dev tools are chosen for ecosystem fit (ruff, mypy,
+pytest, etc.).
+
+**Updates:** Dependabot (`.github/dependabot.yml`) opens weekly PRs for the lockfile
+(`versioning-strategy: lockfile-only` for uv — constraints in `pyproject.toml` are unchanged)
+and for GitHub Actions. Maintainers review and merge after CI passes.
+
 ## Workflow
 
 1. Create a branch with a conventional prefix (`feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`).
@@ -47,7 +64,7 @@ repository.
 
 ## Releases
 
-Releases are cut by maintainers. First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
+Releases are cut by maintainers (see `MAINTAINERS.md`). First, curate the `## [Unreleased]` section of `CHANGELOG.md` by
 hand (the tooling never generates release notes). Then:
 
 1. `make release-prep VERSION=X.Y.Z` — bumps `version` in `pyproject.toml`, rolls `[Unreleased]`
