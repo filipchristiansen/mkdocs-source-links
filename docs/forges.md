@@ -32,3 +32,16 @@ plugins:
   - source-links:
       forge: gitlab   # github | gitlab | bitbucket | gitea | azure
 ```
+
+## Unsupported forges
+
+The plugin does **not** build view URLs for these hosts. Use full forge blob URLs in markdown
+(they pass through unchanged) or open a [feature request](https://github.com/filipchristiansen/mkdocs-source-links/issues/new?template=feature_request.md).
+
+| Host | Notes |
+| ---- | ----- |
+| **Bitbucket Server / Data Center** | Different URL scheme from Bitbucket Cloud (`/projects/.../browse/...?at=...`). A self-hosted hostname containing `bitbucket` (for example `bitbucket.corp.com`) is autodetected as **Cloud** and rewritten links will be **wrong** — do not set `forge: bitbucket` on Server/DC. |
+| **SourceHut** (`git.sr.ht`) | Not autodetected or supported. |
+| **AWS CodeCommit** | Console browse URLs differ from the git clone host; not supported. |
+| **Google Gitiles** (`*.googlesource.com`) | Distinct `/+ref/path` URL scheme; not supported. |
+| **Other forges** | e.g. Pagure, Savannah, cloud vendor git UIs — not autodetected; use full blob URLs. |
