@@ -124,6 +124,20 @@ def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
     assert f"github.com/example/test-repo/tree/{sha}/scripts" in html
 
 
+@pytest.mark.skipif(_GIT is None, reason="git not available")
+def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _init_git_repo(tmp_path)
+    assert _GIT is not None
+    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    _write_mkdocs_yml(tmp_path, plugin_options={"pin": "tag"})
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert "github.com/example/test-repo/blob/v1.0.0/backend/config.py" in html
+    assert "github.com/example/test-repo/tree/v1.0.0/scripts" in html
+
+
 def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> None:
     _setup_doc_site(tmp_path)
     _write_mkdocs_yml(tmp_path, plugin_options={"enabled": False})

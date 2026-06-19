@@ -5,8 +5,8 @@
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `enabled` | bool | `true` | Turn link rewriting on or off. When `false`, page markdown is left untouched and no git lookup runs. |
-| `pin` | string | `branch` | Pin forge URLs to a branch name (`branch`) or the current commit SHA (`commit`). When `commit`, falls back to the resolved branch if git is unavailable. |
-| `branch` | string | resolved (see below) | Git branch used in forge URLs when `pin` is `branch`, or as fallback when `pin` is `commit`. |
+| `pin` | string | `branch` | Pin forge URLs to a branch name (`branch`), the current commit SHA (`commit`), or an exact tag at `HEAD` (`tag`). When `commit` or `tag` lookup fails, falls back to the resolved branch. |
+| `branch` | string | resolved (see below) | Git branch used in forge URLs when `pin` is `branch`, or as fallback when `pin` is `commit` or `tag`. Tag names are valid here when set explicitly (for example `branch: v1.2.3`). |
 | `forge` | string | autodetected | Forge type: `github`, `gitlab`, `bitbucket`, `gitea`, or `azure`. Overrides host autodetection. |
 | `warn_on_missing` | bool | `true` | Emit a warning when a `](../path)` link's target does not exist in the repository. Counts toward `mkdocs build --strict`. |
 
@@ -15,6 +15,7 @@ plugins:
   - source-links:
       branch: develop
       pin: commit             # permalink to HEAD SHA instead of branch name
+      # pin: tag              # use exact tag at HEAD (e.g. v1.2.3); else resolved branch
       forge: gitlab           # only needed when autodetection can't identify the host
       warn_on_missing: false  # silence warnings for intentionally absent targets
 ```

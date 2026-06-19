@@ -38,9 +38,9 @@ not support hash-based line anchors; line fragments are omitted for that forge.
 ## Git ref and historical links
 
 Every rewritten `../` link uses the same git ref for the build, from [`pin`](configuration.md#options)
-and [`branch`](configuration.md#options): a branch or tag name when `pin: branch`, or the current
-commit SHA when `pin: commit` (with branch fallback if git is unavailable). There is no per-link ref
-override.
+and [`branch`](configuration.md#options): a branch or tag name when `pin: branch`, the current
+commit SHA when `pin: commit`, or an exact tag at `HEAD` when `pin: tag` (with branch fallback if
+`HEAD` is not tagged). There is no per-link ref override.
 
 To point at a **specific** commit or tag for one link — for example code as it existed in an older
 release — use a full forge blob URL in the markdown. Absolute URLs are left unchanged by the plugin

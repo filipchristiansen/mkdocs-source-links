@@ -55,6 +55,7 @@ plugins:
 plugins:
   - source-links:
       pin: commit             # embed HEAD SHA instead of branch name
+      # pin: tag              # exact tag at HEAD (release builds); else resolved branch
       forge: gitlab           # override autodetection for custom domains
       warn_on_missing: false  # silence missing-target warnings
       enabled: !ENV [SOURCE_LINKS, true]  # disable per environment
