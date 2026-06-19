@@ -1,5 +1,7 @@
 """Tests for the MkDocs plugin hook."""
 
+# pylint: disable=protected-access
+
 from __future__ import annotations
 
 import logging
@@ -102,7 +104,7 @@ def test_on_config_disabled_sets_branch_view_ref() -> None:
     )
 
     assert plugin.on_config(config) is config
-    assert plugin._view_ref == ViewRef("develop", "branch")  # pylint: disable=protected-access
+    assert plugin._view_ref == ViewRef("develop", "branch")
 
 
 def test_on_page_markdown_disabled_leaves_markdown() -> None:
@@ -178,7 +180,7 @@ def test_on_config_without_repo_url_skips_git_and_sets_branch_ref() -> None:
         assert plugin.on_config(config) is config
 
     resolve_mock.assert_not_called()
-    assert plugin._view_ref == ViewRef("develop", "branch")  # pylint: disable=protected-access
+    assert plugin._view_ref == ViewRef("develop", "branch")
 
 
 def test_on_config_warns_when_pin_falls_back_to_branch(
@@ -192,7 +194,9 @@ def test_on_config_warns_when_pin_falls_back_to_branch(
         edit_uri="edit/main/docs/",
     )
     fallback = ResolvedViewRef(
-        ViewRef("main", "branch"), used_fallback=True, requested_pin="commit"
+        ViewRef("main", "branch"),
+        used_fallback=True,
+        requested_pin="commit",
     )
 
     with (
@@ -202,4 +206,94 @@ def test_on_config_warns_when_pin_falls_back_to_branch(
         plugin.on_config(config)
 
     assert "could not be resolved via git" in caplog.text
-    assert plugin._view_ref == ViewRef("main", "branch")  # pylint: disable=protected-access
+    assert plugin._view_ref == ViewRef("main", "branch")
+
+
+def test_on_config_branch_pin_uses_plugin_branch_override() -> None:
+    plugin = SourceLinksPlugin()
+    plugin.config = {"pin": "branch", "branch": "release-1.0"}
+    config = _config(
+        repo_url=REPO,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="edit/main/docs/",
+    )
+
+    with patch("mkdocs_source_links.plugin.resolve_view_ref") as resolve_mock:
+        resolve_mock.return_value = ResolvedViewRef(
+            ViewRef("release-1.0", "branch"),
+            used_fallback=False,
+            requested_pin="branch",
+        )
+        plugin.on_config(config)
+
+    resolve_mock.assert_called_once_with(
+        pin="branch",
+        repo_root=Path("/repo"),
+        branch="release-1.0",
+    )
+    assert plugin._view_ref == ViewRef("release-1.0", "branch")
+
+
+def test_on_config_commit_pin_sets_commit_view_ref() -> None:
+    plugin = SourceLinksPlugin()
+    plugin.config = {"pin": "commit"}
+    config = _config(
+        repo_url=REPO,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="edit/main/docs/",
+    )
+    commit_ref = ResolvedViewRef(
+        ViewRef("abc123", "commit"),
+        used_fallback=False,
+        requested_pin="commit",
+    )
+
+    with patch("mkdocs_source_links.plugin.resolve_view_ref", return_value=commit_ref):
+        plugin.on_config(config)
+
+    assert plugin._view_ref == ViewRef("abc123", "commit")
+
+
+def test_on_config_tag_pin_sets_tag_view_ref() -> None:
+    plugin = SourceLinksPlugin()
+    plugin.config = {"pin": "tag"}
+    config = _config(
+        repo_url=REPO,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="edit/main/docs/",
+    )
+    tag_ref = ResolvedViewRef(ViewRef("v1.2.3", "tag"), used_fallback=False, requested_pin="tag")
+
+    with patch("mkdocs_source_links.plugin.resolve_view_ref", return_value=tag_ref):
+        plugin.on_config(config)
+
+    assert plugin._view_ref == ViewRef("v1.2.3", "tag")
+
+
+def test_on_page_markdown_passes_forge_to_rewrite(tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    page_path = docs / "page.md"
+    page_path.write_text("# Page\n")
+    (tmp_path / "env.example").write_text("x\n")
+    mkdocs_yml = tmp_path / "mkdocs.yml"
+    mkdocs_yml.write_text("site_name: test\n")
+
+    plugin = SourceLinksPlugin()
+    plugin.config = {"forge": "gitlab"}
+    markdown = "[cfg](../env.example)."
+    page = _page(str(page_path))
+    config = _config(
+        repo_url=REPO,
+        config_file_path=str(mkdocs_yml),
+        edit_uri="edit/main/docs/",
+    )
+    files = cast(Files, SimpleNamespace())
+
+    with patch("mkdocs_source_links.plugin.rewrite_repo_parent_links") as rewrite_mock:
+        rewrite_mock.return_value = markdown
+        plugin.on_config(config)
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    rewrite_mock.assert_called_once()
+    assert rewrite_mock.call_args.kwargs["forge"] == "gitlab"
