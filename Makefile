@@ -36,7 +36,7 @@ audit:
 	uv run pip-audit -l --desc on
 
 test:
-	uv run pytest --cov
+	uv run pytest --cov --cov-branch
 
 docs:
 	uv run mkdocs build --strict
