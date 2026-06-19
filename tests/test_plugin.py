@@ -297,3 +297,209 @@ def test_on_page_markdown_passes_forge_to_rewrite(tmp_path: Path) -> None:
 
     rewrite_mock.assert_called_once()
     assert rewrite_mock.call_args.kwargs["forge"] == "gitlab"
+
+
+def _rewrite_logging_setup(tmp_path: Path) -> tuple[SourceLinksPlugin, Page, MkDocsConfig, Files]:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    page_path = docs / "page.md"
+    page_path.write_text("# Page\n")
+    (tmp_path / "README.md").write_text("# Readme\n")
+    (tmp_path / "src.py").write_text("x\n")
+    mkdocs_yml = tmp_path / "mkdocs.yml"
+    mkdocs_yml.write_text("site_name: test\n")
+
+    plugin = SourceLinksPlugin()
+    page = _page(str(page_path), src_path="page.md")
+    config = _config(
+        repo_url=REPO,
+        config_file_path=str(mkdocs_yml),
+        edit_uri="edit/main/docs/",
+    )
+    files = cast(Files, SimpleNamespace())
+    return plugin, page, config, files
+
+
+def test_log_rewrites_default_is_silent(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {}
+    markdown = "[readme](../README.md) and [src](../src.py)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote" not in caplog.text
+
+
+def test_log_rewrites_summary_logs_build_total(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    markdown = "[readme](../README.md) and [src](../src.py)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote 2 ../ links across 1 page" in caplog.text
+    assert "page.md: rewrote" not in caplog.text
+
+
+def test_log_rewrites_verbose_logs_per_page_and_summary(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "verbose"}
+    markdown = "[readme](../README.md)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "page.md: rewrote 1 link" in caplog.text
+    assert "Rewrote 1 ../ link across 1 page" in caplog.text
+
+
+def test_log_rewrites_verbose_skips_pages_with_zero_rewrites(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "verbose"}
+    markdown = "No parent links here."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "page.md: rewrote" not in caplog.text
+    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+
+
+def test_log_rewrites_summary_logs_zero_when_no_rewrites(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    markdown = "No parent links here."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "page.md: rewrote" not in caplog.text
+    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+
+
+def test_log_rewrites_silent_without_repo_url(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    markdown = "[readme](../README.md)."
+    config = _config(
+        repo_url=None,
+        config_file_path=config.config_file_path,
+        edit_uri="edit/main/docs/",
+    )
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote" not in caplog.text
+
+
+def test_log_rewrites_summary_across_multiple_pages(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    page_b_path = tmp_path / "docs" / "other.md"
+    page_b_path.write_text("# Other\n")
+    page_b = _page(str(page_b_path), src_path="other.md")
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(
+            "[readme](../README.md).",
+            page=page,
+            config=config,
+            files=files,
+        )
+        plugin.on_page_markdown(
+            "[src](../src.py) and [readme](../README.md).",
+            page=page_b,
+            config=config,
+            files=files,
+        )
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote 3 ../ links across 2 pages" in caplog.text
+
+
+def test_log_rewrites_disabled_when_plugin_disabled(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"enabled": False, "log_rewrites": "summary"}
+    markdown = "[readme](../README.md)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote" not in caplog.text
+
+
+def test_log_rewrites_zero_for_virtual_page(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, _, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    page = _page(None)
+    markdown = "[readme](../README.md)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+
+
+def test_log_rewrites_counters_reset_on_config(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _rewrite_logging_setup(tmp_path)
+    plugin.config = {"log_rewrites": "summary"}
+    markdown = "[readme](../README.md)."
+
+    plugin.on_config(config)
+    plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_post_build(config=config)
+
+    assert "Rewrote 0 ../ links across 0 pages" in caplog.text

@@ -109,6 +109,7 @@ workflow.
 | `branch` | string | resolved | Override branch resolution; set an explicit tag name (`branch: v1.2.3`) when not building from that tag. |
 | `forge` | string | autodetected | Host without a forge hostname label (e.g. `git.mycompany.com` running GitLab). |
 | `warn_on_missing` | bool | `true` | `false` to silence missing-target warnings; `true` with `mkdocs build --strict` for CI. |
+| `log_rewrites` | `false` \| `summary` \| `verbose` | `false` | Opt-in rewrite statistics at INFO level; `summary` for one build line, `verbose` for per-page counts. |
 
 Valid `forge` values: `github`, `gitlab`, `bitbucket`, `gitea`, `azure`. See [Forges](forges.md) for the
 support matrix, autodetection limits, and **unsupported** hosts (Bitbucket Server, SourceHut, etc.).
@@ -167,6 +168,29 @@ plugins:
   - source-links:
       warn_on_missing: false
 ```
+
+### `log_rewrites`
+
+Verify the plugin is rewriting links after first setup or when auditing `../` conventions:
+
+```yaml
+plugins:
+  - source-links:
+      log_rewrites: summary   # one line at end of build
+      # log_rewrites: verbose # per-page lines plus summary
+```
+
+Example build output with `summary`:
+
+```text
+INFO    -  mkdocs_source_links: Rewrote 2 ../ links across 1 page
+```
+
+With `verbose`, pages with rewrites log first (`guide.md: rewrote 3 links`), then the summary.
+Paths are relative to the docs directory (same as `warn_on_missing` warnings), without a `docs/`
+prefix. Requires `repo_url`; leave at `false` (default) for quiet CI builds. Note that
+`mkdocs build -q` suppresses INFO output, so rewrite statistics are hidden even when
+`log_rewrites` is enabled.
 
 ## `pin` and ref modes
 
@@ -461,6 +485,7 @@ plugins:
       # branch: develop                       # override resolved branch
       # forge: gitlab                         # neutral hostname only
       warn_on_missing: true                  # false to silence; true + --strict for CI
+      # log_rewrites: summary                # opt-in rewrite stats; false by default
 
 markdown_extensions:
   - admonition
@@ -480,6 +505,7 @@ Use this flow for `pin` and `forge`; adjust the other options as needed:
 - **`enabled: false`** or `SOURCE_LINKS=false` — skip rewriting for local iteration.
 - **`branch:`** — override resolved branch, or hardcode a tag name with `pin: branch`.
 - **`warn_on_missing: false`** — allow missing `../` targets without warnings.
+- **`log_rewrites: summary`** or **`verbose`** — confirm rewriting during setup; keep `false` in CI.
 
 1. **`repo_url` set?** If no → links unchanged. If yes → continue.
 2. **Release build at an exact tag checkout?** If yes → `pin: tag`. If no → continue.

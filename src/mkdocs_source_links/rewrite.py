@@ -76,13 +76,14 @@ def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
 
 
 @dataclass(frozen=True)
-class _RewriteContext:
+class _RewriteContext:  # pylint: disable=too-many-instance-attributes
     page_abs_path: Path
     repo_root: Path
     repo_url: str
     view_ref: ViewRef
     forge: str | None
     report_missing: Callable[[str], None] | None
+    report_rewrite: Callable[[], None] | None
     image_ref_labels: frozenset[str]
 
 
@@ -280,6 +281,8 @@ def _rewrite_link_match(match: re.Match[str], ctx: _RewriteContext) -> str:
     url = _parent_link_forge_url(path_part, fragment, ctx)
     if url is None:
         return match.group(0)
+    if ctx.report_rewrite is not None:
+        ctx.report_rewrite()
     title_suffix = f" {title}" if title else ""
     return f"]({url}{title_suffix})"
 
@@ -298,6 +301,8 @@ def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
     url = _parent_link_forge_url(path_part, fragment, ctx)
     if url is None:
         return None
+    if ctx.report_rewrite is not None:
+        ctx.report_rewrite()
     title_suffix = f" {title}" if title else ""
     return f"[{label}]: {url}{title_suffix}"
 
@@ -321,7 +326,7 @@ def _rewrite_reference_definitions(markdown: str, ctx: _RewriteContext) -> str:
     return "".join(out)
 
 
-def rewrite_repo_parent_links(
+def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     markdown: str,
     *,
     page_abs_path: Path,
@@ -330,6 +335,7 @@ def rewrite_repo_parent_links(
     view_ref: ViewRef,
     forge: str | None = None,
     report_missing: Callable[[str], None] | None = None,
+    report_rewrite: Callable[[], None] | None = None,
 ) -> str:
     """Replace ``](../…)`` and ``[ref]: ../…`` markdown links with git-forge view URLs.
 
@@ -356,6 +362,9 @@ def rewrite_repo_parent_links(
         Optional callback invoked with the link target (as written in the markdown) for each
         ``../`` link that resolves inside ``repo_root`` but points at a path that does not exist
         on disk. Links outside the repo are not reported.
+    report_rewrite : Callable[[], None] | None
+        Optional callback invoked once for each successfully rewritten inline link or reference
+        definition.
 
     Returns
     -------
@@ -381,6 +390,7 @@ def rewrite_repo_parent_links(
         view_ref=view_ref,
         forge=forge,
         report_missing=report_missing,
+        report_rewrite=report_rewrite,
         image_ref_labels=image_ref_labels,
     )
 

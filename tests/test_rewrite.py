@@ -5,6 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from conftest import REPO
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import repo_relative_path, rewrite_repo_parent_links
@@ -104,6 +106,127 @@ def test_report_missing_not_called_outside_repo(repo_tree: Path) -> None:
         report_missing=missing.append,
     )
     assert not missing
+
+
+def test_report_rewrite_called_for_inline_link(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[cfg](../env.example)."
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert len(rewrites) == 1
+
+
+def test_report_rewrite_called_for_reference_definition(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[cfg]: ../env.example\n"
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert len(rewrites) == 1
+
+
+def test_report_rewrite_not_called_for_missing_target(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[gone](../does_not_exist.py)."
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert not rewrites
+
+
+def test_report_rewrite_not_called_outside_repo(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[etc](../../etc/passwd)."
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert not rewrites
+
+
+def test_report_rewrite_not_called_for_inline_image(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "![alt](../img.png)\n"
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert not rewrites
+
+
+def test_report_rewrite_counts_mixed_links(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[a](../env.example) and [b](../src.py)\n\n[c]: ../backend/src/config.py\n"
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert len(rewrites) == 3
+
+
+@pytest.mark.parametrize(
+    ("md", "kwargs"),
+    [
+        ("```markdown\n[env](../env.example)\n```\n", {}),
+        ("Write `[env](../env.example)` to link a repo file.", {}),
+        (
+            "[cfg](../backend/src/config.py).",
+            {"repo_url": "https://example.com/example/example-repo"},
+        ),
+        ("![logo][img]\n\n[img]: ../img.png\n", {}),
+    ],
+    ids=["fenced_code", "inline_code", "unsupported_host", "image_reference_definition"],
+)
+def test_report_rewrite_not_called_for_skipped_links(
+    repo_tree: Path,
+    md: str,
+    kwargs: dict[str, str],
+) -> None:
+    page = repo_tree / "docs" / "page.md"
+    rewrites: list[None] = []
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=kwargs.get("repo_url", REPO),
+        view_ref=ViewRef("main", "branch"),
+        report_rewrite=lambda: rewrites.append(None),
+    )
+    assert not rewrites
 
 
 def test_rewrite_leaves_in_doc_links(repo_tree: Path) -> None:

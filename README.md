@@ -59,6 +59,7 @@ plugins:
       # pin: tag              # exact tag at HEAD (release builds); else resolved branch
       forge: gitlab           # override autodetection for custom domains
       warn_on_missing: false  # silence missing-target warnings
+      log_rewrites: summary   # or verbose for per-page counts; false by default
       enabled: !ENV [SOURCE_LINKS, true]  # disable per environment
 ```
 
