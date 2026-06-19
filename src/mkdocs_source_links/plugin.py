@@ -39,7 +39,8 @@ class SourceLinksPlugin(BasePlugin):
     Notes
     -----
     Requires ``repo_url`` in ``mkdocs.yml``. Pages without a backing file (virtual pages) are left
-    unchanged. The git view ref is resolved once per build in ``on_config``.
+    unchanged. The git view ref is resolved once per build in ``on_config``, which MkDocs always
+    runs before ``on_page_markdown``. ``_view_ref`` holds a placeholder until ``on_config`` runs.
     """
 
     config_scheme: PlainConfigSchema = (
@@ -50,7 +51,7 @@ class SourceLinksPlugin(BasePlugin):
         ("warn_on_missing", config_options.Type(bool, default=True)),
     )
 
-    _view_ref: ViewRef
+    _view_ref: ViewRef = ViewRef("", "branch")
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Resolve the git view ref once per build and cache it.
