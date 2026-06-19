@@ -45,8 +45,23 @@ not support hash-based line anchors; line fragments are omitted for that forge.
 
 Every rewritten `../` link uses the same git ref for the build, from [`pin`](configuration.md#options)
 and [`branch`](configuration.md#options): a branch or tag name when `pin: branch`, the current
-commit SHA when `pin: commit`, or an exact tag at `HEAD` when `pin: tag` (with branch fallback if
-`HEAD` is not tagged). There is no per-link ref override.
+commit SHA when `pin: commit`, or an exact tag at `HEAD` when `pin: tag`. When `pin: commit` or
+`pin: tag` cannot be resolved (git unavailable, not a repository, or `HEAD` not on an exact tag),
+the plugin falls back to the resolved branch and emits a **warning** at build time. There is no
+per-link ref override.
+
+## Branch names from edit_uri
+
+When plugin `branch` and `extra.git_branch` are unset, the branch name is parsed from `edit_uri`
+by taking the **first path segment** after `edit/` or `blob/`. Branch names that contain `/`
+(for example `feature/my-branch` in `edit/feature/my-branch/docs/`) are truncated to the first
+segment only. Set [`branch`](configuration.md#options) or `extra.git_branch` explicitly for
+slash-containing branch names.
+
+## Symlinks
+
+Forge URLs use the **lexical** path written in the markdown (the symlink name), not the symlink
+target path, while still validating that the resolved target exists inside the repository.
 
 To point at a **specific** commit or tag for one link — for example code as it existed in an older
 release — use a full forge blob URL in the markdown. Absolute URLs are left unchanged by the plugin

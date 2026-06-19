@@ -212,3 +212,15 @@ def test_repo_view_url_unknown_host_returns_none() -> None:
 
 def test_supported_forges_contains_expected() -> None:
     assert set(SUPPORTED_FORGES) == {"github", "gitlab", "bitbucket", "gitea", "azure"}
+
+
+def test_repo_view_url_invalid_explicit_forge_raises() -> None:
+    with pytest.raises(ValueError, match="unsupported forge 'unknown'"):
+        repo_view_url(
+            repo_url="https://github.com/o/r",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+            forge="unknown",
+        )

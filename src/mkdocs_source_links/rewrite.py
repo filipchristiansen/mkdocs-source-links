@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import os
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,18 +12,12 @@ from .anchors import translate_line_fragment
 from .ref import ViewRef
 from .urls import detect_forge, repo_view_url
 
-# Single left-to-right scan matching, in order: a fenced code block, an inline code span, an
-# inline image with a ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link.
-# Matching code regions and images first means links inside them are left untouched.
+# Left-to-right scan outside fenced code blocks: an inline code span, an inline image with a
+# ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link. Fenced regions are
+# skipped by a line-based pass that shares fence rules with the reference-definition rewriter.
 _SCAN = re.compile(
     r"""
-    (?P<fence>                                  # fenced code block
-        ^[ \t]*(?P<fence_marker>`{3,}|~{3,})    # opening fence (``` or ~~~, optionally indented)
-        [^\n]*\n                                # info string + newline
-        [\s\S]*?                                # body (lazy, spans lines)
-        ^[ \t]*(?P=fence_marker)[ \t]*$         # closing fence (same marker)
-    )
-    | (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
+    (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
     | (?P<image>!\[[^\]]*\]\(\s*                               # inline image with ../ dest
         (?:
             <(?P<img_path_a>\.\./[^>\#\n]+)(?P<img_frag_a>\#[^>\n]*)?>
@@ -90,7 +85,7 @@ class _RewriteContext:
 
 
 def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
-    """Express an absolute path relative to the repository root.
+    """Express a resolved absolute path relative to the repository root.
 
     Parameters
     ----------
@@ -114,6 +109,10 @@ def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
 def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> str | None:
     """Resolve a ``../`` link from a doc page to a repo-root-relative POSIX path.
 
+    The returned path reflects the link text (lexical path). Symlink targets are not followed
+    when building the forge URL path segment, but ``resolve()`` is still used to verify the
+    target lies inside ``repo_root``.
+
     Parameters
     ----------
     page_abs_path : Path
@@ -131,24 +130,30 @@ def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> st
     """
     if not href.startswith("../"):
         return None
-    target = (page_abs_path.parent / href).resolve()
-    return _repo_relative(target=target, repo_root=repo_root)
+    root = repo_root.resolve()
+    resolved = (page_abs_path.parent / href).resolve()
+    if _repo_relative(target=resolved, repo_root=repo_root) is None:
+        return None
+    rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
+    if rel.startswith(".."):
+        return None
+    return Path(rel).as_posix()
 
 
-def _parent_link_forge_url(
-    path_part: str,
-    fragment: str,
-    ctx: _RewriteContext,
-) -> str | None:
+def _parent_link_forge_url(path_part: str, fragment: str, ctx: _RewriteContext) -> str | None:
     """Build a forge view URL for a ``../`` path, or return ``None`` to leave the link unchanged."""
-    target = (ctx.page_abs_path.parent / path_part).resolve()
-    repo_path = _repo_relative(target=target, repo_root=ctx.repo_root)
+    resolved = (ctx.page_abs_path.parent / path_part).resolve()
+    repo_path = repo_relative_path(
+        page_abs_path=ctx.page_abs_path,
+        href=path_part,
+        repo_root=ctx.repo_root,
+    )
     if repo_path is None:
         return None
 
-    if target.is_dir():
+    if resolved.is_dir():
         is_dir = True
-    elif target.is_file():
+    elif resolved.is_file():
         is_dir = False
     else:
         if ctx.report_missing is not None:
@@ -156,6 +161,8 @@ def _parent_link_forge_url(
         return None
 
     forge_name = ctx.forge or detect_forge(ctx.repo_url)
+    if forge_name is None:
+        return None
     url = repo_view_url(
         repo_url=ctx.repo_url,
         ref=ctx.view_ref.ref,
@@ -164,10 +171,13 @@ def _parent_link_forge_url(
         is_dir=is_dir,
         forge=forge_name,
     )
-    if url is None:
-        return None
-    out_fragment = translate_line_fragment(fragment, forge=forge_name) if forge_name else fragment
+    out_fragment = translate_line_fragment(fragment, forge=forge_name)
     return f"{url}{out_fragment}"
+
+
+def _fence_closes_line(body: str, *, char: str, min_len: int) -> bool:
+    """Return whether ``body`` closes a fence opened with ``char`` repeated ``min_len`` times."""
+    return re.match(rf"^[ \t]*({re.escape(char)}{{{min_len},}})[ \t]*$", body) is not None
 
 
 def _fence_closes_on_same_line(*, marker: str, rest: str) -> bool:
@@ -178,6 +188,90 @@ def _fence_closes_on_same_line(*, marker: str, rest: str) -> bool:
     min_len = len(marker)
     trailing = re.search(rf"({re.escape(char)}{{{min_len},}})\s*$", rest)
     return trailing is not None
+
+
+@dataclass(frozen=True)
+class _FencedLine:
+    raw: str
+    body: str
+    in_fence: bool
+
+    @property
+    def suffix(self) -> str:
+        """Return line-ending characters stripped from :attr:`body`."""
+        return self.raw[len(self.body) :]
+
+
+def _iter_fenced_lines(markdown: str) -> Iterator[_FencedLine]:
+    """Yield each line with whether it lies inside a fenced code block."""
+    in_fence = False
+    fence_char = ""
+    fence_min_len = 0
+
+    for raw_line in markdown.splitlines(keepends=True):
+        body = raw_line.rstrip("\r\n")
+
+        if in_fence:
+            yield _FencedLine(raw_line, body, in_fence=True)
+            if _fence_closes_line(body, char=fence_char, min_len=fence_min_len):
+                in_fence = False
+                fence_char = ""
+                fence_min_len = 0
+            continue
+
+        if open_m := _FENCE_OPEN.match(body):
+            marker = open_m.group("marker")
+            if not _fence_closes_on_same_line(marker=marker, rest=open_m.group("rest")):
+                in_fence = True
+                fence_char = marker[0]
+                fence_min_len = len(marker)
+                yield _FencedLine(raw_line, body, in_fence=True)
+                continue
+
+        yield _FencedLine(raw_line, body, in_fence=False)
+
+
+def _iter_fence_runs(markdown: str) -> Iterator[tuple[str, bool]]:
+    """Yield maximal contiguous markdown runs and whether each run is inside a fence."""
+    run: list[str] = []
+    run_in_fence = False
+    have_run = False
+
+    for line in _iter_fenced_lines(markdown):
+        if have_run and line.in_fence != run_in_fence:
+            yield "".join(run), run_in_fence
+            run.clear()
+        have_run = True
+        run_in_fence = line.in_fence
+        run.append(line.raw)
+
+    if have_run:
+        yield "".join(run), run_in_fence
+
+
+def _rewrite_inline_links(markdown: str, replace: Callable[[re.Match[str]], str]) -> str:
+    """Run ``_SCAN`` only on markdown outside fenced code blocks."""
+    return "".join(
+        text if in_fence else _SCAN.sub(replace, text)
+        for text, in_fence in _iter_fence_runs(markdown)
+    )
+
+
+def _rewrite_link_match(match: re.Match[str], ctx: _RewriteContext) -> str:
+    """Return a rewritten ``](../path)`` match, or the original text if unchanged."""
+    if match.group("image") is not None:
+        return match.group(0)
+    path_part = match.group("path") or match.group("path_a")
+    if path_part is None:
+        # Matched an inline code span: leave it untouched.
+        return match.group(0)
+    fragment = match.group("frag") or match.group("frag_a") or ""
+    title = match.group("title")
+    url = _parent_link_forge_url(path_part, fragment, ctx)
+    if url is None:
+        return match.group(0)
+    title_suffix = f" {title}" if title else ""
+    return f"]({url}{title_suffix})"
 
 
 def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
@@ -201,35 +295,18 @@ def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
 def _rewrite_reference_definitions(markdown: str, ctx: _RewriteContext) -> str:
     """Rewrite ``[label]: ../path`` reference definitions to forge URLs."""
     out: list[str] = []
-    in_fence = False
-    fence_marker = ""
 
-    for raw_line in markdown.splitlines(keepends=True):
-        body = raw_line.rstrip("\r\n")
-        suffix = raw_line[len(body) :]
-
-        if in_fence:
-            if re.match(rf"^[ \t]*{re.escape(fence_marker)}[ \t]*$", body):
-                in_fence = False
-                fence_marker = ""
-            out.append(raw_line)
+    for line in _iter_fenced_lines(markdown):
+        if line.in_fence:
+            out.append(line.raw)
             continue
 
-        open_m = _FENCE_OPEN.match(body)
-        if open_m:
-            marker = open_m.group("marker")
-            if not _fence_closes_on_same_line(marker=marker, rest=open_m.group("rest")):
-                in_fence = True
-                fence_marker = marker
-            out.append(raw_line)
-            continue
-
-        rewritten = _rewrite_ref_def_line(body, ctx)
+        rewritten = _rewrite_ref_def_line(line.body, ctx)
         if rewritten is not None:
-            out.append(f"{rewritten}{suffix}")
+            out.append(f"{rewritten}{line.suffix}")
             continue
 
-        out.append(raw_line)
+        out.append(line.raw)
 
     return "".join(out)
 
@@ -297,20 +374,8 @@ def rewrite_repo_parent_links(
         image_ref_labels=image_ref_labels,
     )
 
-    def repl(match: re.Match[str]) -> str:
-        if match.group("image") is not None:
-            return match.group(0)
-        path_part = match.group("path") or match.group("path_a")
-        if path_part is None:
-            # Matched a fenced code block or inline code span: leave it untouched.
-            return match.group(0)
-        fragment = match.group("frag") or match.group("frag_a") or ""
-        title = match.group("title")
-        url = _parent_link_forge_url(path_part, fragment, ctx)
-        if url is None:
-            return match.group(0)
-        title_suffix = f" {title}" if title else ""
-        return f"]({url}{title_suffix})"
-
-    rewritten = _SCAN.sub(repl, markdown)
+    rewritten = _rewrite_inline_links(
+        markdown,
+        lambda match: _rewrite_link_match(match, ctx),
+    )
     return _rewrite_reference_definitions(rewritten, ctx)

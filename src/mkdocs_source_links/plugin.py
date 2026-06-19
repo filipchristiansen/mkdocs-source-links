@@ -76,11 +76,21 @@ class SourceLinksPlugin(BasePlugin):
         if not self.config.get("enabled", True):
             self._view_ref = ViewRef(branch, "branch")
             return config
-        self._view_ref = resolve_view_ref(
+        if not config.repo_url:
+            self._view_ref = ViewRef(branch, "branch")
+            return config
+        resolved = resolve_view_ref(
             pin=self.config.get("pin", "branch"),
             repo_root=Path(config.config_file_path).parent,
             branch=branch,
         )
+        self._view_ref = resolved.view_ref
+        if resolved.used_fallback:
+            log.warning(
+                "pin %r could not be resolved via git; using branch %r in forge URLs",
+                resolved.requested_pin,
+                resolved.view_ref.ref,
+            )
         return config
 
     def on_page_markdown(

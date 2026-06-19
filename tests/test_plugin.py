@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any, cast
+from unittest.mock import patch
 
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.files import Files
@@ -13,7 +14,7 @@ from mkdocs.structure.pages import Page
 
 from conftest import REPO
 from mkdocs_source_links.plugin import SourceLinksPlugin
-from mkdocs_source_links.ref import ViewRef
+from mkdocs_source_links.ref import ResolvedViewRef, ViewRef
 
 if TYPE_CHECKING:
     import pytest
@@ -162,3 +163,43 @@ def test_warn_on_missing_disabled_is_silent(
 
     assert out == markdown
     assert "does not exist" not in caplog.text
+
+
+def test_on_config_without_repo_url_skips_git_and_sets_branch_ref() -> None:
+    plugin = SourceLinksPlugin()
+    plugin.config = {"pin": "commit"}
+    config = _config(
+        repo_url=None,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="edit/develop/docs/",
+    )
+
+    with patch("mkdocs_source_links.plugin.resolve_view_ref") as resolve_mock:
+        assert plugin.on_config(config) is config
+
+    resolve_mock.assert_not_called()
+    assert plugin._view_ref == ViewRef("develop", "branch")  # pylint: disable=protected-access
+
+
+def test_on_config_warns_when_pin_falls_back_to_branch(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin = SourceLinksPlugin()
+    plugin.config = {"pin": "commit"}
+    config = _config(
+        repo_url=REPO,
+        config_file_path="/repo/mkdocs.yml",
+        edit_uri="edit/main/docs/",
+    )
+    fallback = ResolvedViewRef(
+        ViewRef("main", "branch"), used_fallback=True, requested_pin="commit"
+    )
+
+    with (
+        patch("mkdocs_source_links.plugin.resolve_view_ref", return_value=fallback),
+        caplog.at_level(logging.WARNING),
+    ):
+        plugin.on_config(config)
+
+    assert "could not be resolved via git" in caplog.text
+    assert plugin._view_ref == ViewRef("main", "branch")  # pylint: disable=protected-access

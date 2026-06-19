@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- CommonMark fenced code blocks now close when the closing fence uses **more** markers than the opener (for example ` ``` ` opened, ` ```` ` closed); reference definitions after such blocks are rewritten correctly.
+- Symlink targets: forge URLs use the path written in the markdown (the symlink name), not the resolved target path.
+
+### Changed
+
+- `pin: commit` and `pin: tag` emit a build warning when git lookup fails and the resolved branch is used instead; git is no longer invoked when `repo_url` is unset.
+- `repo_view_url()` raises `ValueError` for an unsupported explicit `forge` name instead of `KeyError`.
+
+### Documentation
+
+- Document slash-containing branch names from `edit_uri`, git pin fallback warnings, and symlink URL behavior in limitations and branch resolution docs.
+
 ## [0.5.1] - 2026-06-19
 
 ### Fixed
