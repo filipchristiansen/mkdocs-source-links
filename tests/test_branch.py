@@ -77,6 +77,17 @@ def test_edit_uri_gitlab_blob_prefix() -> None:
     )
 
 
+def test_edit_uri_unrecognized_falls_back_to_main() -> None:
+    assert (
+        resolve_branch(
+            plugin_branch=None,
+            extra={},
+            edit_uri="custom/path/docs/",
+        )
+        == "main"
+    )
+
+
 def test_fallback_main() -> None:
     assert resolve_branch(plugin_branch=None, extra={}, edit_uri=None) == "main"
 

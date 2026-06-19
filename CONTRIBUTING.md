@@ -2,6 +2,9 @@
 
 Thanks for your interest in improving mkdocs-source-links!
 
+This project follows the [Contributor Covenant Code of Conduct](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/CODE_OF_CONDUCT.md). By
+participating, you agree to uphold it.
+
 ## Development setup
 
 This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-commit.com), and a `Makefile`.
@@ -49,6 +52,9 @@ and for GitHub Actions. Maintainers review and merge after CI passes.
 
 4. Open a pull request targeting `main` with a conventional title (for example `fix: ...`).
    CI runs the same lint and test suite across Python 3.10-3.13.
+
+5. Include `Signed-off-by: Your Name <email@example.com>` in each commit message (see
+   [Developer Certificate of Origin](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/DCO1.1.md)). Use `git commit -s` to add this automatically.
 
 ## Coding standards
 

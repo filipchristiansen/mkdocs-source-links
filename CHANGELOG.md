@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1), `GOVERNANCE.md`, and `ROADMAP.md`.
+- Continuity-of-access plan and 2FA policy in `MAINTAINERS.md`.
+- `DCO1.1.md` and `Signed-off-by` requirement in `CONTRIBUTING.md`.
+- Regression test for unrecognized `edit_uri` branch fallback in `branch.py`.
+
+### Changed
+
+- README links to governance, roadmap, and code of conduct.
+- `MAINTAINERS.md` documents branch protection expectations and private Code of Conduct reporting.
+- `make test` and CI use branch coverage.
+
 ## [0.4.1] - 2026-06-19
 
 ### Added

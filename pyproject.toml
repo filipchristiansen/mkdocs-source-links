@@ -61,6 +61,7 @@ docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.27"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["scripts"]
+addopts = "--cov-branch"
 
 [tool.coverage.run]
 source = ["src", "scripts"]
