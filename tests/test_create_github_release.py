@@ -26,7 +26,7 @@ CHANGELOG = """# Changelog
 [0.6.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.2...v0.6.0
 """
 
-_GH_STUB_SCRIPT = """\
+_GH_STUB_SCRIPT = f"""\
 #!/usr/bin/env bash
 set -euo pipefail
 if [[ "$1" == "release" && "$2" == "view" ]]; then
@@ -35,7 +35,7 @@ fi
 if [[ "$1" == "release" && "$2" == "create" ]]; then
   while [[ $# -gt 0 ]]; do
     if [[ "$1" == "--notes" ]]; then
-      printf '%s' "$2" > release-notes.txt
+      printf '%s' "$2" > {_NOTES_FILE}
       exit 0
     fi
     shift
