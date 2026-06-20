@@ -7,7 +7,7 @@ For vulnerability reporting and supported versions, see
 
 ## Release assets
 
-Each GitHub Release (for example [v0.5.1](https://github.com/filipchristiansen/mkdocs-source-links/releases/tag/v0.5.1))
+Each GitHub Release (for example [v0.6.0](https://github.com/filipchristiansen/mkdocs-source-links/releases/tag/v0.6.0))
 includes:
 
 | Asset | Purpose |
