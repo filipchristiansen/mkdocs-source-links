@@ -9,7 +9,7 @@
 [![CI](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/filipchristiansen/mkdocs-source-links/actions/workflows/ci.yml?query=branch%3Amain)
 [![python](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads)
 
-MkDocs plugin that rewrites `](../path)` links to your git forge during **`on_page_markdown`**. Your
+MkDocs plugin that rewrites `[text](../path)` inline links and `[ref]: ../path` reference definitions to your git forge during **`on_page_markdown`**. Your
 source markdown on disk keeps relative paths, so links stay **clickable in your IDE and on GitHub**
 while the published site points readers at the right blob/tree URL on your forge.
 
@@ -25,7 +25,7 @@ Documentation often lives in `docs/` but links to files outside it (`../pyprojec
 work on GitHub and in editors that resolve repo paths, so you can click through to the real file.
 They break in a built MkDocs site because those files are not part of the rendered docs tree.
 
-This plugin rewrites parent-directory links during **`on_page_markdown`** (markdown stage), leaving
+This plugin rewrites those `[text](../path)` and `[ref]: ../path` links during **`on_page_markdown`** (markdown stage), leaving
 source files unchanged. Forge URLs appear in the built site output.
 
 !!! note "This site dogfoods the plugin"

@@ -95,3 +95,29 @@ def test_rewrite_reference_definition_missing_reports(repo_tree: Path) -> None:
 
 def test_rewrite_reference_definition_non_parent_unchanged(repo_tree: Path) -> None:
     assert rewrite_on_docs_page(repo_tree, "[other]: other.md\n") == "[other]: other.md\n"
+
+
+def test_rewrite_reference_definition_preserves_leading_spaces(repo_tree: Path) -> None:
+    assert (
+        rewrite_on_docs_page(repo_tree, "  [cfg]: ../backend/src/config.py\n")
+        == f"  [cfg]: {REPO}/blob/main/backend/src/config.py\n"
+    )
+
+
+def test_rewrite_reference_definition_preserves_max_indent(repo_tree: Path) -> None:
+    assert (
+        rewrite_on_docs_page(repo_tree, "   [env]: ../env.example\n")
+        == f"   [env]: {REPO}/blob/main/env.example\n"
+    )
+
+
+def test_rewrite_reference_definition_preserves_indent_with_title(repo_tree: Path) -> None:
+    assert (
+        rewrite_on_docs_page(repo_tree, '  [env]: ../env.example "The env file"\n')
+        == f'  [env]: {REPO}/blob/main/env.example "The env file"\n'
+    )
+
+
+def test_rewrite_reference_definition_over_indent_unchanged(repo_tree: Path) -> None:
+    md = "    [cfg]: ../backend/src/config.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md

@@ -1,5 +1,5 @@
 site_name: MkDocs Source Links
-site_description: MkDocs plugin that rewrites ../ markdown links to forge view URLs during on_page_markdown (built site output).
+site_description: "MkDocs plugin that rewrites [text](../path) inline links and [ref]: ../path definitions to forge view URLs during on_page_markdown."
 
 site_url: https://filipchristiansen.github.io/mkdocs-source-links/
 repo_url: https://github.com/filipchristiansen/mkdocs-source-links

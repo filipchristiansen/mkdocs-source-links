@@ -14,7 +14,7 @@
 [![mypy](https://img.shields.io/badge/mypy-checked-039dfc?logo=mypy&logoColor=white)](https://mypy-lang.org)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-MkDocs plugin that rewrites `](../path)` links to your git forge during **`on_page_markdown`** (before HTML is built). Source markdown on disk is unchanged; forge URLs appear in the built site.
+MkDocs plugin that rewrites `[text](../path)` inline links and `[ref]: ../path` reference definitions to your git forge during **`on_page_markdown`** (before HTML is built). Source markdown on disk is unchanged; forge URLs appear in the built site.
 
 - **Files** → `https://…/blob/<ref>/<path>` (GitHub/GitLab; forge-specific paths on Gitea, Bitbucket, Azure)
 - **Directories** → `https://…/tree/<ref>/<path>` where the forge distinguishes files from directories
@@ -69,8 +69,8 @@ for all options.
 
 ## Link conventions and branch resolution
 
-Parent-directory links (`../path`) to repo files and directories are rewritten to forge blob/tree
-URLs; links between pages inside `docs/` are unchanged. Branch names are resolved from plugin
+Complete inline `[text](../path)` links and `[ref]: ../path` definitions targeting repo files and directories are rewritten to forge blob/tree
+URLs; links between pages inside `docs/` are unchanged. Lonely `](../path)` suffixes in prose are not matched. Branch names are resolved from plugin
 config, `extra.git_branch`, or `edit_uri`.
 
 See [Usage](https://filipchristiansen.github.io/mkdocs-source-links/usage/) and

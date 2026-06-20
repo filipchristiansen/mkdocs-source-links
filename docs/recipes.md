@@ -7,7 +7,7 @@ worked `mkdocs.yml` examples, and fixed behavior. For the compact options table 
 
 ## Prerequisites
 
-The plugin rewrites `](../path)` links during `mkdocs build` using three layers of MkDocs configuration
+The plugin rewrites `[text](../path)` inline links and `[ref]: ../path` reference definitions during `mkdocs build` using three layers of MkDocs configuration
 plus its own options.
 
 ### MkDocs settings
@@ -68,7 +68,7 @@ Use `mkdocs build -f path/to/mkdocs.yml` when the config is not in the current d
 
 | Pattern | Example | Why |
 | ------- | ------- | --- |
-| No `../` prefix | `[x](src/foo.py)`, `[x](./foo.py)` | Only parent-directory links match |
+| No `../` prefix | `[x](src/foo.py)`, `[x](./foo.py)` | Only complete inline and reference links with `../` targets match |
 | HTML link | `<a href="../foo">` | Markdown-only rewrite |
 | Absolute / hard-coded blob URL | `https://github.com/.../blob/old/src/foo.py` | Pass through — use for one-off historical refs |
 | Missing on-disk target | `[x](../not-there.py)` | Not rewritten; warning by default |
@@ -457,7 +457,7 @@ Summary of behavior that does not change with configuration. Details in [Limitat
 | Topic | Behavior |
 | ----- | -------- |
 | Rewrite stage | `on_page_markdown` — markdown only, not HTML (`on_page_content` is not used). |
-| Code blocks | Fenced blocks (`` ``` `` or `~~~`) and inline code spans are skipped; **indented** (4-space) code blocks are not — use fences for literal examples. |
+| Code blocks | Fenced blocks (`` ``` `` or `~~~`) and inline code spans are skipped. Indented (4-space) blocks are not — complete inline parent-directory links there still rewrite; lonely link suffixes in prose do not match. Use fences for literal examples. |
 | Virtual pages | Pages without a backing markdown file are unchanged. |
 | Line anchors | `#L10`, `#L10-L20` translated per forge; Azure DevOps omits line fragments. |
 | Targets | Only existing files/directories under the plugin root at build time; directory targets treat trailing slash as optional. |

@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Image reference label collection ignores fenced code blocks, so examples in fences no longer suppress real `[ref]: ../path` definitions.
 - Full image references (`![alt][ref]`) no longer register a false shortcut label that skipped unrelated link definitions sharing the alt text.
 - Repo-internal paths whose names start with `..` (for example `../..weird/file.txt`) are rewritten correctly instead of being rejected.
+- Lonely `](../path)` suffixes in prose are no longer rewritten when they are not part of a complete inline link.
+- Inline images with nested or escaped `]` characters in alt text are no longer rewritten.
+- Indented reference definitions (`[ref]: ../path`, up to three spaces) keep their leading whitespace when rewritten.
 
 ## [0.6.0] - 2026-06-20
 

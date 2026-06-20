@@ -20,7 +20,7 @@ mitigation will be released in a new version.
 
 ## Security assessment
 
-mkdocs-source-links is a **build-time MkDocs plugin**. It rewrites markdown links in documentation
+mkdocs-source-links is a **build-time MkDocs plugin**. It rewrites complete inline `[text](../path)` links and `[ref]: ../path` reference definitions in documentation
 pages during `mkdocs build`; it does not serve HTTP, store secrets, or make network requests at
 runtime.
 

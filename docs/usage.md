@@ -20,8 +20,8 @@ For do/don't patterns, monorepo `../` depth, and shared root files, see
 
 --8<-- "docs/snippets/link_conventions_table.md"
 
-Only `](../...)` links whose target resolves to an existing file or directory inside the repository
-are rewritten. URL fragments (`#anchor`) are preserved.
+Only complete inline `[text](../…)` links and `[ref]: ../…` definitions whose target resolves to an existing file or directory inside the repository
+are rewritten. URL fragments (`#anchor`) are preserved. Lonely `](../…)` suffixes in prose are not matched.
 
 ## What it does not touch
 
