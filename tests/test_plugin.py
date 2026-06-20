@@ -503,3 +503,97 @@ def test_log_rewrites_counters_reset_on_config(
         plugin.on_post_build(config=config)
 
     assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+
+
+def test_unknown_forge_warns_once_per_build(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    page_path = docs / "page.md"
+    page_path.write_text("# Page\n")
+    (tmp_path / "README.md").write_text("# Readme\n")
+    (tmp_path / "src.py").write_text("x\n")
+    mkdocs_yml = tmp_path / "mkdocs.yml"
+    mkdocs_yml.write_text("site_name: test\n")
+
+    plugin = SourceLinksPlugin()
+    plugin.config = {}
+    page = _page(str(page_path), src_path="page.md")
+    unknown = "https://example.com/org/repo"
+    config = _config(
+        repo_url=unknown,
+        config_file_path=str(mkdocs_yml),
+        edit_uri="edit/main/docs/",
+    )
+    files = cast(Files, SimpleNamespace())
+    markdown = "[readme](../README.md) and [src](../src.py)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.WARNING):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "Could not detect git forge" in warnings[0].message
+
+
+def test_unknown_forge_silent_with_explicit_forge_override(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    page_path = docs / "page.md"
+    page_path.write_text("# Page\n")
+    (tmp_path / "README.md").write_text("# Readme\n")
+    mkdocs_yml = tmp_path / "mkdocs.yml"
+    mkdocs_yml.write_text("site_name: test\n")
+
+    plugin = SourceLinksPlugin()
+    plugin.config = {"forge": "gitlab"}
+    page = _page(str(page_path), src_path="page.md")
+    config = _config(
+        repo_url="https://example.com/org/repo",
+        config_file_path=str(mkdocs_yml),
+        edit_uri="edit/main/docs/",
+    )
+    files = cast(Files, SimpleNamespace())
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.WARNING):
+        plugin.on_page_markdown("[readme](../README.md).", page=page, config=config, files=files)
+
+    assert "Could not detect git forge" not in caplog.text
+
+
+def test_log_rewrites_verbose_logs_skipped_shared_image_ref_label(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    page_path = docs / "page.md"
+    page_path.write_text("# Page\n")
+    (tmp_path / "img.png").write_bytes(b"\x89PNG\r\n")
+    mkdocs_yml = tmp_path / "mkdocs.yml"
+    mkdocs_yml.write_text("site_name: test\n")
+
+    plugin = SourceLinksPlugin()
+    plugin.config = {"log_rewrites": "verbose"}
+    page = _page(str(page_path), src_path="page.md")
+    config = _config(
+        repo_url=REPO,
+        config_file_path=str(mkdocs_yml),
+        edit_uri="edit/main/docs/",
+    )
+    files = cast(Files, SimpleNamespace())
+    markdown = "[docs][ref]\n![docs]\n\n[docs]: ../img.png\n"
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.INFO):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    assert "page.md: skipped [docs] reference definition (image reference label)" in caplog.text

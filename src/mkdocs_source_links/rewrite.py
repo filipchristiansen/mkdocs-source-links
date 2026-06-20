@@ -81,9 +81,11 @@ class _RewriteContext:  # pylint: disable=too-many-instance-attributes
     repo_root: Path
     repo_url: str
     view_ref: ViewRef
-    forge: str | None
+    resolved_forge: str | None
     report_missing: Callable[[str], None] | None
     report_rewrite: Callable[[], None] | None
+    report_unknown_forge: Callable[[], None] | None
+    report_skipped_shared_label: Callable[[str], None] | None
     image_ref_labels: frozenset[str]
 
 
@@ -174,8 +176,10 @@ def _parent_link_forge_url(path_part: str, fragment: str, ctx: _RewriteContext) 
             ctx.report_missing(path_part)
         return None
 
-    forge_name = ctx.forge or detect_forge(ctx.repo_url)
+    forge_name = ctx.resolved_forge
     if forge_name is None:
+        if ctx.report_unknown_forge is not None:
+            ctx.report_unknown_forge()
         return None
     url = repo_view_url(
         repo_url=ctx.repo_url,
@@ -367,6 +371,8 @@ def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
         return None
     label = ref_m.group("label")
     if _normalize_ref_label(label) in ctx.image_ref_labels:
+        if ctx.report_skipped_shared_label is not None:
+            ctx.report_skipped_shared_label(label)
         return None
     path_part = ref_m.group("path") or ref_m.group("path_a")
     fragment = ref_m.group("frag") or ref_m.group("frag_a") or ""
@@ -410,6 +416,8 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     forge: str | None = None,
     report_missing: Callable[[str], None] | None = None,
     report_rewrite: Callable[[], None] | None = None,
+    report_unknown_forge: Callable[[], None] | None = None,
+    report_skipped_shared_label: Callable[[str], None] | None = None,
 ) -> str:
     """Replace complete inline ``[text](../…)`` links and ``[ref]: ../…`` definitions with
     forge URLs.
@@ -442,6 +450,12 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     report_rewrite : Callable[[], None] | None
         Optional callback invoked once for each successfully rewritten inline link or reference
         definition.
+    report_unknown_forge : Callable[[], None] | None
+        Optional callback invoked when a ``../`` link would be rewritten but the git forge could
+        not be determined from ``repo_url`` and no explicit ``forge`` was set.
+    report_skipped_shared_label : Callable[[str], None] | None
+        Optional callback invoked when a ``[label]: ../path`` definition is skipped because
+        ``label`` is also used by an image reference on the page.
 
     Returns
     -------
@@ -466,9 +480,11 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
         repo_root=repo_root,
         repo_url=repo_url,
         view_ref=view_ref,
-        forge=forge,
+        resolved_forge=forge or detect_forge(repo_url),
         report_missing=report_missing,
         report_rewrite=report_rewrite,
+        report_unknown_forge=report_unknown_forge,
+        report_skipped_shared_label=report_skipped_shared_label,
         image_ref_labels=image_ref_labels,
     )
 

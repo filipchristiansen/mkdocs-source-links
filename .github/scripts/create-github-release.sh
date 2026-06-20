@@ -45,6 +45,20 @@ if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
   exit 1
 fi
 
+COMPARE_LINK=$(
+  awk -v ver="$VERSION" '
+    $0 ~ "^\\[" ver "\\]: " { print $NF; exit }
+  ' "$CHANGELOG"
+)
+if [ -z "$COMPARE_LINK" ]; then
+  echo "::error::No compare link found for ${VERSION} in CHANGELOG.md."
+  exit 1
+fi
+
+NOTES="${NOTES}
+
+**Full changelog:** ${COMPARE_LINK}"
+
 gh release create "$TAG" \
   "$PROVENANCE" \
   sbom/*.cdx.json \
