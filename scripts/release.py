@@ -336,7 +336,7 @@ def main() -> None:
     prep = sub.add_parser("prep", help="bump, roll changelog, open release PR")
     prep.add_argument("version", type=_parse_version)
 
-    tag = sub.add_parser("tag", help="signed tag + GitHub release for merged version")
+    tag = sub.add_parser("tag", help="signed tag; publish workflow creates GitHub release")
     tag.add_argument("version", type=_parse_version)
 
     args = parser.parse_args()

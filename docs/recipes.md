@@ -250,7 +250,7 @@ full forge blob URL for one-off historical links. See
 ### Example CI pattern (release from tag)
 
 ```yaml
-# .github/workflows/docs.yml (illustrative)
+# .github/workflows/docs.yml (illustrative — adapt checkout and Python setup to your CI)
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -258,8 +258,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}  # tag ref for release workflow
-      - run: pip install mkdocs mkdocs-material mkdocs-source-links
-      - run: mkdocs build --strict
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync
+      - run: uv run mkdocs build --strict
 ```
 
 With `pin: tag` in `mkdocs.yml`, published links point at `vX.Y.Z` on the forge.

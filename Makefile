@@ -18,8 +18,8 @@ help:
 	@echo "  ci             Pre-PR checks (lint, audit, test, coverage, docs)"
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
-	@echo "  release-tag    Signed tag + GitHub release after merge  (VERSION=X.Y.Z)"
-	@echo "  verify-tag     Preflight: verify signed tag on GitHub   (TAG=vX.Y.Z)"
+	@echo "  release-tag    Signed tag; publish workflow creates GitHub release  (VERSION=X.Y.Z)"
+	@echo "  verify-tag     Verify signed tag on GitHub                          (TAG=vX.Y.Z)"
 
 install:
 	uv python install 3.10
