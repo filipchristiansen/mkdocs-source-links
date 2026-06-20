@@ -5,8 +5,8 @@ Known limitations of the current release. Several are tracked on the
 
 ## Link syntax
 
-Inline links are matched, including titled links (`](../x "title")`) and angle-bracket
-destinations (`](<../x>)`, which may contain spaces); the title and fragment are preserved, and
+Complete inline `[text](../path)` links are matched, including titled links (`[text](../x "title")`) and angle-bracket
+destinations (`[text](<../x>)`, which may contain spaces); the title and fragment are preserved, and
 spaces are percent-encoded in the resulting URL. Reference-style definitions (`[ref]: ../path`,
 optional title) are rewritten the same way; usages such as `[text][ref]` pick up the forge URL
 when the markdown processor resolves the reference.
@@ -14,22 +14,23 @@ when the markdown processor resolves the reference.
 Reference definitions must fit on a **single line**. Multi-line definitions (for example a title
 wrapped to the next line) are not matched and are left unchanged.
 
-Rewriting is text-level (a regex over the page markdown), but fenced code blocks (backtick or
+Rewriting is text-level over the page markdown, but fenced code blocks (backtick or
 tilde fences) and inline code spans are detected and skipped, so a literal `](../path)` or
 `[ref]: ../path` shown as an example is left unchanged.
 
-**Indented code blocks** (four-space or tab-indented paragraphs) are **not** skipped. A literal
-`](../path)` inside an indented block **will be rewritten**. Use fenced code blocks for examples
-that must stay literal.
+**Indented code blocks** (four-space or tab-indented paragraphs) are **not** skipped. A complete
+inline `[text](../path)` link inside an indented block **will be rewritten**; lonely `](../path)`
+suffixes in prose are not matched. Use fenced code blocks for examples that must stay literal.
 
 Raw HTML links (`<a href="../...">`) are not rewritten; only markdown inline and reference-style
 `../` links are.
 
-**Images** are intentionally not rewritten. Inline images (`![alt](../path)`) and image reference
-definitions (`![alt][ref]` with `[ref]: ../path`) are left unchanged because forge blob/tree URLs
-are HTML pages, not raw image assets — rewriting them would break `<img>` rendering in the built
-site. If a reference label is used by both a normal link and an image, the definition is skipped
-so the image keeps working (the normal link usage is left unrevised).
+**Images** are intentionally not rewritten. Inline images (`![alt](../path)`), including alt text
+with nested or escaped `]` characters, and image reference definitions (`![alt][ref]` with
+`[ref]: ../path`) are left unchanged because forge blob/tree URLs are HTML pages, not raw image
+assets — rewriting them would break `<img>` rendering in the built site. If a reference label is
+used by both a normal link and an image, the definition is skipped so the image keeps working (the
+normal link usage is left unrevised).
 
 MkDocs **virtual pages** (generated content with no markdown file on disk) are left unchanged —
 the plugin needs `page.file.abs_src_path` to resolve `../` paths from the page location.
@@ -91,7 +92,7 @@ and work in the built site as written.
 
 ## Existing targets only
 
-A `../` link is only rewritten when its target resolves to a file or directory that **exists in
+A complete inline `[text](../path)` link or `[ref]: ../path` definition is only rewritten when its target resolves to a file or directory that **exists in
 the working tree at build time** inside the repository. The plugin does not run `git` to check
 whether a path existed at the commit, tag, or branch embedded in the forge URL;
 [`pin: commit`](configuration.md#options) and [`pin: tag`](configuration.md#options) only set that

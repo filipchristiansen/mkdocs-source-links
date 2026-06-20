@@ -1,4 +1,4 @@
-"""Rewrite ../ markdown links to forge view URLs."""
+"""Rewrite [text](../path) inline links and [ref]: ../path definitions to forge view URLs."""
 
 from __future__ import annotations
 
@@ -12,36 +12,29 @@ from .anchors import translate_line_fragment
 from .ref import ViewRef
 from .urls import detect_forge, repo_view_url
 
-# Left-to-right scan on markdown outside fenced code blocks: an inline code span, an inline image
-# with a ``../`` destination, or a ``](../path)`` / ``](../path#fragment)`` link. Fenced regions
-# are skipped via :func:`_iter_fence_runs`; a regex scan (not line-based rewriting) is required
-# here because inline links, images, and backtick spans can share a line. Reference definitions use
-# a line pass instead because each ``[label]: ../path`` occupies its own line.
-_SCAN = re.compile(
+# Left-to-right scan on markdown outside fenced code blocks: inline code spans are skipped,
+# then complete ``[text](../path)`` links are parsed with bracket-aware scanning (nested and
+# escaped ``]`` in labels). Inline images (``![alt](../path)``) are left unchanged. Fenced
+# regions are skipped via :func:`_iter_fence_runs`. Reference definitions use a line pass.
+_INLINE_CODE = re.compile(r"(?P<backticks>`+)[\s\S]*?(?P=backticks)")
+
+_INLINE_DEST = re.compile(
     r"""
-    (?P<inline>(?P<backticks>`+)[\s\S]*?(?P=backticks))      # inline code span
-    | (?P<image>!\[[^\]]*\]\(\s*                               # inline image with ../ dest
-        (?:
-            <(?P<img_path_a>\.\./[^>\#\n]+)(?P<img_frag_a>\#[^>\n]*)?>
-          | (?P<img_path>\.\./[^)\s\#]+)(?P<img_frag>\#[^)\s]*)?
-        )
-        (?:\s+(?P<img_title>"[^"]*"|'[^']*'|\([^)]*\)))?
-      \s*\))
-    | \]\(\s*                                                  # the link: ](
-        (?:
-            <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?> # angle-bracket dest (allows spaces)
-          | (?P<path>\.\./[^)\s\#]+)(?P<frag>\#[^)\s]*)?       # bare destination
-        )
-        (?:\s+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?           # optional title
-      \s*\)
+    \(\s*
+    (?:
+        <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?>
+      | (?P<path>\.\./[^)\s\#]+)(?P<frag>\#[^)\s]*)?
+    )
+    (?:\s+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?
+    \s*\)
     """,
-    re.MULTILINE | re.VERBOSE,
+    re.VERBOSE,
 )
 
 # Reference-style link definitions: ``[label]: ../path`` (up to 3 spaces indent, optional title).
 _REF_DEF = re.compile(
     r"""
-    ^[ \t]{0,3}
+    ^(?P<indent>[ \t]{0,3})
     \[(?P<label>[^\]]+)\]:[ \t]+
     (?:
         <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?>
@@ -270,31 +263,101 @@ def _iter_fence_runs(markdown: str) -> Iterator[tuple[str, bool]]:
         yield "".join(run), run_in_fence
 
 
-def _rewrite_inline_links(markdown: str, replace: Callable[[re.Match[str]], str]) -> str:
-    """Run ``_SCAN`` only on markdown outside fenced code blocks."""
-    return "".join(
-        text if in_fence else _SCAN.sub(replace, text)
-        for text, in_fence in _iter_fence_runs(markdown)
-    )
+def _read_balanced_brackets(text: str, start: int) -> tuple[str, int] | None:
+    """Return bracketed text and the index after ``]`` when ``text[start - 1]`` is ``[``."""
+    depth = 1
+    index = start
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 2
+            continue
+        if char == "[":
+            depth += 1
+        elif char == "]":
+            depth -= 1
+            if depth == 0:
+                return text[start:index], index + 1
+        index += 1
+    return None
 
 
-def _rewrite_link_match(match: re.Match[str], ctx: _RewriteContext) -> str:
-    """Return a rewritten ``](../path)`` match, or the original text if unchanged."""
-    if match.group("image") is not None:
-        return match.group(0)
-    path_part = match.group("path") or match.group("path_a")
-    if path_part is None:
-        # Matched an inline code span: leave it untouched.
-        return match.group(0)
-    fragment = match.group("frag") or match.group("frag_a") or ""
-    title = match.group("title")
+def _rewritten_inline_dest(dest_match: re.Match[str], ctx: _RewriteContext) -> str | None:
+    """Return a rewritten ``(../path)`` destination for a parsed inline link, or ``None``."""
+    path_part = dest_match.group("path") or dest_match.group("path_a")
+    fragment = dest_match.group("frag") or dest_match.group("frag_a") or ""
+    title = dest_match.group("title")
     url = _parent_link_forge_url(path_part, fragment, ctx)
     if url is None:
-        return match.group(0)
+        return None
     if ctx.report_rewrite is not None:
         ctx.report_rewrite()
     title_suffix = f" {title}" if title else ""
-    return f"]({url}{title_suffix})"
+    return f"({url}{title_suffix})"
+
+
+def _rewrite_inline_links_text(text: str, ctx: _RewriteContext) -> str:
+    """Rewrite complete inline ``[text](../path)`` links in ``text``."""
+    out: list[str] = []
+    index = 0
+    while index < len(text):
+        code_match = _INLINE_CODE.match(text, index)
+        if code_match is not None:
+            out.append(code_match.group(0))
+            index = code_match.end()
+            continue
+
+        is_image = text.startswith("![", index)
+        if is_image:
+            bracket_start = index + 2
+        elif index < len(text) and text[index] == "[":
+            bracket_start = index + 1
+        else:
+            out.append(text[index])
+            index += 1
+            continue
+
+        parsed = _read_balanced_brackets(text, bracket_start)
+        if parsed is None:
+            out.append(text[index])
+            index += 1
+            continue
+        _label, after_bracket = parsed
+
+        if after_bracket >= len(text) or text[after_bracket] != "(":
+            out.append(text[index:after_bracket])
+            index = after_bracket
+            continue
+
+        dest_match = _INLINE_DEST.match(text, after_bracket)
+        if dest_match is None:
+            out.append(text[index : after_bracket + 1])
+            index = after_bracket + 1
+            continue
+
+        link_end = dest_match.end()
+        if is_image:
+            out.append(text[index:link_end])
+            index = link_end
+            continue
+
+        prefix = text[index:after_bracket]
+        rewritten_suffix = _rewritten_inline_dest(dest_match, ctx)
+        if rewritten_suffix is None:
+            out.append(text[index:link_end])
+        else:
+            out.append(prefix + rewritten_suffix)
+        index = link_end
+
+    return "".join(out)
+
+
+def _rewrite_inline_links(markdown: str, ctx: _RewriteContext) -> str:
+    """Rewrite inline links only on markdown outside fenced code blocks."""
+    return "".join(
+        text if in_fence else _rewrite_inline_links_text(text, ctx)
+        for text, in_fence in _iter_fence_runs(markdown)
+    )
 
 
 def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
@@ -314,7 +377,8 @@ def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
     if ctx.report_rewrite is not None:
         ctx.report_rewrite()
     title_suffix = f" {title}" if title else ""
-    return f"[{label}]: {url}{title_suffix}"
+    indent = ref_m.group("indent")
+    return f"{indent}[{label}]: {url}{title_suffix}"
 
 
 def _rewrite_reference_definitions(markdown: str, ctx: _RewriteContext) -> str:
@@ -347,10 +411,13 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     report_missing: Callable[[str], None] | None = None,
     report_rewrite: Callable[[], None] | None = None,
 ) -> str:
-    """Replace ``](../…)`` and ``[ref]: ../…`` markdown links with git-forge view URLs.
+    """Replace complete inline ``[text](../…)`` links and ``[ref]: ../…`` definitions with
+    forge URLs.
 
-    Only links whose target resolves to an existing file or directory inside ``repo_root`` are
-    rewritten. Unsupported hosts, paths outside the repo, and missing targets are left unchanged.
+    Inline rewrites require a bracket-balanced ``[label](../path)`` pair; lonely ``](../path)``
+    suffixes in prose are left unchanged. Only links whose target resolves to an existing file or
+    directory inside ``repo_root`` are rewritten. Unsupported hosts, paths outside the repo, and
+    missing targets are left unchanged.
 
     Parameters
     ----------
@@ -379,15 +446,16 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     Returns
     -------
     str
-        Markdown with matching parent-directory links rewritten to forge URLs.
+        Markdown with matching inline and reference links rewritten to forge URLs.
 
     Notes
     -----
     Directory targets use ``tree`` URLs; file targets use ``blob`` URLs (on forges that
     distinguish them). URL fragments (``#anchor``) and link titles are preserved, and
-    angle-bracket destinations (``](<../x>)``) are supported. Inline images (``![alt](../path)``)
-    and image reference definitions are left unchanged because forge blob URLs are HTML pages, not
-    raw image assets. Links inside fenced code blocks and inline code spans are left unchanged.
+    angle-bracket destinations (``[text](<../x>)``) are supported. Inline images
+    (``![alt](../path)``), including alt text with nested or escaped ``]`` characters, and image
+    reference definitions are left unchanged because forge blob URLs are HTML pages, not raw image
+    assets. Links inside fenced code blocks and inline code spans are left unchanged.
     Reference-style definitions (``[ref]: ../path``) are rewritten when not inside a fenced code
     block and not used as an image reference label.
     """
@@ -404,8 +472,5 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
         image_ref_labels=image_ref_labels,
     )
 
-    rewritten = _rewrite_inline_links(
-        markdown,
-        lambda match: _rewrite_link_match(match, ctx),
-    )
+    rewritten = _rewrite_inline_links(markdown, ctx)
     return _rewrite_reference_definitions(rewritten, ctx)

@@ -401,7 +401,7 @@ def test_rewrite_real_link_with_adjacent_code(repo_tree: Path) -> None:
         repo_url=REPO,
         view_ref=ViewRef("main", "branch"),
     )
-    # The inline span and the fenced block are untouched; only the real link is rewritten.
+    # Inline code and fenced blocks stay literal; lonely `](../x)` in prose is not matched.
     assert "`](../x)`" in out
     assert "```\n[env](../env.example)\n```" in out
     assert f"[env]({REPO}/blob/main/env.example)" in out

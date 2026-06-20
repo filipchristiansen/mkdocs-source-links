@@ -26,11 +26,12 @@ def _plural(count: int, noun: str) -> str:
 
 
 class SourceLinksPlugin(BasePlugin):
-    """MkDocs plugin that rewrites parent-directory markdown links to forge URLs.
+    """MkDocs plugin that rewrites parent-directory inline and reference markdown links to
+    forge URLs.
 
-    During ``mkdocs build``, ``](../path)`` inline links and ``[ref]: ../path`` reference
-    definitions in each page's markdown are replaced with git-forge blob/tree/view URLs. Source
-    files on disk are not modified.
+    During ``mkdocs build``, complete inline ``[text](../path)`` links and ``[ref]: ../path``
+    reference definitions in each page's markdown are replaced with git-forge blob/tree/view URLs.
+    Source files on disk are not modified.
 
     Attributes
     ----------
@@ -119,7 +120,7 @@ class SourceLinksPlugin(BasePlugin):
         config: MkDocsConfig,
         files: Files,
     ) -> str:
-        """Rewrite ``](../…)`` and ``[ref]: ../…`` links in page markdown to forge view URLs.
+        """Rewrite inline ``[text](../…)`` links and ``[ref]: ../…`` definitions to forge URLs.
 
         Parameters
         ----------
@@ -136,8 +137,9 @@ class SourceLinksPlugin(BasePlugin):
         Returns
         -------
         str
-            Markdown with parent-directory links rewritten, or the original ``markdown`` when the
-            plugin is disabled, ``repo_url`` is missing, or the page has no backing file.
+            Markdown with matching inline and reference links rewritten, or the original
+            ``markdown`` when the plugin is disabled, ``repo_url`` is missing, or the page has no
+            backing file.
         """
         _ = files
         if not self.config.get("enabled", True):
