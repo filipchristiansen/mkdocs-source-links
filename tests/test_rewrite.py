@@ -62,6 +62,36 @@ def test_repo_relative_path_relpath_outside_repo(repo_tree: Path) -> None:
         )
 
 
+def test_repo_relative_path_filename_starting_with_dot_dot(repo_tree: Path) -> None:
+    weird = repo_tree / "..weird"
+    weird.mkdir()
+    (weird / "file.txt").write_text("x\n")
+    page = repo_tree / "docs" / "page.md"
+    assert (
+        repo_relative_path(
+            page_abs_path=page,
+            href="../..weird/file.txt",
+            repo_root=repo_tree,
+        )
+        == "..weird/file.txt"
+    )
+
+
+def test_rewrite_link_to_filename_starting_with_dot_dot(repo_tree: Path) -> None:
+    weird = repo_tree / "..weird"
+    weird.mkdir()
+    (weird / "file.txt").write_text("x\n")
+    md = "[f](../..weird/file.txt)\n"
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=repo_tree / "docs" / "page.md",
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert f"]({REPO}/blob/main/..weird/file.txt)" in out
+
+
 def test_rewrite_outside_repo_unchanged(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "[etc](../../etc/passwd)."

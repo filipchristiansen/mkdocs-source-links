@@ -72,6 +72,13 @@ def test_rewrite_reference_definition_skips_fenced_code_block(repo_tree: Path) -
     assert rewrite_on_docs_page(repo_tree, md) == md
 
 
+def test_fenced_image_ref_does_not_suppress_link_reference_definition(repo_tree: Path) -> None:
+    md = "```\n![x][cfg]\n```\n\n[cfg]: ../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == (
+        f"```\n![x][cfg]\n```\n\n[cfg]: {REPO}/blob/main/src.py\n"
+    )
+
+
 def test_rewrite_reference_definition_after_single_line_fence(repo_tree: Path) -> None:
     md = "```f()```\n\n[cfg]: ../backend/src/config.py\n"
     assert rewrite_on_docs_page(repo_tree, md) == (
