@@ -6,10 +6,14 @@ import os
 import shutil
 import stat
 import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 SCRIPT = Path(".github/scripts/create-github-release.sh")
 _BASH = shutil.which("bash") or "/bin/bash"
+_NOTES_FILE = "release-notes.txt"
 
 CHANGELOG = """# Changelog
 
@@ -31,7 +35,7 @@ fi
 if [[ "$1" == "release" && "$2" == "create" ]]; then
   while [[ $# -gt 0 ]]; do
     if [[ "$1" == "--notes" ]]; then
-      printf '%s' "$2" > {notes_path}
+      printf '%s' "$2" > release-notes.txt
       exit 0
     fi
     shift
@@ -41,7 +45,14 @@ exit 1
 """
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="create-github-release.sh runs on Linux Publish workflow only",
+)
 def test_create_github_release_appends_compare_link(tmp_path: Path) -> None:
+    if shutil.which("bash") is None:
+        pytest.skip("bash not available")
+
     changelog_path = tmp_path / "CHANGELOG.md"
     changelog_path.write_text(CHANGELOG)
     provenance = tmp_path / "mkdocs-source-links.intoto.jsonl"
@@ -54,9 +65,9 @@ def test_create_github_release_appends_compare_link(tmp_path: Path) -> None:
     sbom.mkdir()
     (sbom / "mkdocs-source-links-0.6.0.cdx.json").write_text("{}")
 
-    notes_path = tmp_path / "release-notes.txt"
+    notes_path = tmp_path / _NOTES_FILE
     gh_stub = tmp_path / "gh"
-    gh_stub.write_text(_GH_STUB_SCRIPT.format(notes_path=notes_path))
+    gh_stub.write_text(_GH_STUB_SCRIPT)
     gh_stub.chmod(gh_stub.stat().st_mode | stat.S_IXUSR)
 
     env = os.environ.copy()
