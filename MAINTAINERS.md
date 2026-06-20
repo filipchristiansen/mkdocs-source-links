@@ -89,6 +89,7 @@ Maintainers configure `main` with:
 - Required signed commits
 - Required status checks (lint, test, audit, docs)
 - At least one approving pull request review
+- Code owner review (see [`.github/CODEOWNERS`](../.github/CODEOWNERS))
 - **Require approval from someone other than the author** when a co-maintainer is listed
 
 See [Contributing](https://filipchristiansen.github.io/mkdocs-source-links/contributing/) and [Governance](https://filipchristiansen.github.io/mkdocs-source-links/governance/).
