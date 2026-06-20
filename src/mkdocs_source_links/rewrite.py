@@ -126,11 +126,13 @@ def _resolve_parent_href(
     resolved = (page_abs_path.parent / href).resolve()
     if _repo_relative(target=resolved, repo_root=repo_root) is None:
         return None
-    rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
-    rel_parts = Path(rel).parts
-    if rel_parts and rel_parts[0] == os.pardir:
-        return None
-    return Path(rel).as_posix(), resolved
+    repo_rel = Path(
+        os.path.relpath(
+            os.path.normpath(str(page_abs_path.parent / href)),
+            str(root),
+        )
+    ).as_posix()
+    return repo_rel, resolved
 
 
 def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> str | None:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -47,19 +46,6 @@ def test_repo_relative_path_outside_repo(repo_tree: Path) -> None:
 def test_repo_relative_path_non_parent_href(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     assert repo_relative_path(page_abs_path=page, href="other.md", repo_root=repo_tree) is None
-
-
-def test_repo_relative_path_relpath_outside_repo(repo_tree: Path) -> None:
-    page = repo_tree / "docs" / "page.md"
-    with patch("mkdocs_source_links.rewrite.os.path.relpath", return_value="../outside"):
-        assert (
-            repo_relative_path(
-                page_abs_path=page,
-                href="../backend/src/config.py",
-                repo_root=repo_tree,
-            )
-            is None
-        )
 
 
 def test_repo_relative_path_filename_starting_with_dot_dot(repo_tree: Path) -> None:
