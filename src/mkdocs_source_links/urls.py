@@ -30,26 +30,26 @@ def _normalize_repo_base(repo_url: str) -> str:
     return base
 
 
-def _quoted_repo_path(repo_path: str) -> str:
-    """Percent-encode a repo-root-relative path for URL path segments."""
-    return quote(repo_path, safe="/")
+def _quote_part(part: str) -> str:
+    """Percent-encode a URL path part, preserving internal slashes."""
+    return quote(part, safe="/")
 
 
 def _github_url(req: _ForgeRequest) -> str:
     """Build a GitHub blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+    return f"{req.base}/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
 
 
 def _gitlab_url(req: _ForgeRequest) -> str:
     """Build a GitLab blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/-/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+    return f"{req.base}/-/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
 
 
 def _bitbucket_url(req: _ForgeRequest) -> str:
     """Build a Bitbucket Cloud src URL (files and directories share the same path)."""
-    return f"{req.base}/src/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+    return f"{req.base}/src/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
 
 
 def _gitea_ref_segment(ref_kind: RefKind) -> str:
@@ -64,7 +64,7 @@ def _gitea_ref_segment(ref_kind: RefKind) -> str:
 def _gitea_url(req: _ForgeRequest) -> str:
     """Build a Gitea/Forgejo src URL (files and directories share the same path)."""
     kind = _gitea_ref_segment(req.ref_kind)
-    return f"{req.base}/src/{kind}/{req.ref}/{_quoted_repo_path(req.repo_path)}"
+    return f"{req.base}/src/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
 
 
 def _azure_version_prefix(ref_kind: RefKind) -> str:

@@ -238,3 +238,76 @@ def test_repo_view_url_invalid_explicit_forge_raises() -> None:
             is_dir=False,
             forge="unknown",
         )
+
+
+_REF_ENCODING_CASES: list[tuple[str, str]] = [
+    ("feature/foo", "feature/foo"),
+    ("release candidate", "release%20candidate"),
+    ("bugfix/foo#123", "bugfix/foo%23123"),
+    ("topic?draft", "topic%3Fdraft"),
+    ("v1.0.0+build", "v1.0.0%2Bbuild"),
+    ("références", "r%C3%A9f%C3%A9rences"),
+]
+
+_PATH_FORGE_URL_TEMPLATES: list[tuple[str, str, str]] = [
+    ("github", "https://github.com/o/r", "https://github.com/o/r/blob/{ref}/a/b.py"),
+    ("gitlab", "https://gitlab.com/o/r", "https://gitlab.com/o/r/-/blob/{ref}/a/b.py"),
+    (
+        "bitbucket",
+        "https://bitbucket.org/o/r",
+        "https://bitbucket.org/o/r/src/{ref}/a/b.py",
+    ),
+    (
+        "gitea",
+        "https://codeberg.org/o/r",
+        "https://codeberg.org/o/r/src/branch/{ref}/a/b.py",
+    ),
+]
+
+
+@pytest.mark.parametrize(("ref", "encoded_ref"), _REF_ENCODING_CASES)
+@pytest.mark.parametrize(("forge", "repo_url", "url_template"), _PATH_FORGE_URL_TEMPLATES)
+def test_repo_view_url_encodes_ref_per_forge(
+    forge: str,
+    repo_url: str,
+    url_template: str,
+    ref: str,
+    encoded_ref: str,
+) -> None:
+    expected = url_template.format(ref=encoded_ref)
+    assert (
+        repo_view_url(
+            repo_url=repo_url,
+            ref=ref,
+            ref_kind="branch",
+            repo_path="a/b.py",
+            is_dir=False,
+            forge=forge,
+        )
+        == expected
+    )
+
+
+_AZURE_REF_ENCODING_CASES: list[tuple[str, str]] = [
+    ("feature/foo", "GBfeature%2Ffoo"),
+    ("release candidate", "GBrelease%20candidate"),
+    ("bugfix/foo#123", "GBbugfix%2Ffoo%23123"),
+    ("topic?draft", "GBtopic%3Fdraft"),
+    ("v1.0.0+build", "GBv1.0.0%2Bbuild"),
+    ("références", "GBr%C3%A9f%C3%A9rences"),
+]
+
+
+@pytest.mark.parametrize(("ref", "encoded_version"), _AZURE_REF_ENCODING_CASES)
+def test_repo_view_url_azure_ref_encoding_unchanged(ref: str, encoded_version: str) -> None:
+    """Azure already percent-encodes the version query parameter."""
+    assert (
+        repo_view_url(
+            repo_url="https://dev.azure.com/o/p/_git/r",
+            ref=ref,
+            ref_kind="branch",
+            repo_path="a/b.py",
+            is_dir=False,
+        )
+        == f"https://dev.azure.com/o/p/_git/r?path=/a/b.py&version={encoded_version}"
+    )
