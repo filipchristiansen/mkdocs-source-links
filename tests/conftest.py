@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for rewrite tests."""
+"""Shared pytest fixtures and helpers."""
 
 from __future__ import annotations
 
@@ -7,10 +7,39 @@ from pathlib import Path
 
 import pytest
 
+from git_utils import find_git, init_git_repo
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import rewrite_repo_parent_links
 
 REPO = "https://github.com/example/example-repo"
+
+
+@pytest.fixture(scope="session", name="git_exe")
+def _git_exe() -> str:
+    """Return the git executable path, failing the session if git is not installed."""
+    git = find_git()
+    if git is None:
+        pytest.fail("git is required for tests")
+    return git
+
+
+@pytest.fixture(name="git_repo")
+def _git_repo(tmp_path: Path, git_exe: str) -> tuple[Path, str]:
+    """Fresh ``tmp_path`` git repository with one commit.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Pytest temporary directory used as the repository root.
+    git_exe : str
+        Path to the git executable from :func:`git_exe`.
+
+    Returns
+    -------
+    tuple[Path, str]
+        Repository root and the HEAD commit SHA.
+    """
+    return tmp_path, init_git_repo(tmp_path, git_exe)
 
 
 @pytest.fixture(name="repo_tree")

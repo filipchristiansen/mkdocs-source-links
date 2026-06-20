@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 
-_GIT = shutil.which("git")
+from git_utils import init_git_repo
+
 PluginOption = bool | str
 
 
@@ -85,17 +84,6 @@ def _run_mkdocs_build_stderr(root: Path, *, quiet: bool = False) -> str:
     return result.stderr
 
 
-def _init_git_repo(root: Path) -> str:
-    assert _GIT is not None
-    kwargs: dict[str, Any] = {"cwd": root, "capture_output": True, "text": True}
-    subprocess.run([_GIT, "init"], check=True, **kwargs)
-    subprocess.run([_GIT, "config", "user.email", "t@e.com"], check=True, **kwargs)
-    subprocess.run([_GIT, "config", "user.name", "T"], check=True, **kwargs)
-    subprocess.run([_GIT, "add", "-A"], check=True, **kwargs)
-    subprocess.run([_GIT, "commit", "-m", "init"], check=True, **kwargs)
-    return subprocess.run([_GIT, "rev-parse", "HEAD"], check=True, **kwargs).stdout.strip()
-
-
 @pytest.mark.parametrize(
     ("repo_url", "edit_uri", "file_url_fragment", "dir_url_fragment"),
     [
@@ -129,10 +117,9 @@ def test_mkdocs_build_rewrites_parent_links_by_forge(
     assert dir_url_fragment in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    sha = _init_git_repo(tmp_path)
+    sha = init_git_repo(tmp_path, git_exe)
     _write_mkdocs_yml(tmp_path, plugin_options={"pin": "commit"})
 
     html = _run_mkdocs_build(tmp_path)
@@ -141,12 +128,10 @@ def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
     assert f"github.com/example/test-repo/tree/{sha}/scripts" in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(tmp_path, plugin_options={"pin": "tag"})
 
     html = _run_mkdocs_build(tmp_path)
@@ -155,12 +140,10 @@ def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path) -> None:
     assert "github.com/example/test-repo/tree/v1.0.0/scripts" in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(
         tmp_path,
         repo_url="https://codeberg.org/example/test-repo",
@@ -190,12 +173,10 @@ def test_mkdocs_build_azure_branch_uses_gb_version(tmp_path: Path) -> None:
     )
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(
         tmp_path,
         repo_url="https://dev.azure.com/org/project/_git/test-repo",
