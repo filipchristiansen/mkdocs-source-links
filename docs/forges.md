@@ -37,6 +37,14 @@ used and a warning is emitted).
 Azure uses the same `?path=/<path>` query for all pin modes; only the `version=` prefix changes.
 Bitbucket and GitHub/GitLab use the same path pattern for branch names, tags, and commit SHAs.
 
+**Hardcoded tag via `branch:`:** Setting `pin: branch` with `branch: v1.2.3` (without a tag
+checkout) always emits a **branch** ref in URLs. On GitHub, GitLab, and Bitbucket Cloud that often
+still works because branch and tag names share the same path shape. On **Gitea/Forgejo/Codeberg**
+and **Azure DevOps** it produces the wrong URL kind (`/src/branch/v1.2.3/…` instead of
+`/src/tag/v1.2.3/…`, or `version=GBv1.2.3` instead of `version=GTv1.2.3`). Use [`pin: tag`](recipes.md#pin-tag)
+from an exact tag checkout, or paste a full forge URL for one-off links. See
+[Limitations — Hardcoded tag names](limitations.md#hardcoded-tag-names).
+
 ## Autodetection limits
 
 Self-hosted detection matches forge names as **hostname labels** (for example `gitlab.example.com`
@@ -67,7 +75,7 @@ The plugin does **not** build view URLs for these hosts. Use full forge blob URL
 
 | Host | Notes |
 | ---- | ----- |
-| **Bitbucket Server / Data Center** | Different URL scheme from Bitbucket Cloud (`/projects/.../browse/...?at=...`). A self-hosted hostname containing `bitbucket` (for example `bitbucket.corp.com`) is autodetected as **Cloud** and rewritten links will be **wrong** — do not set `forge: bitbucket` on Server/DC. |
+| **Bitbucket Server / Data Center** | Different URL scheme from Bitbucket Cloud (`/projects/.../browse/...?at=...`). Self-hosted hostnames (for example `bitbucket.corp.com`) are **not autodetected** — `../` links are left unchanged unless you set `forge` explicitly. Do **not** set `forge: bitbucket` on Server/DC; that uses Bitbucket Cloud URL shape and will be wrong. Use full Server/DC browse URLs in markdown instead. |
 | **SourceHut** (`git.sr.ht`) | Not autodetected or supported. |
 | **AWS CodeCommit** | Console browse URLs differ from the git clone host; not supported. |
 | **Google Gitiles** (`*.googlesource.com`) | Distinct `/+ref/path` URL scheme; not supported. |

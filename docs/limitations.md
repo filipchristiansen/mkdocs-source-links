@@ -54,6 +54,21 @@ commit SHA when `pin: commit`, or an exact tag at `HEAD` when `pin: tag`. When `
 the plugin falls back to the resolved branch and emits a **warning** at build time. There is no
 per-link ref override.
 
+### Hardcoded tag names
+
+You can set an explicit tag name with `pin: branch` and `branch: v1.2.3` when you are not building
+from that tag checkout. That always treats the value as a **branch** ref in URL building — the
+plugin does not infer tag kind from the string.
+
+On **GitHub, GitLab, and Bitbucket Cloud**, branch and tag names often share the same URL path
+shape, so this recipe may still work. On **Gitea/Forgejo/Codeberg** and **Azure DevOps**, branch
+and tag URLs differ (`/src/branch/…` vs `/src/tag/…`, or `version=GB…` vs `version=GT…`), so
+hardcoded tag names via `branch:` produce **wrong links** on those forges.
+
+For release docs on Gitea or Azure, check out the release tag and use [`pin: tag`](recipes.md#pin-tag).
+For a single historical link, use a full forge blob URL in markdown (it passes through unchanged).
+See [Pin modes and URL shape](forges.md#pin-modes-and-url-shape).
+
 ## Branch names from edit_uri
 
 When plugin `branch` and `extra.git_branch` are unset, the branch name is parsed from `edit_uri`
