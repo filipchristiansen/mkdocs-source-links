@@ -58,7 +58,7 @@ _FENCE_OPEN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<rest>.*)$")
 # Image reference usages (definitions are ``[label]: ../path`` without a leading ``!``).
 _IMAGE_REF_FULL = re.compile(r"!\[[^\]]*\]\[([^\]]+)\]")
 _IMAGE_REF_COLLAPSED = re.compile(r"!\[([^\]]+)\]\[\]")
-_IMAGE_REF_SHORTCUT = re.compile(r"!\[([^\]]+)\](?!\()")
+_IMAGE_REF_SHORTCUT = re.compile(r"!\[([^\]]+)\](?!\(|\[)")
 
 
 def _normalize_ref_label(label: str) -> str:
@@ -67,11 +67,18 @@ def _normalize_ref_label(label: str) -> str:
 
 
 def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
-    """Return normalized labels used by image reference usages in ``markdown``."""
+    """Return normalized labels used by image reference usages in ``markdown``.
+
+    Only scans text outside fenced code blocks so examples in fences cannot suppress real
+    reference definitions elsewhere on the page.
+    """
     labels: set[str] = set()
-    for pattern in (_IMAGE_REF_FULL, _IMAGE_REF_COLLAPSED, _IMAGE_REF_SHORTCUT):
-        for match in pattern.finditer(markdown):
-            labels.add(_normalize_ref_label(match.group(1)))
+    for text, in_fence in _iter_fence_runs(markdown):
+        if in_fence:
+            continue
+        for pattern in (_IMAGE_REF_FULL, _IMAGE_REF_COLLAPSED, _IMAGE_REF_SHORTCUT):
+            for match in pattern.finditer(text):
+                labels.add(_normalize_ref_label(match.group(1)))
     return frozenset(labels)
 
 
@@ -119,10 +126,13 @@ def _resolve_parent_href(
     resolved = (page_abs_path.parent / href).resolve()
     if _repo_relative(target=resolved, repo_root=repo_root) is None:
         return None
-    rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
-    if rel.startswith(".."):
-        return None
-    return Path(rel).as_posix(), resolved
+    repo_rel = Path(
+        os.path.relpath(
+            os.path.normpath(str(page_abs_path.parent / href)),
+            str(root),
+        )
+    ).as_posix()
+    return repo_rel, resolved
 
 
 def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> str | None:

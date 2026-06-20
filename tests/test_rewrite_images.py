@@ -70,3 +70,9 @@ def test_rewrite_still_rewrites_link_reference_definition(repo_tree: Path) -> No
     md = "[cfg][ref]\n\n[ref]: ../img.png\n"
     out = rewrite_on_docs_page(repo_tree, md)
     assert f"[ref]: {REPO}/blob/main/img.png" in out
+
+
+def test_rewrite_rewrites_link_ref_when_full_image_ref_shares_alt_label(repo_tree: Path) -> None:
+    md = "![logo][cfg]\n\n[logo]: ../src.py\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert f"[logo]: {REPO}/blob/main/src.py" in out
