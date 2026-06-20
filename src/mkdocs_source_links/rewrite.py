@@ -127,7 +127,8 @@ def _resolve_parent_href(
     if _repo_relative(target=resolved, repo_root=repo_root) is None:
         return None
     rel = os.path.relpath(os.path.normpath(str(page_abs_path.parent / href)), str(root))
-    if rel == os.pardir or rel.startswith(os.pardir + os.sep):
+    rel_parts = Path(rel).parts
+    if rel_parts and rel_parts[0] == os.pardir:
         return None
     return Path(rel).as_posix(), resolved
 
