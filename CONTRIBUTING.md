@@ -51,7 +51,8 @@ and for GitHub Actions. Maintainers review and merge after CI passes.
    ```
 
 4. Open a pull request targeting `main` with a conventional title (for example `fix: ...`).
-   CI runs the same lint and test suite across Python 3.10-3.13.
+   CI runs the same lint and test suite across Python 3.10-3.13. The Docs workflow builds
+   with Python 3.12 (a representative version from that matrix).
 
 5. Include `Signed-off-by: Your Name <email@example.com>` in each commit message (see
    [Developer Certificate of Origin](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/DCO1.1.md)). Use `git commit -s` to add this automatically.
@@ -83,8 +84,8 @@ hand (the tooling never generates release notes). Then:
    PyPI, and creates the GitHub release with SLSA provenance (`.intoto.jsonl`) and distribution
    archives in a single `gh release create` (required for **immutable releases** — do not enable
    SLSA `upload-assets`, which pre-creates an empty release and breaks asset upload). Release notes
-   on GitHub are taken from the matching `CHANGELOG.md` section; a post-release job verifies
-   provenance with `slsa-verifier`.
+   on GitHub are taken from the matching `CHANGELOG.md` section with a compare link footer; a
+   post-release job verifies provenance with `slsa-verifier`.
 
 ### Signed tags and commits
 

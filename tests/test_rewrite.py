@@ -9,6 +9,7 @@ import pytest
 from conftest import REPO
 from mkdocs_source_links.ref import ViewRef
 from mkdocs_source_links.rewrite import repo_relative_path, rewrite_repo_parent_links
+from mkdocs_source_links.urls import detect_forge
 
 
 def test_repo_relative_path_from_docs(repo_tree: Path) -> None:
@@ -341,6 +342,66 @@ def test_rewrite_unsupported_host_unchanged(repo_tree: Path) -> None:
         )
         == md
     )
+
+
+def test_rewrite_reports_unknown_forge_for_each_eligible_link(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[a](../src.py) and [b](../env.example)."
+    unknown = "https://example.com/example/example-repo"
+    warnings: list[None] = []
+
+    def _report() -> None:
+        warnings.append(None)
+
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=unknown,
+        view_ref=ViewRef("main", "branch"),
+        report_unknown_forge=_report,
+    )
+    assert len(warnings) == 2
+
+
+def test_rewrite_detects_forge_once_per_page(
+    repo_tree: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[a](../src.py) and [b](../env.example)."
+    calls: list[str] = []
+
+    def _tracking_detect(repo_url: str) -> str | None:
+        calls.append(repo_url)
+        return detect_forge(repo_url)
+
+    monkeypatch.setattr("mkdocs_source_links.rewrite.detect_forge", _tracking_detect)
+
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert calls == [REPO]
+
+
+def test_rewrite_reports_skipped_shared_image_ref_label(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[docs][ref]\n![docs]\n\n[docs]: ../img.png\n"
+    skipped: list[str] = []
+
+    rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+        report_skipped_shared_label=skipped.append,
+    )
+    assert skipped == ["docs"]
 
 
 def test_rewrite_forge_override(repo_tree: Path) -> None:

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Build warning (once per build) when `../` links cannot be rewritten because the git forge could not be autodetected from `repo_url` and no `forge:` override is set.
+- `log_rewrites: verbose` logs when a reference definition is skipped because its label is shared with an image reference on the same page.
+
+### Changed
+
+- Git forge autodetection runs once per page rewrite instead of once per link.
+- Plugin rewrite counters and view ref state are initialized in `__init__` rather than as class-level defaults.
+- GitHub Actions workflows pin `uv` to `0.11.17`; the Publish workflow runs pytest before building release artifacts.
+- GitHub release notes from the Publish workflow append the CHANGELOG compare link footer.
+
 ### Fixed
 
 - Git branch, tag, and commit refs with spaces, `#`, `?`, `+`, or non-ASCII characters are percent-encoded in GitHub, GitLab, Bitbucket Cloud, and Gitea/Forgejo view URLs (Azure DevOps already encoded refs in the `version` query parameter).

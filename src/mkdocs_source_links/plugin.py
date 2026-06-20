@@ -60,13 +60,12 @@ class SourceLinksPlugin(BasePlugin):
         ("log_rewrites", config_options.Choice((False, "summary", "verbose"), default=False)),
     )
 
-    _view_ref: ViewRef = ViewRef("", "branch")
-    _rewrite_total: int = 0
-    _rewrite_by_page: dict[str, int]
-
     def __init__(self) -> None:
         super().__init__()
-        self._rewrite_by_page = {}
+        self._view_ref = ViewRef("", "branch")
+        self._rewrite_total = 0
+        self._rewrite_by_page: dict[str, int] = {}
+        self._warned_unknown_forge = False
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Resolve the git view ref once per build and cache it.
@@ -86,6 +85,7 @@ class SourceLinksPlugin(BasePlugin):
         """
         self._rewrite_total = 0
         self._rewrite_by_page = {}
+        self._warned_unknown_forge = False
         branch = resolve_branch(
             plugin_branch=self.config.get("branch"),
             extra=config.extra or {},
@@ -111,7 +111,7 @@ class SourceLinksPlugin(BasePlugin):
             )
         return config
 
-    def on_page_markdown(
+    def on_page_markdown(  # pylint: disable=too-many-locals
         self,
         markdown: str,
         /,
@@ -160,6 +160,7 @@ class SourceLinksPlugin(BasePlugin):
 
         log_mode = self.config.get("log_rewrites", False)
         report_rewrite: Callable[[], None] | None = None
+        report_skipped_shared_label: Callable[[str], None] | None = None
         page_rewrites = 0
         if log_mode:
 
@@ -168,6 +169,33 @@ class SourceLinksPlugin(BasePlugin):
                 page_rewrites += 1
 
             report_rewrite = _count_rewrite
+
+            if log_mode == "verbose":
+                src_path = page.file.src_path
+
+                def _log_skipped_shared_label(label: str) -> None:
+                    log.info(
+                        "%s: skipped [%s] reference definition (image reference label)",
+                        src_path,
+                        label,
+                    )
+
+                report_skipped_shared_label = _log_skipped_shared_label
+
+        report_unknown_forge: Callable[[], None] | None = None
+        if self.config.get("forge") is None:
+
+            def _warn_unknown_forge() -> None:
+                if self._warned_unknown_forge:
+                    return
+                self._warned_unknown_forge = True
+                log.warning(
+                    "Could not detect git forge from repo_url %r; set forge: in mkdocs.yml "
+                    "to rewrite ../ links",
+                    config.repo_url,
+                )
+
+            report_unknown_forge = _warn_unknown_forge
 
         result = rewrite_repo_parent_links(
             markdown,
@@ -178,6 +206,8 @@ class SourceLinksPlugin(BasePlugin):
             forge=self.config.get("forge"),
             report_missing=report_missing,
             report_rewrite=report_rewrite,
+            report_unknown_forge=report_unknown_forge,
+            report_skipped_shared_label=report_skipped_shared_label,
         )
         if page_rewrites:
             src_path = page.file.src_path
