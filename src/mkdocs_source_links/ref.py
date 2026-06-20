@@ -79,9 +79,17 @@ def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ResolvedViewR
     ResolvedViewRef
         Resolved ref and kind for URL building, plus whether a ``commit``/``tag`` pin fell back to
         the branch.
+
+    Raises
+    ------
+    ValueError
+        If ``pin`` is not ``branch``, ``commit``, or ``tag``.
     """
     if pin == "branch":
         return ResolvedViewRef(ViewRef(branch, "branch"), used_fallback=False, requested_pin=pin)
+    if pin not in ("commit", "tag"):
+        msg = f"unsupported pin {pin!r}; expected 'branch', 'commit', or 'tag'"
+        raise ValueError(msg)
     if _GIT is None:
         return ResolvedViewRef(
             ViewRef(branch, "branch"),

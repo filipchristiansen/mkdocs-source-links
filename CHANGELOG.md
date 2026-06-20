@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Unknown `pin` values passed to internal ref resolution raise `ValueError` instead of falling through to commit lookup.
 - Git branch, tag, and commit refs with spaces, `#`, `?`, `+`, or non-ASCII characters are percent-encoded in GitHub, GitLab, Bitbucket Cloud, and Gitea/Forgejo view URLs (Azure DevOps already encoded refs in the `version` query parameter).
 - Image reference label collection ignores fenced code blocks, so examples in fences no longer suppress real `[ref]: ../path` definitions.
 - Full image references (`![alt][ref]`) no longer register a false shortcut label that skipped unrelated link definitions sharing the alt text.

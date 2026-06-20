@@ -32,6 +32,37 @@ def test_repo_relative_path_to_nested_file(repo_tree: Path) -> None:
     )
 
 
+def test_repo_relative_path_from_nested_docs_page(repo_tree: Path) -> None:
+    guide = repo_tree / "docs" / "guide"
+    guide.mkdir()
+    page = guide / "page.md"
+    page.write_text("# Guide\n")
+    assert (
+        repo_relative_path(
+            page_abs_path=page,
+            href="../../backend/src/config.py",
+            repo_root=repo_tree,
+        )
+        == "backend/src/config.py"
+    )
+
+
+def test_rewrite_nested_docs_page_parent_links(repo_tree: Path) -> None:
+    guide = repo_tree / "docs" / "guide"
+    guide.mkdir()
+    page = guide / "page.md"
+    page.write_text("# Guide\n")
+    md = "[cfg](../../backend/src/config.py)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[cfg]({REPO}/blob/main/backend/src/config.py)."
+
+
 def test_repo_relative_path_outside_repo(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     assert (

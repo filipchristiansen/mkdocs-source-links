@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from mkdocs_source_links.ref import ResolvedViewRef, ViewRef, _git_run, resolve_view_ref
 
 
@@ -14,6 +16,11 @@ def test_resolve_view_ref_branch_pin() -> None:
     assert resolved == ResolvedViewRef(
         ViewRef("main", "branch"), used_fallback=False, requested_pin="branch"
     )
+
+
+def test_resolve_view_ref_unknown_pin_raises() -> None:
+    with pytest.raises(ValueError, match="unsupported pin 'bogus'"):
+        resolve_view_ref(pin="bogus", repo_root=Path("/repo"), branch="main")
 
 
 def test_resolve_view_ref_commit_pin(git_repo: tuple[Path, str]) -> None:
