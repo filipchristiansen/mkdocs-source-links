@@ -9,7 +9,7 @@ For scenario-based setup (monorepos, release builds, self-hosted forges), see
 | ------ | ---- | ------- | ----------- |
 | `enabled` | bool | `true` | Turn link rewriting on or off. When `false`, page markdown is left untouched and no git lookup runs. |
 | `pin` | string | `branch` | Pin forge URLs to a branch name (`branch`), the current commit SHA (`commit`), or an exact tag at `HEAD` (`tag`). When `commit` or `tag` lookup fails, falls back to the resolved branch and emits a build warning. |
-| `branch` | string | resolved (see below) | Git branch used in forge URLs when `pin` is `branch`, or as fallback when `pin` is `commit` or `tag`. Tag names are valid here when set explicitly (for example `branch: v1.2.3`). |
+| `branch` | string | resolved (see below) | Git branch used in forge URLs when `pin` is `branch`, or as fallback when `pin` is `commit` or `tag`. You may set a tag name explicitly (for example `branch: v1.2.3`), but that is **not forge-neutral** — Gitea/Forgejo/Codeberg and Azure DevOps use different URL shapes for branches and tags. Prefer [`pin: tag`](recipes.md#pin-tag) from a tag checkout on those forges, or a full forge blob URL for one-off historical links. |
 | `forge` | string | autodetected | Forge type: `github`, `gitlab`, `bitbucket`, `gitea`, or `azure`. Overrides host autodetection. |
 | `warn_on_missing` | bool | `true` | Emit a warning when a `](../path)` link's target does not exist in the repository. Counts toward `mkdocs build --strict`. |
 | `log_rewrites` | `false` \| `summary` \| `verbose` | `false` | Opt-in INFO logging of successful `../` rewrites. Requires `repo_url`. Use YAML boolean `false`, not a quoted string. |

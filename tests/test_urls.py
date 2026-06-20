@@ -117,9 +117,23 @@ def test_detect_forge(repo_url: str, expected: str | None) -> None:
         (
             "https://codeberg.org/o/r",
             False,
+            "v1.2.3",
+            "branch",
+            "https://codeberg.org/o/r/src/branch/v1.2.3/a/b.py",
+        ),
+        (
+            "https://codeberg.org/o/r",
+            False,
             "v1.0.0",
             "tag",
             "https://codeberg.org/o/r/src/tag/v1.0.0/a/b.py",
+        ),
+        (
+            "https://dev.azure.com/o/p/_git/r",
+            False,
+            "v1.2.3",
+            "branch",
+            "https://dev.azure.com/o/p/_git/r?path=/a/b.py&version=GBv1.2.3",
         ),
         (
             "https://dev.azure.com/o/p/_git/r",

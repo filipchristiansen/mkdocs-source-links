@@ -106,7 +106,7 @@ workflow.
 | ------ | ---- | ------- | ----------- |
 | `enabled` | bool | `true` | Turn rewriting off for local preview, or gate with an environment variable. |
 | `pin` | string | `branch` | `branch` — normal docs; `commit` — permalink to `HEAD` SHA; `tag` — exact tag at `HEAD` (release builds). |
-| `branch` | string | resolved | Override branch resolution; set an explicit tag name (`branch: v1.2.3`) when not building from that tag. |
+| `branch` | string | resolved | Override branch resolution. To pin URLs to a tag name without a tag checkout, see [Hardcoded tag without tag checkout](#hardcoded-tag-without-tag-checkout) — not safe on all forges. |
 | `forge` | string | autodetected | Host without a forge hostname label (e.g. `git.mycompany.com` running GitLab). |
 | `warn_on_missing` | bool | `true` | `false` to silence missing-target warnings; `true` with `mkdocs build --strict` for CI. |
 | `log_rewrites` | `false` \| `summary` \| `verbose` | `false` | Opt-in rewrite statistics at INFO level; `summary` for one build line, `verbose` for per-page counts. |
@@ -148,7 +148,9 @@ plugins:
       branch: develop
 ```
 
-Also use for a hardcoded tag when you are not on that tag checkout: `pin: branch` with `branch: v1.2.3`.
+Override the resolved branch name (for example `develop` instead of `main`). See
+[Hardcoded tag without tag checkout](#hardcoded-tag-without-tag-checkout) when you need a tag name
+without checking out that tag.
 
 ### `forge`
 
@@ -226,7 +228,11 @@ plugins:
 If `HEAD` is exactly tagged (e.g. `v1.2.3`), URLs use that tag name. If `HEAD` is not exactly tagged,
 falls back to the resolved branch.
 
-**Hardcoded tag without tag checkout:** use `pin: branch` with an explicit branch override:
+#### Hardcoded tag without tag checkout
+
+When you cannot check out the tag but need tag-shaped URLs on **GitHub, GitLab, or Bitbucket Cloud**
+(for forges where branch and tag share the same path pattern), use `pin: branch` with an explicit
+override:
 
 ```yaml
 plugins:
@@ -234,6 +240,12 @@ plugins:
       pin: branch
       branch: v1.2.3
 ```
+
+This always emits a **branch** ref in URLs. It is **not forge-neutral**: on Gitea/Forgejo/Codeberg
+and Azure DevOps it produces `/src/branch/v1.2.3/…` or `version=GBv1.2.3` instead of the correct
+tag URL shape. On those forges, check out the release tag and use `pin: tag` (below), or paste a
+full forge blob URL for one-off historical links. See
+[Limitations — Hardcoded tag names](limitations.md#hardcoded-tag-names).
 
 ### Example CI pattern (release from tag)
 
@@ -503,7 +515,9 @@ markdown_extensions:
 Use this flow for `pin` and `forge`; adjust the other options as needed:
 
 - **`enabled: false`** or `SOURCE_LINKS=false` — skip rewriting for local iteration.
-- **`branch:`** — override resolved branch, or hardcode a tag name with `pin: branch`.
+- **`branch:`** — override resolved branch. For a hardcoded tag name without a tag checkout, see
+  [Hardcoded tag without tag checkout](#hardcoded-tag-without-tag-checkout) (GitHub/GitLab/Bitbucket
+  Cloud only; use `pin: tag` on Gitea/Azure).
 - **`warn_on_missing: false`** — allow missing `../` targets without warnings.
 - **`log_rewrites: summary`** or **`verbose`** — confirm rewriting during setup; keep `false` in CI.
 
