@@ -12,6 +12,7 @@ __pycache__/
 
 # Tests & coverage
 .pytest_cache/
+.hypothesis/
 .coverage
 coverage.xml
 htmlcov/
