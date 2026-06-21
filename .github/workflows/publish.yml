@@ -87,7 +87,10 @@ jobs:
       actions: read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
+    # Must be pinned by version tag, NOT a commit SHA: the generic generator downloads its prebuilt,
+    # signed builder binary by release tag (refs/tags/vX.Y.Z) and rejects a SHA ref ("Invalid ref ...
+    # Expected ref of the form refs/tags/vX.Y.Z"), which is what broke the v0.7.0 release.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.hashes }}"
       provenance-name: mkdocs-source-links.intoto.jsonl
