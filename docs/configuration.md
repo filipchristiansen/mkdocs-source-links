@@ -34,8 +34,8 @@ mode. Counts include successful inline `[text](../…)` links and `[ref]: ../…
 | Value | Output |
 | ----- | ------ |
 | `false` | No rewrite statistics (default). |
-| `summary` | One build line, e.g. `Rewrote 42 ../ links across 8 pages`. |
-| `verbose` | Per-page lines for pages with rewrites, plus the summary line, e.g. `guide.md: rewrote 3 links`. |
+| `summary` | One build line, e.g. `Rewrote 42 links across 8 pages`. |
+| `verbose` | Per-page lines for pages with rewrites, plus the summary line, e.g. `guide.md: rewrote 3 links`. Also logs when a reference definition is skipped because its label is shared with an image reference on the same page. |
 
 Per-page paths in `verbose` mode are MkDocs `src_path` values (relative to the docs directory,
 such as `guide.md` or `nested/page.md`), the same format used in `warn_on_missing` warnings — not

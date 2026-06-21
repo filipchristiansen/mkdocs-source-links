@@ -54,6 +54,17 @@ def test_edit_uri_blob_prefix() -> None:
     )
 
 
+def test_edit_uri_bitbucket_src_prefix() -> None:
+    assert (
+        resolve_branch(
+            plugin_branch=None,
+            extra={},
+            edit_uri="src/develop/docs/",
+        )
+        == "develop"
+    )
+
+
 def test_edit_uri_gitlab_edit_prefix() -> None:
     assert (
         resolve_branch(

@@ -123,7 +123,7 @@ def test_resolve_view_ref_commit_fallback_on_git_timeout(tmp_path: Path) -> None
 
 
 def test_git_run_returns_none_when_git_unavailable(tmp_path: Path) -> None:
-    with patch("mkdocs_source_links.ref._GIT", None):
+    with patch("mkdocs_source_links.ref.shutil.which", return_value=None):
         assert _git_run(tmp_path, "rev-parse", "HEAD") is None
         commit = resolve_view_ref(pin="commit", repo_root=tmp_path, branch="main")
         assert commit.view_ref == ViewRef("main", "branch")
@@ -131,3 +131,16 @@ def test_git_run_returns_none_when_git_unavailable(tmp_path: Path) -> None:
         tag = resolve_view_ref(pin="tag", repo_root=tmp_path, branch="main")
         assert tag.view_ref == ViewRef("main", "branch")
         assert tag.used_fallback is True
+
+
+def test_resolve_view_ref_uses_git_when_which_finds_it_at_call_time(
+    git_repo: tuple[Path, str],
+) -> None:
+    root, sha = git_repo
+    with patch("mkdocs_source_links.ref.shutil.which", return_value=None):
+        unavailable = resolve_view_ref(pin="commit", repo_root=root, branch="main")
+        assert unavailable.used_fallback is True
+
+    resolved = resolve_view_ref(pin="commit", repo_root=root, branch="main")
+    assert resolved.view_ref == ViewRef(sha, "commit")
+    assert resolved.used_fallback is False

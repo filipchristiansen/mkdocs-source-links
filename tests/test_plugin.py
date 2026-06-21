@@ -349,7 +349,7 @@ def test_log_rewrites_summary_logs_build_total(
         plugin.on_page_markdown(markdown, page=page, config=config, files=files)
         plugin.on_post_build(config=config)
 
-    assert "Rewrote 2 ../ links across 1 page" in caplog.text
+    assert "Rewrote 2 links across 1 page" in caplog.text
     assert "page.md: rewrote" not in caplog.text
 
 
@@ -367,7 +367,7 @@ def test_log_rewrites_verbose_logs_per_page_and_summary(
         plugin.on_post_build(config=config)
 
     assert "page.md: rewrote 1 link" in caplog.text
-    assert "Rewrote 1 ../ link across 1 page" in caplog.text
+    assert "Rewrote 1 link across 1 page" in caplog.text
 
 
 def test_log_rewrites_verbose_skips_pages_with_zero_rewrites(
@@ -384,7 +384,7 @@ def test_log_rewrites_verbose_skips_pages_with_zero_rewrites(
         plugin.on_post_build(config=config)
 
     assert "page.md: rewrote" not in caplog.text
-    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+    assert "Rewrote 0 links across 0 pages" in caplog.text
 
 
 def test_log_rewrites_summary_logs_zero_when_no_rewrites(
@@ -401,7 +401,7 @@ def test_log_rewrites_summary_logs_zero_when_no_rewrites(
         plugin.on_post_build(config=config)
 
     assert "page.md: rewrote" not in caplog.text
-    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+    assert "Rewrote 0 links across 0 pages" in caplog.text
 
 
 def test_log_rewrites_silent_without_repo_url(
@@ -451,7 +451,7 @@ def test_log_rewrites_summary_across_multiple_pages(
         )
         plugin.on_post_build(config=config)
 
-    assert "Rewrote 3 ../ links across 2 pages" in caplog.text
+    assert "Rewrote 3 links across 2 pages" in caplog.text
 
 
 def test_log_rewrites_disabled_when_plugin_disabled(
@@ -484,7 +484,7 @@ def test_log_rewrites_zero_for_virtual_page(
         plugin.on_page_markdown(markdown, page=page, config=config, files=files)
         plugin.on_post_build(config=config)
 
-    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+    assert "Rewrote 0 links across 0 pages" in caplog.text
 
 
 def test_log_rewrites_counters_reset_on_config(
@@ -502,7 +502,7 @@ def test_log_rewrites_counters_reset_on_config(
     with caplog.at_level(logging.INFO):
         plugin.on_post_build(config=config)
 
-    assert "Rewrote 0 ../ links across 0 pages" in caplog.text
+    assert "Rewrote 0 links across 0 pages" in caplog.text
 
 
 def test_unknown_forge_warns_once_per_build(

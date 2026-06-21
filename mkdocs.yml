@@ -30,7 +30,8 @@ theme:
 
 plugins:
   - search
-  - source-links
+  - source-links:
+      log_rewrites: verbose
   - mkdocstrings:
       handlers:
         python:

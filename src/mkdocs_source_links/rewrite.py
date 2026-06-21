@@ -48,15 +48,33 @@ _REF_DEF = re.compile(
 
 _FENCE_OPEN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<rest>.*)$")
 
-# Image reference usages (definitions are ``[label]: ../path`` without a leading ``!``).
-_IMAGE_REF_FULL = re.compile(r"!\[[^\]]*\]\[([^\]]+)\]")
-_IMAGE_REF_COLLAPSED = re.compile(r"!\[([^\]]+)\]\[\]")
-_IMAGE_REF_SHORTCUT = re.compile(r"!\[([^\]]+)\](?!\(|\[)")
-
 
 def _normalize_ref_label(label: str) -> str:
     """Normalize a reference label (case-fold, collapse whitespace)."""
     return re.sub(r"\s+", " ", label.strip()).casefold()
+
+
+def _collect_image_reference_label_at(text: str, index: int) -> tuple[str, int] | None:  # pylint: disable=too-many-return-statements
+    """Return a normalized image-reference label and the index after the usage, or ``None``."""
+    if not text.startswith("![", index):
+        return None
+    alt_parsed = _read_balanced_brackets(text, index + 2)
+    if alt_parsed is None:
+        return None
+    alt, after_alt = alt_parsed
+    if after_alt >= len(text):
+        return _normalize_ref_label(alt), after_alt
+    if text[after_alt] == "[":
+        if after_alt + 1 < len(text) and text[after_alt + 1] == "]":
+            return _normalize_ref_label(alt), after_alt + 2
+        ref_parsed = _read_balanced_brackets(text, after_alt + 1)
+        if ref_parsed is None:
+            return None
+        ref_label, after_ref = ref_parsed
+        return _normalize_ref_label(ref_label), after_ref
+    if text[after_alt] in "([":
+        return None
+    return _normalize_ref_label(alt), after_alt
 
 
 def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
@@ -69,9 +87,18 @@ def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
     for text, in_fence in _iter_fence_runs(markdown):
         if in_fence:
             continue
-        for pattern in (_IMAGE_REF_FULL, _IMAGE_REF_COLLAPSED, _IMAGE_REF_SHORTCUT):
-            for match in pattern.finditer(text):
-                labels.add(_normalize_ref_label(match.group(1)))
+        index = 0
+        while index < len(text):
+            code_match = _INLINE_CODE.match(text, index)
+            if code_match is not None:
+                index = code_match.end()
+                continue
+            collected = _collect_image_reference_label_at(text, index)
+            if collected is None:
+                index += 1
+                continue
+            label, index = collected
+            labels.add(label)
     return frozenset(labels)
 
 

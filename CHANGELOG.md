@@ -18,11 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugin rewrite counters and view ref state are initialized in `__init__` rather than as class-level defaults.
 - GitHub Actions workflows pin `uv` to `0.11.17`; the Publish workflow runs pytest before building release artifacts.
 - GitHub release notes from the Publish workflow append the CHANGELOG compare link footer.
+- `log_rewrites` summary output no longer includes `../` in the message text.
 
 ### Fixed
 
 - Unknown `pin` values passed to internal ref resolution raise `ValueError` instead of falling through to commit lookup.
 - Git branch, tag, and commit refs with spaces, `#`, `?`, `+`, or non-ASCII characters are percent-encoded in GitHub, GitLab, Bitbucket Cloud, and Gitea/Forgejo view URLs (Azure DevOps already encoded refs in the `version` query parameter).
+- `repo_url` query strings, fragments, and `.git` suffixes are stripped before building forge URLs (fixes malformed Azure URLs when `repo_url` includes query parameters).
+- Bitbucket Cloud `edit_uri: src/<branch>/…` is parsed when resolving branch names.
+- Image reference label collection handles nested and escaped `]` in alt text, so reference-style images are not broken.
+- Git is resolved at call time instead of import time for `pin: commit` and `pin: tag` lookup.
 - Image reference label collection ignores fenced code blocks, so examples in fences no longer suppress real `[ref]: ../path` definitions.
 - Full image references (`![alt][ref]`) no longer register a false shortcut label that skipped unrelated link definitions sharing the alt text.
 - Repo-internal paths whose names start with `..` (for example `../..weird/file.txt`) are rewritten correctly instead of being rejected.

@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -72,13 +73,13 @@ def _run(*args: str, capture: bool = False) -> str:
     str
         The captured stdout (stripped) when ``capture`` is True, else "".
     """
-    print(f"$ {' '.join(args)}")
+    print(f"$ {shlex.join(args)}")
     try:
         result = subprocess.run(args, check=True, text=True, capture_output=capture)
     except FileNotFoundError:
         _fail(f"command not found: {args[0]}")
     except subprocess.CalledProcessError as exc:
-        _fail(f"command failed (exit {exc.returncode}): {' '.join(args)}")
+        _fail(f"command failed (exit {exc.returncode}): {shlex.join(args)}")
     return result.stdout.strip() if capture else ""
 
 

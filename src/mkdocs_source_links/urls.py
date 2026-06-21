@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from typing import NamedTuple
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from .ref import RefKind
 
@@ -22,12 +22,55 @@ class _ForgeRequest(NamedTuple):
     is_dir: bool
 
 
+_GITEA_REF_SEGMENTS: dict[RefKind, str] = {
+    "branch": "branch",
+    "commit": "commit",
+    "tag": "tag",
+}
+
+_AZURE_VERSION_PREFIXES: dict[RefKind, str] = {
+    "branch": "GB",
+    "commit": "GC",
+    "tag": "GT",
+}
+
+# Exact public hosts mapped to their forge.
+_KNOWN_HOSTS = {
+    "github.com": "github",
+    "gitlab.com": "gitlab",
+    "bitbucket.org": "bitbucket",
+    "codeberg.org": "gitea",
+    "dev.azure.com": "azure",
+}
+
+# Substring hints for self-hosted instances (used only when the host is not a known public host).
+# Bitbucket Cloud is only at bitbucket.org; self-hosted Bitbucket Server/DC is not supported.
+_HOST_HINTS = (
+    ("github", "github"),
+    ("gitlab", "gitlab"),
+    ("gitea", "gitea"),
+    ("forgejo", "gitea"),
+    ("codeberg", "gitea"),
+)
+
+
 def _normalize_repo_base(repo_url: str) -> str:
-    """Strip trailing slashes and a ``.git`` suffix from a repository URL."""
-    base = repo_url.rstrip("/")
-    if base.endswith(".git"):
-        return base[:-4]
-    return base
+    """Normalize a repository URL for forge view URL building.
+
+    Drops query and fragment first, then strips a trailing slash and ``.git`` suffix from the path
+    (order matters — ``repo.git?foo=bar`` must not leave ``.git`` after query removal).
+    """
+    parsed = urlsplit(repo_url)
+    if not parsed.scheme or not parsed.hostname:
+        base = repo_url.rstrip("/")
+        if base.endswith(".git"):
+            return base[:-4]
+        return base
+    netloc = parsed.netloc
+    path = parsed.path.rstrip("/")
+    if path.endswith(".git"):
+        path = path[:-4]
+    return urlunsplit((parsed.scheme, netloc, path, "", "")).rstrip("/")
 
 
 def _quote_part(part: str) -> str:
@@ -54,11 +97,7 @@ def _bitbucket_url(req: _ForgeRequest) -> str:
 
 def _gitea_ref_segment(ref_kind: RefKind) -> str:
     """Return the Gitea/Forgejo ``src/`` path segment for a ref kind."""
-    if ref_kind == "commit":
-        return "commit"
-    if ref_kind == "tag":
-        return "tag"
-    return "branch"
+    return _GITEA_REF_SEGMENTS[ref_kind]
 
 
 def _gitea_url(req: _ForgeRequest) -> str:
@@ -69,11 +108,7 @@ def _gitea_url(req: _ForgeRequest) -> str:
 
 def _azure_version_prefix(ref_kind: RefKind) -> str:
     """Return the Azure DevOps version query prefix for a ref kind."""
-    if ref_kind == "commit":
-        return "GC"
-    if ref_kind == "tag":
-        return "GT"
-    return "GB"
+    return _AZURE_VERSION_PREFIXES[ref_kind]
 
 
 def _azure_url(req: _ForgeRequest) -> str:
@@ -93,25 +128,6 @@ _BUILDERS: dict[str, Callable[[_ForgeRequest], str]] = {
 
 #: Forge names accepted by the plugin's ``forge`` option.
 SUPPORTED_FORGES: tuple[str, ...] = tuple(_BUILDERS)
-
-# Exact public hosts mapped to their forge.
-_KNOWN_HOSTS = {
-    "github.com": "github",
-    "gitlab.com": "gitlab",
-    "bitbucket.org": "bitbucket",
-    "codeberg.org": "gitea",
-    "dev.azure.com": "azure",
-}
-
-# Substring hints for self-hosted instances (used only when the host is not a known public host).
-# Bitbucket Cloud is only at bitbucket.org; self-hosted Bitbucket Server/DC is not supported.
-_HOST_HINTS = (
-    ("github", "github"),
-    ("gitlab", "gitlab"),
-    ("gitea", "gitea"),
-    ("forgejo", "gitea"),
-    ("codeberg", "gitea"),
-)
 
 
 def _host_matches_hint(host: str, needle: str) -> bool:
