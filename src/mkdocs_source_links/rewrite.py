@@ -1,4 +1,4 @@
-"""Rewrite [text](../path) inline links and [ref]: ../path definitions to forge view URLs.
+"""Rewrite ``[text](../path)`` inline links and ``[ref]: ../path`` definitions to forge view URLs.
 
 :func:`rewrite_repo_parent_links` collects image-reference labels, rewrites inline links, then
 reference definitions. The markdown parsing primitives live in the internal ``_scan`` and

@@ -61,6 +61,45 @@ def test_extra_git_branch_string_emits_no_warning(
     assert "extra.git_branch" not in caplog.text
 
 
+def test_extra_git_branch_falsy_non_string_is_coerced_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch=None,
+            extra={"git_branch": 0},
+            edit_uri="edit/main/docs/",
+        )
+    assert result == "0"
+    assert "extra.git_branch should be a string" in caplog.text
+
+
+def test_extra_git_branch_empty_string_falls_back_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch=None,
+            extra={"git_branch": ""},
+            edit_uri="edit/develop/docs/",
+        )
+    assert result == "develop"
+    assert "extra.git_branch is set but empty" in caplog.text
+
+
+def test_extra_git_branch_blank_string_falls_back_to_main_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch=None,
+            extra={"git_branch": "   "},
+            edit_uri=None,
+        )
+    assert result == "main"
+    assert "extra.git_branch is set but empty" in caplog.text
+
+
 def test_edit_uri_edit_prefix() -> None:
     assert (
         resolve_branch(

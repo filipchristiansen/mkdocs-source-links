@@ -54,6 +54,13 @@ _HOST_HINTS = (
 )
 
 
+def _strip_dot_git(value: str) -> str:
+    """Strip a trailing ``.git`` suffix, case-insensitively (``.GIT`` is also removed)."""
+    if value[-4:].lower() == ".git":
+        return value[:-4]
+    return value
+
+
 def _normalize_repo_base(repo_url: str) -> str:
     """Normalize a repository URL for forge view URL building.
 
@@ -62,14 +69,9 @@ def _normalize_repo_base(repo_url: str) -> str:
     """
     parsed = urlsplit(repo_url)
     if not parsed.scheme or not parsed.hostname:
-        base = repo_url.rstrip("/")
-        if base.endswith(".git"):
-            return base[:-4]
-        return base
+        return _strip_dot_git(repo_url.rstrip("/"))
     netloc = parsed.netloc
-    path = parsed.path.rstrip("/")
-    if path.endswith(".git"):
-        path = path[:-4]
+    path = _strip_dot_git(parsed.path.rstrip("/"))
     return urlunsplit((parsed.scheme, netloc, path, "", "")).rstrip("/")
 
 

@@ -1,25 +1,24 @@
 .DEFAULT_GOAL := help
 
-.PHONY: install sync lint audit test docs docs-serve ci release-prep release-tag verify-tag
+.PHONY: install sync lint audit test docs docs-serve ci release-prep release-tag
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  ----------------- Install -----------------------"
+	@echo "  ----------------- Install ---------------------------------------------------------"
 	@echo "  install        Install dependencies"
 	@echo "  sync           Sync all dependency groups"
-	@echo "  ----------------- CI (local) --------------------"
+	@echo "  ----------------- CI (local) ------------------------------------------------------"
 	@echo "  lint           Run lint (auto-fix where supported)"
 	@echo "  audit          Scan dependencies for known vulnerabilities"
 	@echo "  test           Run tests"
 	@echo "  docs           Build documentation site (strict)"
 	@echo "  docs-serve     Build docs, then serve locally (mkdocs serve)"
 	@echo "  ci             Pre-PR checks (lint, audit, test, coverage, docs)"
-	@echo "  ----------------- Release -----------------------"
-	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
+	@echo "  ----------------- Release ---------------------------------------------------------"
+	@echo "  release-prep   Bump, roll changelog, open release PR                (VERSION=X.Y.Z)"
 	@echo "  release-tag    Signed tag; publish workflow creates GitHub release  (VERSION=X.Y.Z)"
-	@echo "  verify-tag     Verify signed tag on GitHub          (TAG=vX.Y.Z [REPO=owner/repo])"
 
 install:
 	uv python install 3.10
@@ -54,9 +53,3 @@ release-prep:
 release-tag:
 	@test -n "$(VERSION)" || { echo "usage: make release-tag VERSION=X.Y.Z"; exit 1; }
 	uv run python scripts/release.py tag $(VERSION)
-
-REPO ?= filipchristiansen/mkdocs-source-links
-
-verify-tag:
-	@test -n "$(TAG)" || { echo "usage: make verify-tag TAG=vX.Y.Z [REPO=owner/repo]"; exit 1; }
-	GITHUB_REPOSITORY=$(REPO) TAG=$(TAG) bash .github/scripts/verify-release-tag.sh

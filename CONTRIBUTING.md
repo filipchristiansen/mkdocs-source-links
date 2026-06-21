@@ -80,8 +80,7 @@ hand (the tooling never generates release notes). Then:
    into a dated `## [X.Y.Z]` section with updated compare links, runs `make ci`, and opens the
    release PR.
 2. After the PR is merged, `make release-tag VERSION=X.Y.Z` — creates a **signed** annotated tag
-   `vX.Y.Z` and pushes it. Optionally run `make verify-tag TAG=vX.Y.Z` first to confirm the tag
-   is verified on GitHub. The publish workflow verifies the tag signature, builds and uploads to
+   `vX.Y.Z` and pushes it. The publish workflow verifies the tag signature, builds and uploads to
    PyPI, and creates the GitHub release with SLSA provenance (`.intoto.jsonl`) and distribution
    archives in a single `gh release create` (required for **immutable releases** — do not enable
    SLSA `upload-assets`, which pre-creates an empty release and breaks asset upload). Release notes
