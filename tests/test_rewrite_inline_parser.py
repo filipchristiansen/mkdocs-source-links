@@ -17,7 +17,7 @@ def test_rewrite_leaves_lonely_parent_link_suffix_in_prose(repo_tree: Path) -> N
 def test_rewrite_still_rewrites_link_with_nested_brackets_in_label(repo_tree: Path) -> None:
     md = "[a [nested]](../src.py)\n"
     out = rewrite_on_docs_page(repo_tree, md)
-    assert f"[a [nested]]({REPO}/blob/main/src.py)" in out
+    assert out == f"[a [nested]]({REPO}/blob/main/src.py)\n"
 
 
 def test_rewrite_skips_image_with_nested_brackets_in_alt(repo_tree: Path) -> None:

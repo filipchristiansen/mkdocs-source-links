@@ -153,4 +153,4 @@ def test_built_url_uses_resolved_branch(tmp_path: Path) -> None:
             "branch",
         ),
     )
-    assert "blob/develop/README.md" in out
+    assert out == f"[readme]({REPO}/blob/develop/README.md)."
