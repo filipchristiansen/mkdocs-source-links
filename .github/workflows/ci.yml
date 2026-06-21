@@ -46,6 +46,8 @@ jobs:
 
       # Single source of truth: run the same hooks as `make lint` locally.
       - name: Run pre-commit
+        env:
+          SKIP: no-commit-to-branch
         run: uv run pre-commit run --all-files --show-diff-on-failure
 
   audit:
