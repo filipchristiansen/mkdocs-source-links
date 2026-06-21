@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
+
+import pytest
 
 from conftest import REPO
 from mkdocs_source_links.branch import resolve_branch
@@ -30,6 +33,32 @@ def test_extra_git_branch() -> None:
         )
         == "master"
     )
+
+
+def test_extra_git_branch_non_string_is_coerced_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch=None,
+            extra={"git_branch": 1234},
+            edit_uri="edit/main/docs/",
+        )
+    assert result == "1234"
+    assert "extra.git_branch should be a string" in caplog.text
+
+
+def test_extra_git_branch_string_emits_no_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch=None,
+            extra={"git_branch": "release"},
+            edit_uri="edit/main/docs/",
+        )
+    assert result == "release"
+    assert "extra.git_branch" not in caplog.text
 
 
 def test_edit_uri_edit_prefix() -> None:

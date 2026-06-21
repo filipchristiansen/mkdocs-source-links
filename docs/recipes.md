@@ -205,6 +205,23 @@ single historical link use a full forge blob URL in markdown ([Limitations](limi
 | `commit` | `git rev-parse HEAD` | Yes | Resolved branch |
 | `tag` | `git describe --tags --exact-match` | Yes | Resolved branch |
 
+### When `pin: commit`/`tag` falls back to a branch
+
+`commit` and `tag` resolution shells out to `git` from the `mkdocs.yml` directory and **falls back
+to the resolved branch with a build warning** in these cases:
+
+- The `mkdocs.yml` directory is **not inside a git worktree** (for example a release archive or a
+  shallow export with no `.git`).
+- `git` is **not installed** or not on `PATH`.
+- For `pin: tag` only, `HEAD` is **not exactly tagged** (`git describe --tags --exact-match`
+  fails) — for example mid-development commits between releases.
+
+A `mkdocs.yml` in a **subdirectory** of a git worktree is **not** a failure case: `git` discovers
+the repository by walking up from that directory, so nested configs (see
+[Nested `mkdocs.yml`](#nested-mkdocsyml-subdirectory-config)) still resolve the commit SHA or tag.
+The plugin repository root for `../` path resolution is a separate concern from where `git`
+metadata is read.
+
 ### `pin: branch`
 
 Default. Forge URLs use the resolved branch name (`main`, `develop`, etc.). Works in environments

@@ -865,7 +865,7 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mkdocs", specifier = ">=1.5" }]
+requires-dist = [{ name = "mkdocs", specifier = ">=1.5,<2.0" }]
 
 [package.metadata.requires-dev]
 dev = [

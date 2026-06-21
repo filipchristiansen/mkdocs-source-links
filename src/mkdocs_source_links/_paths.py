@@ -6,26 +6,26 @@ import os
 from pathlib import Path
 
 
-def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
-    """Express a resolved absolute path relative to the repository root.
+def _is_within(*, target: Path, root: Path) -> bool:
+    """Return whether ``target`` lies inside the already-resolved repository ``root``.
 
     Parameters
     ----------
     target : Path
         Absolute, resolved path to a file or directory.
-    repo_root : Path
-        Repository root the path should be made relative to.
+    root : Path
+        Resolved repository root the path should be checked against.
 
     Returns
     -------
-    str | None
-        ``target`` as a repo-root-relative POSIX path, or ``None`` if it lies outside
-        ``repo_root``.
+    bool
+        ``True`` when ``target`` is ``root`` or a descendant of it, ``False`` otherwise.
     """
     try:
-        return target.relative_to(repo_root.resolve()).as_posix()
+        target.relative_to(root)
     except ValueError:
-        return None
+        return False
+    return True
 
 
 def resolve_parent_href(
@@ -37,9 +37,11 @@ def resolve_parent_href(
     """Resolve a ``../`` href to a repo-relative POSIX path and absolute target path."""
     if not href.startswith("../"):
         return None
+    # Resolve the repository root once; the same value drives both the inside-repo check and the
+    # relative-path base below.
     root = repo_root.resolve()
     resolved = (page_abs_path.parent / href).resolve()
-    if _repo_relative(target=resolved, repo_root=repo_root) is None:
+    if not _is_within(target=resolved, root=root):
         return None
     repo_rel = Path(
         os.path.relpath(
