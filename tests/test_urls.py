@@ -231,7 +231,6 @@ def test_repo_view_url_normalizes_repo_url(repo_url: str, expected_base_blob: st
             ref_kind="branch",
             repo_path="x",
             is_dir=False,
-            forge="azure" if "dev.azure.com" in repo_url else None,
         )
         == expected_base_blob
     )
