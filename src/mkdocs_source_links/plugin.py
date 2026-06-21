@@ -252,7 +252,7 @@ class SourceLinksPlugin(BasePlugin):
 
         page_count = len(self._rewrite_by_page)
         log.info(
-            "Rewrote %d ../ %s across %d %s",
+            "Rewrote %d %s across %d %s",
             self._rewrite_total,
             _plural(self._rewrite_total, "link"),
             page_count,

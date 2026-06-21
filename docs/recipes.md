@@ -185,7 +185,7 @@ plugins:
 Example build output with `summary`:
 
 ```text
-INFO    -  mkdocs_source_links: Rewrote 2 ../ links across 1 page
+INFO    -  mkdocs_source_links: Rewrote 2 links across 1 page
 ```
 
 With `verbose`, pages with rewrites log first (`guide.md: rewrote 3 links`), then the summary.

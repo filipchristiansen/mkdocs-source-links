@@ -2,7 +2,7 @@
 
 1. Plugin `branch:` config
 2. `extra.git_branch` in `mkdocs.yml`
-3. Parsed from `edit_uri` (`edit/<branch>/...` or `blob/<branch>/...`) — **only the first path segment** after `edit/` or `blob/` is used, so branch names containing `/` (for example `feature/my-branch`) are not parsed correctly; set `branch:` or `extra.git_branch` explicitly instead
+3. Parsed from `edit_uri` (`edit/<branch>/...`, `blob/<branch>/...`, or Bitbucket `src/<branch>/...`) — **only the first path segment** after `edit/`, `blob/`, or `src/` is used, so branch names containing `/` (for example `feature/my-branch`) are not parsed correctly; set `branch:` or `extra.git_branch` explicitly instead
 4. Fallback: `main`
 
 If your default branch is not `main`, set `edit_uri`, `extra.git_branch`, or `source-links.branch`

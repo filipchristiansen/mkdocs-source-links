@@ -9,7 +9,6 @@ from typing import Literal, NamedTuple
 
 RefKind = Literal["branch", "commit", "tag"]
 
-_GIT = shutil.which("git")
 _GIT_TIMEOUT = 10
 
 
@@ -30,11 +29,12 @@ class ResolvedViewRef(NamedTuple):
 
 def _git_run(repo_root: Path, *args: str) -> str | None:
     """Run a git command in ``repo_root`` and return stripped stdout, or ``None`` on failure."""
-    if _GIT is None:
+    git = shutil.which("git")
+    if git is None:
         return None
     try:
         result = subprocess.run(  # noqa: S603 (subprocess-without-shell-equals-true)
-            [_GIT, "-C", str(repo_root), *args],
+            [git, "-C", str(repo_root), *args],
             capture_output=True,
             text=True,
             check=True,
@@ -90,7 +90,7 @@ def resolve_view_ref(*, pin: str, repo_root: Path, branch: str) -> ResolvedViewR
     if pin not in ("commit", "tag"):
         msg = f"unsupported pin {pin!r}; expected 'branch', 'commit', or 'tag'"
         raise ValueError(msg)
-    if _GIT is None:
+    if shutil.which("git") is None:
         return ResolvedViewRef(
             ViewRef(branch, "branch"),
             used_fallback=True,

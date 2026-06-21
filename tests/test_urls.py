@@ -5,7 +5,13 @@ from __future__ import annotations
 import pytest
 
 from mkdocs_source_links.ref import RefKind
-from mkdocs_source_links.urls import SUPPORTED_FORGES, detect_forge, repo_view_url
+from mkdocs_source_links.urls import (
+    SUPPORTED_FORGES,
+    _azure_version_prefix,
+    _gitea_ref_segment,
+    detect_forge,
+    repo_view_url,
+)
 
 
 @pytest.mark.parametrize(
@@ -196,6 +202,81 @@ def test_repo_view_url_git_suffix_stripped() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    ("repo_url", "expected_base_blob"),
+    [
+        (
+            "https://github.com/o/r?tab=readme",
+            "https://github.com/o/r/blob/main/x",
+        ),
+        (
+            "https://github.com/o/r#readme",
+            "https://github.com/o/r/blob/main/x",
+        ),
+        (
+            "https://github.com/o/r.git?foo=bar",
+            "https://github.com/o/r/blob/main/x",
+        ),
+        (
+            "https://dev.azure.com/o/p/_git/r?foo=bar",
+            "https://dev.azure.com/o/p/_git/r?path=/x&version=GBmain",
+        ),
+    ],
+)
+def test_repo_view_url_normalizes_repo_url(repo_url: str, expected_base_blob: str) -> None:
+    assert (
+        repo_view_url(
+            repo_url=repo_url,
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+        )
+        == expected_base_blob
+    )
+
+
+def test_repo_view_url_non_url_base_with_explicit_forge() -> None:
+    assert (
+        repo_view_url(
+            repo_url="scm.internal.example/o/r.git",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+            forge="github",
+        )
+        == "scm.internal.example/o/r/blob/main/x"
+    )
+
+
+def test_repo_view_url_non_url_base_without_git_suffix() -> None:
+    assert (
+        repo_view_url(
+            repo_url="scm.internal.example/o/r",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+            forge="github",
+        )
+        == "scm.internal.example/o/r/blob/main/x"
+    )
+
+
+def test_repo_view_url_preserves_non_default_port() -> None:
+    assert (
+        repo_view_url(
+            repo_url="https://github.example.com:8443/o/r",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+        )
+        == "https://github.example.com:8443/o/r/blob/main/x"
+    )
+
+
 def test_repo_view_url_explicit_forge_override() -> None:
     # Unknown host, but the forge is forced.
     assert (
@@ -226,6 +307,30 @@ def test_repo_view_url_unknown_host_returns_none() -> None:
 
 def test_supported_forges_contains_expected() -> None:
     assert set(SUPPORTED_FORGES) == {"github", "gitlab", "bitbucket", "gitea", "azure"}
+
+
+@pytest.mark.parametrize(
+    ("ref_kind", "expected"),
+    [
+        ("branch", "branch"),
+        ("commit", "commit"),
+        ("tag", "tag"),
+    ],
+)
+def test_gitea_ref_segment(ref_kind: RefKind, expected: str) -> None:
+    assert _gitea_ref_segment(ref_kind) == expected
+
+
+@pytest.mark.parametrize(
+    ("ref_kind", "expected"),
+    [
+        ("branch", "GB"),
+        ("commit", "GC"),
+        ("tag", "GT"),
+    ],
+)
+def test_azure_version_prefix(ref_kind: RefKind, expected: str) -> None:
+    assert _azure_version_prefix(ref_kind) == expected
 
 
 def test_repo_view_url_invalid_explicit_forge_raises() -> None:

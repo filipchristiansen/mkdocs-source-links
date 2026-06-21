@@ -1,8 +1,12 @@
 # Forges
 
-The plugin builds forge view URLs based on `repo_url`. Public forge hosts are detected
-automatically. Hosts that cannot be identified are left unchanged (links are passed through
-verbatim) unless you set [`forge`](configuration.md#options) explicitly.
+The plugin builds forge view URLs based on `repo_url`. Use an **HTTPS** repository URL (the same
+shape MkDocs expects for theme repo/edit links). Query strings and URL fragments in `repo_url` are
+stripped when building forge links.
+
+Public forge hosts are detected automatically. When autodetection fails and no [`forge`](configuration.md#options)
+override is set, the plugin emits a **once-per-build warning** and leaves matching `../` links
+unchanged.
 
 A trailing `.git` suffix on `repo_url` is stripped when building view URLs.
 

@@ -136,6 +136,20 @@ def test_mkdocs_build_rewrites_parent_links_by_forge(
     assert f'href="{dir_url}"' in html
 
 
+def test_mkdocs_build_bitbucket_src_edit_uri_uses_branch_from_path(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(
+        tmp_path,
+        repo_url="https://bitbucket.org/example/test-repo",
+        edit_uri="src/develop/docs/",
+    )
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert 'href="https://bitbucket.org/example/test-repo/src/develop/backend/config.py"' in html
+    assert 'href="https://bitbucket.org/example/test-repo/src/develop/scripts"' in html
+
+
 def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
     sha = init_git_repo(tmp_path, git_exe)
@@ -296,7 +310,7 @@ def test_mkdocs_build_log_rewrites_summary(tmp_path: Path) -> None:
 
     stderr = _run_mkdocs_build_stderr(tmp_path)
 
-    assert "Rewrote 2 ../ links across 1 page" in stderr
+    assert "Rewrote 2 links across 1 page" in stderr
 
 
 def test_mkdocs_build_log_rewrites_verbose(tmp_path: Path) -> None:
@@ -306,7 +320,7 @@ def test_mkdocs_build_log_rewrites_verbose(tmp_path: Path) -> None:
     stderr = _run_mkdocs_build_stderr(tmp_path)
 
     assert "index.md: rewrote 2 links" in stderr
-    assert "Rewrote 2 ../ links across 1 page" in stderr
+    assert "Rewrote 2 links across 1 page" in stderr
 
 
 def test_mkdocs_build_log_rewrites_silent_with_quiet_flag(tmp_path: Path) -> None:
