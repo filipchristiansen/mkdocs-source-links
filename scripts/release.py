@@ -274,7 +274,7 @@ def _cmd_prep(version: str) -> None:
     _run("make", "ci")
 
     _run("git", "add", "pyproject.toml", "CHANGELOG.md", "uv.lock")
-    _run("git", "commit", "-m", f"chore: release v{version}")
+    _run("git", "commit", "-s", "-S", "-m", f"chore: release v{version}")
     _run("git", "push", "-u", "origin", branch)
 
     notes = _extract_notes(version)
