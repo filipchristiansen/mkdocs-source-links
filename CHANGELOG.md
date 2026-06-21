@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Inline link destinations with balanced or backslash-escaped parentheses (for example `[x](../file\(draft\).md)` and `[x](../file(draft).md)`) are parsed with a CommonMark-style scanner and rewritten instead of being left unchanged.
+- Reference-definition labels with nested (`[a [b]]: ../path`) or backslash-escaped (`[a\]b]: ../path`) `]` characters are matched with bracket-aware scanning, consistent with inline link labels; their destinations also support escaped and balanced parentheses.
 
 ## [0.7.0] - 2026-06-21
 
