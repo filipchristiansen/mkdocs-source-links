@@ -99,3 +99,50 @@ def test_rewrite_inline_link_with_unbalanced_parens_left_unchanged(repo_tree: Pa
     out = rewrite_on_docs_page(repo_tree, md)
     assert out == md
     assert "github.com" not in out
+
+
+def test_rewrite_inline_link_angle_bracket_with_escaped_char(repo_tree: Path) -> None:
+    md = r"[env](<../env\.example>)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"[env]({REPO}/blob/main/env.example)\n"
+
+
+def test_rewrite_inline_link_angle_bracket_with_inner_angle_unchanged(repo_tree: Path) -> None:
+    md = "[x](<../a<b>).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_inline_link_unterminated_angle_bracket_unchanged(repo_tree: Path) -> None:
+    md = "[env](<../env.example).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_inline_link_empty_destination_unchanged(repo_tree: Path) -> None:
+    md = "[x]().\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_inline_link_unbalanced_open_paren_unchanged(repo_tree: Path) -> None:
+    md = "[x](../a( ).\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_inline_link_title_with_escaped_quote(repo_tree: Path) -> None:
+    md = r'[env](../env.example "a \" b").' + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f'[env]({REPO}/blob/main/env.example "a \\" b").\n'
+
+
+def test_rewrite_inline_link_unterminated_title_unchanged(repo_tree: Path) -> None:
+    md = '[env](../env.example "unterminated).\n'
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
