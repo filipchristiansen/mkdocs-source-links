@@ -12,6 +12,7 @@ description: >-
 
 When the user asks to **commit staged changes and create a PR** (or uses a short phrase like *"commit and PR"*, *"ship it"*, *"commit and open PR"*, *"do the usual commit and PR"*, or similar), do the following without asking for confirmation unless something is ambiguous:
 
+0. **Pre-flight (never skip)**: Run `git status` and `git branch --show-current` first. **Never commit on `main`** — there are no exceptions, including follow-ups or "add to the same PR" requests. If you are on `main` (e.g. because the PR you meant to amend has already merged, or a checkout switched branches), create a new branch before committing. Also confirm the target PR is still open (`gh pr view <n> --json state`) before assuming you can push more commits to it; if it has merged, branch off `main` and open a new PR.
 1. **Branch**: Create a new branch from current state with a **suitable name** (e.g. `feat/github-line-anchors`, `fix/relative-path-rewriting`, `test/rewrite-edge-cases`, `refactor/plugin-config`, `chore/ci-matrix`). Use conventional prefixes when they fit: `docs/`, `fix/`, `feat/`, `chore/`, `refactor/`, `test/`, `enhance/`, etc.
 2. **Changelog**: Consider whether `CHANGELOG.md` `[Unreleased]` needs an entry **before** committing, so it can ship in the same commit when warranted:
    - **Add** for user-facing plugin changes (`feat`, `fix`) and breaking changes.
