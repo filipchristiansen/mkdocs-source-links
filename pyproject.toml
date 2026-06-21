@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-source-links"
-version = "0.7.0"
+version = "0.7.1"
 description = "MkDocs plugin that rewrites `[text](../path)` inline links and `[ref]: ../path` definitions to forge view URLs during `on_page_markdown`."
 readme = "README.md"
 license = "MIT"
