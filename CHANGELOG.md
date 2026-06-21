@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Build warning when `extra.git_branch` is set to a non-string value; the value is still coerced with `str()` so existing configs keep working.
+
 ### Changed
 
 - `warn_on_missing` emits at most one warning per distinct missing target on a page; a target repeated across several links no longer produces a duplicate warning for each occurrence.

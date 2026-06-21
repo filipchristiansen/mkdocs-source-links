@@ -5,6 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from mkdocs.plugins import get_plugin_logger
+
+log = get_plugin_logger(__name__)
+
 
 def resolve_branch(
     *,
@@ -22,7 +26,8 @@ def resolve_branch(
     plugin_branch : str | None
         Value of the plugin's ``branch`` config option, if set.
     extra : Mapping[str, Any]
-        MkDocs ``extra`` mapping; ``git_branch`` is consulted when present.
+        MkDocs ``extra`` mapping; ``git_branch`` is consulted when present. A non-string
+        ``git_branch`` is coerced with ``str()`` and logs a build warning.
     edit_uri : str | None
         MkDocs ``edit_uri``; the segment after ``edit/``, ``blob/``, or Bitbucket ``src/`` is used
         as the branch name when present. GitLab-style ``-/edit/<branch>/…`` paths are supported.
@@ -35,6 +40,12 @@ def resolve_branch(
     if plugin_branch:
         return plugin_branch
     if branch := extra.get("git_branch"):
+        if not isinstance(branch, str):
+            log.warning(
+                "extra.git_branch should be a string; got %r (%s). Coercing with str().",
+                branch,
+                type(branch).__name__,
+            )
         return str(branch)
     if edit_uri:
         parts = edit_uri.strip("/").split("/")
