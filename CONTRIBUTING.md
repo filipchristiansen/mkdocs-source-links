@@ -55,7 +55,8 @@ and for GitHub Actions. Maintainers review and merge after CI passes.
    with Python 3.12 (a representative version from that matrix).
 
 5. Include `Signed-off-by: Your Name <email@example.com>` in each commit message (see
-   [Developer Certificate of Origin](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/DCO1.1.md)). Use `git commit -s` to add this automatically.
+   [Developer Certificate of Origin](https://github.com/filipchristiansen/mkdocs-source-links/blob/main/DCO1.1.md)). Use `git commit -s` to add this automatically. The **DCO** workflow enforces a
+   matching sign-off on every PR commit; fix existing commits with `git rebase --signoff main`.
 
 ## Coding standards
 
