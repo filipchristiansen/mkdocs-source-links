@@ -26,8 +26,10 @@ def resolve_branch(
     plugin_branch : str | None
         Value of the plugin's ``branch`` config option, if set.
     extra : Mapping[str, Any]
-        MkDocs ``extra`` mapping; ``git_branch`` is consulted when present. A non-string
-        ``git_branch`` is coerced with ``str()`` and logs a build warning.
+        MkDocs ``extra`` mapping; ``git_branch`` is consulted when set (not ``None``). A non-string
+        ``git_branch`` is coerced with ``str()`` and logs a build warning. An empty or
+        whitespace-only ``git_branch`` is ignored with a warning, falling back to ``edit_uri`` or
+        ``main``.
     edit_uri : str | None
         MkDocs ``edit_uri``; the segment after ``edit/``, ``blob/``, or Bitbucket ``src/`` is used
         as the branch name when present. GitLab-style ``-/edit/<branch>/…`` paths are supported.
@@ -39,14 +41,20 @@ def resolve_branch(
     """
     if plugin_branch:
         return plugin_branch
-    if branch := extra.get("git_branch"):
+    if (branch := extra.get("git_branch")) is not None:
         if not isinstance(branch, str):
             log.warning(
                 "extra.git_branch should be a string; got %r (%s). Coercing with str().",
                 branch,
                 type(branch).__name__,
             )
-        return str(branch)
+            return str(branch)
+        if branch.strip():
+            return branch
+        log.warning(
+            "extra.git_branch is set but empty; ignoring it and falling back "
+            "to edit_uri or 'main'.",
+        )
     if edit_uri:
         parts = edit_uri.strip("/").split("/")
         if len(parts) >= 3 and parts[0] == "-" and parts[1] in ("edit", "blob"):

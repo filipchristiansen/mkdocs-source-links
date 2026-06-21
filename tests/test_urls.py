@@ -220,6 +220,10 @@ def test_repo_view_url_git_suffix_stripped() -> None:
             "https://github.com/o/r/blob/main/x",
         ),
         (
+            "https://github.com/o/r.GIT",
+            "https://github.com/o/r/blob/main/x",
+        ),
+        (
             "https://dev.azure.com/o/p/_git/r?foo=bar",
             "https://dev.azure.com/o/p/_git/r?path=/x&version=GBmain",
         ),
@@ -242,6 +246,20 @@ def test_repo_view_url_non_url_base_with_explicit_forge() -> None:
     assert (
         repo_view_url(
             repo_url="scm.internal.example/o/r.git",
+            ref="main",
+            ref_kind="branch",
+            repo_path="x",
+            is_dir=False,
+            forge="github",
+        )
+        == "scm.internal.example/o/r/blob/main/x"
+    )
+
+
+def test_repo_view_url_non_url_base_uppercase_git_suffix_stripped() -> None:
+    assert (
+        repo_view_url(
+            repo_url="scm.internal.example/o/r.GIT",
             ref="main",
             ref_kind="branch",
             repo_path="x",
