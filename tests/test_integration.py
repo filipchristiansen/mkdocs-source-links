@@ -161,6 +161,39 @@ def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path, git_exe: str) -> 
     assert f'href="https://github.com/example/test-repo/tree/{sha}/scripts"' in html
 
 
+def test_mkdocs_build_pin_commit_in_subdir_config_resolves_head_sha(
+    tmp_path: Path, git_exe: str
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    _setup_doc_site(project)
+    sha = init_git_repo(tmp_path, git_exe)
+    _write_mkdocs_yml(project, plugin_options={"pin": "commit"})
+
+    site = project / "site"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "mkdocs",
+            "build",
+            "-f",
+            str(project / "mkdocs.yml"),
+            "-d",
+            str(site),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    html = (site / "index.html").read_text()
+
+    assert f'href="https://github.com/example/test-repo/blob/{sha}/backend/config.py"' in html
+    assert "could not be resolved via git" not in result.stderr
+
+
 def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
     init_git_repo(tmp_path, git_exe)

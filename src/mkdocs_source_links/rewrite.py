@@ -258,6 +258,13 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     assets. Links inside fenced code blocks and inline code spans are left unchanged.
     Reference-style definitions (``[ref]: ../path``) are rewritten when not inside a fenced code
     block and not used as an image reference label.
+
+    The ``report_*`` callbacks are opt-in: when omitted, the corresponding events (missing targets,
+    rewrites, undetectable forge, skipped shared labels) are silently ignored and only affect the
+    returned markdown. The plugin (:class:`mkdocs_source_links.plugin.SourceLinksPlugin`) wires
+    these callbacks to MkDocs logging — for example it passes ``report_unknown_forge`` only when no
+    explicit ``forge`` is configured and warns once per build. Direct API callers that want the
+    same warnings must pass their own callbacks.
     """
 
     image_ref_labels = collect_image_reference_labels(markdown)
