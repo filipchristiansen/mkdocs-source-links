@@ -57,3 +57,45 @@ def test_rewrite_leaves_inline_link_with_non_parent_dest_unchanged(repo_tree: Pa
     md = "[other](src.py)\n"
     out = rewrite_on_docs_page(repo_tree, md)
     assert out == md
+
+
+def test_rewrite_inline_link_with_escaped_parens(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("draft\n")
+    md = r"[draft](../file\(draft\).md)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"[draft]({REPO}/blob/main/file%28draft%29.md)\n"
+
+
+def test_rewrite_inline_link_with_balanced_parens(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("draft\n")
+    md = "[draft](../file(draft).md)\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"[draft]({REPO}/blob/main/file%28draft%29.md)\n"
+
+
+def test_rewrite_inline_link_with_escaped_parens_and_fragment(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("a\nb\n")
+    md = r"[draft](../file\(draft\).md#L2)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"[draft]({REPO}/blob/main/file%28draft%29.md#L2)\n"
+
+
+def test_rewrite_inline_link_with_escaped_parens_and_title(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("draft\n")
+    md = r'[draft](../file\(draft\).md "Draft notes")' + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f'[draft]({REPO}/blob/main/file%28draft%29.md "Draft notes")\n'
+
+
+def test_rewrite_inline_link_angle_bracket_with_literal_parens(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("draft\n")
+    md = "[draft](<../file(draft).md>)\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == f"[draft]({REPO}/blob/main/file%28draft%29.md)\n"
+
+
+def test_rewrite_inline_link_with_unbalanced_parens_left_unchanged(repo_tree: Path) -> None:
+    md = "[x](../file(draft.md)\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
