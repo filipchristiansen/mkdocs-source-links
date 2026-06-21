@@ -28,7 +28,7 @@ def _repo_relative(*, target: Path, repo_root: Path) -> str | None:
         return None
 
 
-def _resolve_parent_href(
+def resolve_parent_href(
     *,
     page_abs_path: Path,
     href: str,
@@ -72,5 +72,5 @@ def repo_relative_path(*, page_abs_path: Path, href: str, repo_root: Path) -> st
         Repo-root-relative POSIX path, or ``None`` if ``href`` is not a ``../`` link or resolves
         outside ``repo_root``.
     """
-    resolved = _resolve_parent_href(page_abs_path=page_abs_path, href=href, repo_root=repo_root)
+    resolved = resolve_parent_href(page_abs_path=page_abs_path, href=href, repo_root=repo_root)
     return resolved[0] if resolved is not None else None
