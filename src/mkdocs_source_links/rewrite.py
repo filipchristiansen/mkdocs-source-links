@@ -12,15 +12,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ._fences import iter_fence_runs, iter_fenced_lines
-from ._paths import _resolve_parent_href, repo_relative_path
+from ._paths import repo_relative_path, resolve_parent_href
 from ._scan import (
-    _INLINE_CODE,
-    _collect_image_reference_labels,
-    _LinkTarget,
-    _normalize_ref_label,
-    _parse_ref_def,
-    _read_balanced_brackets,
-    _read_inline_destination,
+    INLINE_CODE,
+    LinkTarget,
+    collect_image_reference_labels,
+    normalize_ref_label,
+    parse_ref_def,
+    read_balanced_brackets,
+    read_inline_destination,
 )
 from .anchors import translate_line_fragment
 from .ref import ViewRef
@@ -45,7 +45,7 @@ class _RewriteContext:  # pylint: disable=too-many-instance-attributes
 
 def _parent_link_forge_url(path_part: str, fragment: str, ctx: _RewriteContext) -> str | None:
     """Build a forge view URL for a ``../`` path, or return ``None`` to leave the link unchanged."""
-    resolved_pair = _resolve_parent_href(
+    resolved_pair = resolve_parent_href(
         page_abs_path=ctx.page_abs_path,
         href=path_part,
         repo_root=ctx.repo_root,
@@ -80,7 +80,7 @@ def _parent_link_forge_url(path_part: str, fragment: str, ctx: _RewriteContext) 
     return f"{url}{out_fragment}"
 
 
-def _rewritten_inline_dest(dest: _LinkTarget, ctx: _RewriteContext) -> str | None:
+def _rewritten_inline_dest(dest: LinkTarget, ctx: _RewriteContext) -> str | None:
     """Return a rewritten ``(../path)`` destination for a parsed inline link, or ``None``."""
     url = _parent_link_forge_url(dest.path, dest.fragment, ctx)
     if url is None:
@@ -96,7 +96,7 @@ def _rewrite_inline_links_text(text: str, ctx: _RewriteContext) -> str:
     out: list[str] = []
     index = 0
     while index < len(text):
-        code_match = _INLINE_CODE.match(text, index)
+        code_match = INLINE_CODE.match(text, index)
         if code_match is not None:
             out.append(code_match.group(0))
             index = code_match.end()
@@ -112,7 +112,7 @@ def _rewrite_inline_links_text(text: str, ctx: _RewriteContext) -> str:
             index += 1
             continue
 
-        parsed = _read_balanced_brackets(text, bracket_start)
+        parsed = read_balanced_brackets(text, bracket_start)
         if parsed is None:
             out.append(text[index])
             index += 1
@@ -124,7 +124,7 @@ def _rewrite_inline_links_text(text: str, ctx: _RewriteContext) -> str:
             index = after_bracket
             continue
 
-        dest = _read_inline_destination(text, after_bracket)
+        dest = read_inline_destination(text, after_bracket)
         if dest is None:
             out.append(text[index : after_bracket + 1])
             index = after_bracket + 1
@@ -157,10 +157,10 @@ def _rewrite_inline_links(markdown: str, ctx: _RewriteContext) -> str:
 
 def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
     """Return a rewritten reference-definition line, or ``None`` if unchanged."""
-    ref = _parse_ref_def(body)
+    ref = parse_ref_def(body)
     if ref is None or not ref.path.startswith("../"):
         return None
-    if _normalize_ref_label(ref.label) in ctx.image_ref_labels:
+    if normalize_ref_label(ref.label) in ctx.image_ref_labels:
         if ctx.report_skipped_shared_label is not None:
             ctx.report_skipped_shared_label(ref.label)
         return None
@@ -260,7 +260,7 @@ def rewrite_repo_parent_links(  # pylint: disable=too-many-arguments
     block and not used as an image reference label.
     """
 
-    image_ref_labels = _collect_image_reference_labels(markdown)
+    image_ref_labels = collect_image_reference_labels(markdown)
     ctx = _RewriteContext(
         page_abs_path=page_abs_path,
         repo_root=repo_root,

@@ -16,22 +16,22 @@ from ._fences import iter_fence_runs
 # escaped ``]`` in labels). The ``(../path)`` destination is parsed by
 # :func:`_read_destination_and_title`, which handles escaped and balanced parentheses,
 # angle-bracket destinations, fragments, and titles.
-_INLINE_CODE = re.compile(r"(?P<backticks>`+)[\s\S]*?(?P=backticks)")
+INLINE_CODE = re.compile(r"(?P<backticks>`+)[\s\S]*?(?P=backticks)")
 
 # Reference-style link definitions start with an indented label: ``[label]: ../path``. The label
-# (which may contain nested or escaped ``]``) and destination are parsed by :func:`_parse_ref_def`.
+# (which may contain nested or escaped ``]``) and destination are parsed by :func:`parse_ref_def`.
 _REF_DEF_LABEL_START = re.compile(r"^(?P<indent>[ \t]{0,3})\[")
 
 # ASCII punctuation recognized after a backslash as a CommonMark escape in link destinations.
 _ASCII_PUNCTUATION = frozenset(r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
 
 
-def _normalize_ref_label(label: str) -> str:
+def normalize_ref_label(label: str) -> str:
     """Normalize a reference label (case-fold, collapse whitespace)."""
     return re.sub(r"\s+", " ", label.strip()).casefold()
 
 
-def _read_balanced_brackets(text: str, start: int) -> tuple[str, int] | None:
+def read_balanced_brackets(text: str, start: int) -> tuple[str, int] | None:
     """Return bracketed text and the index after ``]`` when ``text[start - 1]`` is ``[``."""
     depth = 1
     index = start
@@ -54,26 +54,26 @@ def _collect_image_reference_label_at(text: str, index: int) -> tuple[str, int] 
     """Return a normalized image-reference label and the index after the usage, or ``None``."""
     if not text.startswith("![", index):
         return None
-    alt_parsed = _read_balanced_brackets(text, index + 2)
+    alt_parsed = read_balanced_brackets(text, index + 2)
     if alt_parsed is None:
         return None
     alt, after_alt = alt_parsed
     if after_alt >= len(text):
-        return _normalize_ref_label(alt), after_alt
+        return normalize_ref_label(alt), after_alt
     if text[after_alt] == "[":
         if after_alt + 1 < len(text) and text[after_alt + 1] == "]":
-            return _normalize_ref_label(alt), after_alt + 2
-        ref_parsed = _read_balanced_brackets(text, after_alt + 1)
+            return normalize_ref_label(alt), after_alt + 2
+        ref_parsed = read_balanced_brackets(text, after_alt + 1)
         if ref_parsed is None:
             return None
         ref_label, after_ref = ref_parsed
-        return _normalize_ref_label(ref_label), after_ref
+        return normalize_ref_label(ref_label), after_ref
     if text[after_alt] in "([":
         return None
-    return _normalize_ref_label(alt), after_alt
+    return normalize_ref_label(alt), after_alt
 
 
-def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
+def collect_image_reference_labels(markdown: str) -> frozenset[str]:
     """Return normalized labels used by image reference usages in ``markdown``.
 
     Only scans text outside fenced code blocks so examples in fences cannot suppress real
@@ -85,7 +85,7 @@ def _collect_image_reference_labels(markdown: str) -> frozenset[str]:
             continue
         index = 0
         while index < len(text):
-            code_match = _INLINE_CODE.match(text, index)
+            code_match = INLINE_CODE.match(text, index)
             if code_match is not None:
                 index = code_match.end()
                 continue
@@ -210,7 +210,9 @@ def _read_link_title(text: str, index: int) -> tuple[str, int] | None:
 
 
 @dataclass(frozen=True)
-class _LinkTarget:
+class LinkTarget:
+    """Parsed inline link target: destination path, fragment, optional title, and end index."""
+
     path: str
     fragment: str
     title: str | None
@@ -238,7 +240,7 @@ def _read_destination_and_title(text: str, index: int) -> tuple[str, str | None,
     return raw_dest, None, cursor
 
 
-def _read_inline_destination(text: str, start: int) -> _LinkTarget | None:
+def read_inline_destination(text: str, start: int) -> LinkTarget | None:
     """Parse a ``(../path "title")`` inline link target; ``text[start]`` must be ``(``."""
     index = _skip_link_whitespace(text, start + 1)
     parsed = _read_destination_and_title(text, index)
@@ -249,7 +251,7 @@ def _read_inline_destination(text: str, start: int) -> _LinkTarget | None:
     if cursor >= len(text) or text[cursor] != ")":
         return None
     raw_path, raw_fragment = _split_destination_fragment(raw_dest)
-    return _LinkTarget(
+    return LinkTarget(
         path=_unescape_destination(raw_path),
         fragment=_unescape_destination(raw_fragment),
         title=title,
@@ -258,7 +260,9 @@ def _read_inline_destination(text: str, start: int) -> _LinkTarget | None:
 
 
 @dataclass(frozen=True)
-class _RefDef:
+class RefDef:
+    """Parsed reference definition: indent, label, path, fragment, and optional title."""
+
     indent: str
     label: str
     path: str
@@ -266,7 +270,7 @@ class _RefDef:
     title: str | None
 
 
-def _parse_ref_def(body: str) -> _RefDef | None:  # pylint: disable=too-many-return-statements
+def parse_ref_def(body: str) -> RefDef | None:  # pylint: disable=too-many-return-statements
     """Parse a single-line ``[label]: ../path "title"`` reference definition, or ``None``.
 
     The label is read with bracket-aware scanning so nested (``[a [b]]``) and backslash-escaped
@@ -275,7 +279,7 @@ def _parse_ref_def(body: str) -> _RefDef | None:  # pylint: disable=too-many-ret
     start_m = _REF_DEF_LABEL_START.match(body)
     if start_m is None:
         return None
-    label_parsed = _read_balanced_brackets(body, start_m.end())
+    label_parsed = read_balanced_brackets(body, start_m.end())
     if label_parsed is None:
         return None
     label, after_label = label_parsed
@@ -293,7 +297,7 @@ def _parse_ref_def(body: str) -> _RefDef | None:  # pylint: disable=too-many-ret
     if _skip_link_whitespace(body, cursor) != len(body):
         return None
     raw_path, raw_fragment = _split_destination_fragment(raw_dest)
-    return _RefDef(
+    return RefDef(
         indent=start_m.group("indent"),
         label=label,
         path=_unescape_destination(raw_path),

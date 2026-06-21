@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from conftest import REPO, rewrite_on_docs_page
-from mkdocs_source_links.rewrite import _collect_image_reference_labels
+from mkdocs_source_links._scan import collect_image_reference_labels
 
 
 def test_rewrite_skips_inline_image(repo_tree: Path) -> None:
@@ -94,12 +94,12 @@ def test_rewrite_rewrites_link_ref_when_full_image_ref_shares_alt_label(repo_tre
 
 
 def test_collect_image_reference_labels_shortcut_at_eof() -> None:
-    assert "solo" in _collect_image_reference_labels("![solo]")
+    assert "solo" in collect_image_reference_labels("![solo]")
 
 
 def test_collect_image_reference_labels_ignores_unbalanced_alt() -> None:
-    assert _collect_image_reference_labels("![unclosed") == frozenset()
+    assert collect_image_reference_labels("![unclosed") == frozenset()
 
 
 def test_collect_image_reference_labels_ignores_unbalanced_ref_label() -> None:
-    assert _collect_image_reference_labels("![alt][unclosed") == frozenset()
+    assert collect_image_reference_labels("![alt][unclosed") == frozenset()
