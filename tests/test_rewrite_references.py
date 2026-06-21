@@ -153,3 +153,23 @@ def test_rewrite_reference_definition_escaped_parens_in_path(repo_tree: Path) ->
 def test_rewrite_reference_definition_unclosed_label_unchanged(repo_tree: Path) -> None:
     md = "[a [nested]: ../src.py\n"
     assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_rewrite_reference_definition_empty_label_unchanged(repo_tree: Path) -> None:
+    md = "[]: ../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_rewrite_reference_definition_without_space_after_colon_unchanged(repo_tree: Path) -> None:
+    md = "[cfg]:../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_rewrite_reference_definition_unterminated_angle_dest_unchanged(repo_tree: Path) -> None:
+    md = "[cfg]: <../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_rewrite_reference_definition_trailing_content_unchanged(repo_tree: Path) -> None:
+    md = "[cfg]: ../src.py extra\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md
