@@ -215,6 +215,9 @@ without `git`.
 Embeds the current `HEAD` commit SHA in blob/tree URLs (permalink). If `git` is unavailable or fails,
 falls back to the resolved branch.
 
+Link targets are still validated against the **working tree at build time** only — the plugin does
+not check whether a path existed at the pinned commit. Build from the checkout you want reflected.
+
 ### `pin: tag`
 
 For **release documentation builds**: check out the release tag in CI, then:
@@ -227,6 +230,9 @@ plugins:
 
 If `HEAD` is exactly tagged (e.g. `v1.2.3`), URLs use that tag name. If `HEAD` is not exactly tagged,
 falls back to the resolved branch.
+
+As with `pin: commit`, only the URL ref comes from git — missing-target checks still use the
+**working tree at build time**, not historical tag snapshots.
 
 #### Hardcoded tag without tag checkout
 

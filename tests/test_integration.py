@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
-import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 
-_GIT = shutil.which("git")
+from git_utils import init_git_repo
+
 PluginOption = bool | str
+
+
+def _setup_nested_doc_site(root: Path) -> None:
+    guide = root / "docs" / "guide"
+    guide.mkdir(parents=True)
+    (guide / "page.md").write_text("[cfg](../../backend/config.py)\n")
+    backend = root / "backend"
+    backend.mkdir()
+    (backend / "config.py").write_text("X = 1\n")
 
 
 def _setup_doc_site(root: Path) -> None:
@@ -56,6 +64,11 @@ def _write_mkdocs_yml(
 
 
 def _run_mkdocs_build(root: Path) -> str:
+    _run_mkdocs_build_site(root)
+    return (root / "site" / "index.html").read_text()
+
+
+def _run_mkdocs_build_site(root: Path) -> None:
     site = root / "site"
     result = subprocess.run(
         [sys.executable, "-m", "mkdocs", "build", "-d", str(site)],
@@ -65,7 +78,6 @@ def _run_mkdocs_build(root: Path) -> str:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    return (site / "index.html").read_text()
 
 
 def _run_mkdocs_build_stderr(root: Path, *, quiet: bool = False) -> str:
@@ -85,31 +97,26 @@ def _run_mkdocs_build_stderr(root: Path, *, quiet: bool = False) -> str:
     return result.stderr
 
 
-def _init_git_repo(root: Path) -> str:
-    assert _GIT is not None
-    kwargs: dict[str, Any] = {"cwd": root, "capture_output": True, "text": True}
-    subprocess.run([_GIT, "init"], check=True, **kwargs)
-    subprocess.run([_GIT, "config", "user.email", "t@e.com"], check=True, **kwargs)
-    subprocess.run([_GIT, "config", "user.name", "T"], check=True, **kwargs)
-    subprocess.run([_GIT, "add", "-A"], check=True, **kwargs)
-    subprocess.run([_GIT, "commit", "-m", "init"], check=True, **kwargs)
-    return subprocess.run([_GIT, "rev-parse", "HEAD"], check=True, **kwargs).stdout.strip()
-
-
 @pytest.mark.parametrize(
-    ("repo_url", "edit_uri", "file_url_fragment", "dir_url_fragment"),
+    ("repo_url", "edit_uri", "file_url", "dir_url"),
     [
         (
             "https://github.com/example/test-repo",
             "edit/main/docs/",
-            "github.com/example/test-repo/blob/main/backend/config.py",
-            "github.com/example/test-repo/tree/main/scripts",
+            "https://github.com/example/test-repo/blob/main/backend/config.py",
+            "https://github.com/example/test-repo/tree/main/scripts",
         ),
         (
             "https://gitlab.com/example/test-repo",
             "-/edit/main/docs/",
-            "gitlab.com/example/test-repo/-/blob/main/backend/config.py",
-            "gitlab.com/example/test-repo/-/tree/main/scripts",
+            "https://gitlab.com/example/test-repo/-/blob/main/backend/config.py",
+            "https://gitlab.com/example/test-repo/-/tree/main/scripts",
+        ),
+        (
+            "https://bitbucket.org/example/test-repo",
+            "src/main/docs/",
+            "https://bitbucket.org/example/test-repo/src/main/backend/config.py",
+            "https://bitbucket.org/example/test-repo/src/main/scripts",
         ),
     ],
 )
@@ -117,50 +124,45 @@ def test_mkdocs_build_rewrites_parent_links_by_forge(
     tmp_path: Path,
     repo_url: str,
     edit_uri: str,
-    file_url_fragment: str,
-    dir_url_fragment: str,
+    file_url: str,
+    dir_url: str,
 ) -> None:
     _setup_doc_site(tmp_path)
     _write_mkdocs_yml(tmp_path, repo_url=repo_url, edit_uri=edit_uri)
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert file_url_fragment in html
-    assert dir_url_fragment in html
+    assert f'href="{file_url}"' in html
+    assert f'href="{dir_url}"' in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_commit_uses_head_sha(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    sha = _init_git_repo(tmp_path)
+    sha = init_git_repo(tmp_path, git_exe)
     _write_mkdocs_yml(tmp_path, plugin_options={"pin": "commit"})
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert f"github.com/example/test-repo/blob/{sha}/backend/config.py" in html
-    assert f"github.com/example/test-repo/tree/{sha}/scripts" in html
+    assert f'href="https://github.com/example/test-repo/blob/{sha}/backend/config.py"' in html
+    assert f'href="https://github.com/example/test-repo/tree/{sha}/scripts"' in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_exact_tag(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(tmp_path, plugin_options={"pin": "tag"})
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert "github.com/example/test-repo/blob/v1.0.0/backend/config.py" in html
-    assert "github.com/example/test-repo/tree/v1.0.0/scripts" in html
+    assert 'href="https://github.com/example/test-repo/blob/v1.0.0/backend/config.py"' in html
+    assert 'href="https://github.com/example/test-repo/tree/v1.0.0/scripts"' in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(
         tmp_path,
         repo_url="https://codeberg.org/example/test-repo",
@@ -170,8 +172,8 @@ def test_mkdocs_build_pin_tag_uses_exact_tag_on_codeberg(tmp_path: Path) -> None
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert "codeberg.org/example/test-repo/src/tag/v1.0.0/backend/config.py" in html
-    assert "codeberg.org/example/test-repo/src/tag/v1.0.0/scripts" in html
+    assert 'href="https://codeberg.org/example/test-repo/src/tag/v1.0.0/backend/config.py"' in html
+    assert 'href="https://codeberg.org/example/test-repo/src/tag/v1.0.0/scripts"' in html
 
 
 def test_mkdocs_build_azure_branch_uses_gb_version(tmp_path: Path) -> None:
@@ -184,18 +186,17 @@ def test_mkdocs_build_azure_branch_uses_gb_version(tmp_path: Path) -> None:
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert (
-        "dev.azure.com/org/project/_git/test-repo?path=/backend/config.py&amp;version=GBmain"
-        in html
+    azure_file = (
+        "https://dev.azure.com/org/project/_git/test-repo"
+        "?path=/backend/config.py&amp;version=GBmain"
     )
+    assert f'href="{azure_file}"' in html
 
 
-@pytest.mark.skipif(_GIT is None, reason="git not available")
-def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path) -> None:
+def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path, git_exe: str) -> None:
     _setup_doc_site(tmp_path)
-    _init_git_repo(tmp_path)
-    assert _GIT is not None
-    subprocess.run([_GIT, "tag", "v1.0.0"], cwd=tmp_path, check=True)
+    init_git_repo(tmp_path, git_exe)
+    subprocess.run([git_exe, "tag", "v1.0.0"], cwd=tmp_path, check=True)
     _write_mkdocs_yml(
         tmp_path,
         repo_url="https://dev.azure.com/org/project/_git/test-repo",
@@ -228,8 +229,50 @@ def test_mkdocs_build_rewrites_reference_definitions(tmp_path: Path) -> None:
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert "github.com/example/test-repo/blob/main/backend/config.py" in html
+    assert 'href="https://github.com/example/test-repo/blob/main/backend/config.py"' in html
     assert "../backend/config.py" not in html
+
+
+def test_mkdocs_build_rewrites_nested_docs_page_links(tmp_path: Path) -> None:
+    _setup_nested_doc_site(tmp_path)
+    (tmp_path / "mkdocs.yml").write_text(
+        """site_name: test
+repo_url: https://github.com/example/test-repo
+edit_uri: edit/main/docs/
+nav:
+  - Guide: guide/page.md
+plugins:
+  - source-links
+"""
+    )
+
+    _run_mkdocs_build_site(tmp_path)
+    html = (tmp_path / "site" / "guide" / "page" / "index.html").read_text()
+
+    assert 'href="https://github.com/example/test-repo/blob/main/backend/config.py"' in html
+    assert "../../backend/config.py" not in html
+
+
+def test_mkdocs_build_warn_on_missing_target(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    (tmp_path / "docs" / "index.md").write_text("[gone](../missing.py)\n")
+    _write_mkdocs_yml(tmp_path)
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "does not exist" in stderr
+    assert "missing.py" in stderr
+
+
+def test_mkdocs_build_pin_commit_fallback_warns_without_git_repo(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, plugin_options={"pin": "commit"})
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "could not be resolved via git" in stderr
+    html = (tmp_path / "site" / "index.html").read_text()
+    assert 'href="https://github.com/example/test-repo/blob/main/backend/config.py"' in html
 
 
 def test_mkdocs_build_forge_override_on_custom_host(tmp_path: Path) -> None:
