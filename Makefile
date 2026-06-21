@@ -19,7 +19,7 @@ help:
 	@echo "  ----------------- Release -----------------------"
 	@echo "  release-prep   Bump, roll changelog, open release PR   (VERSION=X.Y.Z)"
 	@echo "  release-tag    Signed tag; publish workflow creates GitHub release  (VERSION=X.Y.Z)"
-	@echo "  verify-tag     Verify signed tag on GitHub                          (TAG=vX.Y.Z)"
+	@echo "  verify-tag     Verify signed tag on GitHub          (TAG=vX.Y.Z [REPO=owner/repo])"
 
 install:
 	uv python install 3.10
@@ -55,6 +55,8 @@ release-tag:
 	@test -n "$(VERSION)" || { echo "usage: make release-tag VERSION=X.Y.Z"; exit 1; }
 	uv run python scripts/release.py tag $(VERSION)
 
+REPO ?= filipchristiansen/mkdocs-source-links
+
 verify-tag:
-	@test -n "$(TAG)" || { echo "usage: make verify-tag TAG=vX.Y.Z"; exit 1; }
-	GITHUB_REPOSITORY=filipchristiansen/mkdocs-source-links TAG=$(TAG) bash .github/scripts/verify-release-tag.sh
+	@test -n "$(TAG)" || { echo "usage: make verify-tag TAG=vX.Y.Z [REPO=owner/repo]"; exit 1; }
+	GITHUB_REPOSITORY=$(REPO) TAG=$(TAG) bash .github/scripts/verify-release-tag.sh
