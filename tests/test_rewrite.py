@@ -465,6 +465,32 @@ def test_rewrite_skips_fenced_code_block(repo_tree: Path) -> None:
     )
 
 
+def test_rewrite_inside_html_comment_is_rewritten(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "<!-- [env](../env.example) -->\n"
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"<!-- [env]({REPO}/blob/main/env.example) -->\n"
+
+
+def test_rewrite_reference_definition_inside_html_comment_is_rewritten(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "<!--\n[cfg]: ../backend/src/config.py\n-->\n"
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"<!--\n[cfg]: {REPO}/blob/main/backend/src/config.py\n-->\n"
+
+
 def test_rewrite_skips_inline_code_span(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     md = "Write `[env](../env.example)` to link a repo file."
