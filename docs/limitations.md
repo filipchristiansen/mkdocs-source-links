@@ -26,6 +26,10 @@ suffixes in prose are not matched. Use fenced code blocks for examples that must
 Raw HTML links (`<a href="../...">`) are not rewritten; only markdown inline and reference-style
 `../` links are.
 
+**HTML comments are not treated as code.** A complete `[text](../path)` link or `[ref]: ../path`
+definition inside `<!-- ... -->` is rewritten like any other link. Use a fenced or inline code
+span to keep an example literal.
+
 **Images** are intentionally not rewritten. Inline images (`![alt](../path)`), including alt text
 with nested or escaped `]` characters, and image reference definitions (`![alt][ref]` with
 `[ref]: ../path`) are left unchanged because forge blob/tree URLs are HTML pages, not raw image
