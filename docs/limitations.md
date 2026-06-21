@@ -9,7 +9,8 @@ Complete inline `[text](../path)` links are matched, including titled links (`[t
 destinations (`[text](<../x>)`, which may contain spaces); the title and fragment are preserved, and
 spaces are percent-encoded in the resulting URL. Reference-style definitions (`[ref]: ../path`,
 optional title) are rewritten the same way; usages such as `[text][ref]` pick up the forge URL
-when the markdown processor resolves the reference.
+when the markdown processor resolves the reference. Inline and reference labels may contain nested
+(`[a [b]]`) or backslash-escaped (`[a\]b]`) `]` characters.
 
 Reference definitions must fit on a **single line**. Multi-line definitions (for example a title
 wrapped to the next line) are not matched and are left unchanged.

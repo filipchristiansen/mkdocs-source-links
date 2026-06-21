@@ -121,3 +121,35 @@ def test_rewrite_reference_definition_preserves_indent_with_title(repo_tree: Pat
 def test_rewrite_reference_definition_over_indent_unchanged(repo_tree: Path) -> None:
     md = "    [cfg]: ../backend/src/config.py\n"
     assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_rewrite_reference_definition_nested_bracket_label(repo_tree: Path) -> None:
+    assert (
+        rewrite_on_docs_page(repo_tree, "[a [nested]]: ../src.py\n")
+        == f"[a [nested]]: {REPO}/blob/main/src.py\n"
+    )
+
+
+def test_rewrite_reference_definition_escaped_bracket_label(repo_tree: Path) -> None:
+    md = r"[a\]b]: ../src.py" + "\n"
+    assert rewrite_on_docs_page(repo_tree, md) == (f"[a\\]b]: {REPO}/blob/main/src.py\n")
+
+
+def test_rewrite_reference_usage_with_nested_bracket_label(repo_tree: Path) -> None:
+    md = "See [config][a [nested]].\n\n[a [nested]]: ../backend/src/config.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == (
+        f"See [config][a [nested]].\n\n[a [nested]]: {REPO}/blob/main/backend/src/config.py\n"
+    )
+
+
+def test_rewrite_reference_definition_escaped_parens_in_path(repo_tree: Path) -> None:
+    (repo_tree / "file(draft).md").write_text("draft\n")
+    md = r"[draft]: ../file\(draft\).md" + "\n"
+    assert rewrite_on_docs_page(repo_tree, md) == (
+        f"[draft]: {REPO}/blob/main/file%28draft%29.md\n"
+    )
+
+
+def test_rewrite_reference_definition_unclosed_label_unchanged(repo_tree: Path) -> None:
+    md = "[a [nested]: ../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md

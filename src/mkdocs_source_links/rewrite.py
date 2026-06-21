@@ -21,20 +21,9 @@ from .urls import detect_forge, repo_view_url
 # use a line pass.
 _INLINE_CODE = re.compile(r"(?P<backticks>`+)[\s\S]*?(?P=backticks)")
 
-# Reference-style link definitions: ``[label]: ../path`` (up to 3 spaces indent, optional title).
-_REF_DEF = re.compile(
-    r"""
-    ^(?P<indent>[ \t]{0,3})
-    \[(?P<label>[^\]]+)\]:[ \t]+
-    (?:
-        <(?P<path_a>\.\./[^>\#\n]+)(?P<frag_a>\#[^>\n]*)?>
-      | (?P<path>\.\./[^\s\#]+)(?P<frag>\#[^\s]*)?
-    )
-    (?:[ \t]+(?P<title>"[^"]*"|'[^']*'|\([^)]*\)))?
-    [ \t]*$
-    """,
-    re.MULTILINE | re.VERBOSE,
-)
+# Reference-style link definitions start with an indented label: ``[label]: ../path``. The label
+# (which may contain nested or escaped ``]``) and destination are parsed by :func:`_parse_ref_def`.
+_REF_DEF_LABEL_START = re.compile(r"^(?P<indent>[ \t]{0,3})\[")
 
 # ASCII punctuation recognized after a backslash as a CommonMark escape in link destinations.
 _ASCII_PUNCTUATION = frozenset(r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
@@ -540,27 +529,67 @@ def _rewrite_inline_links(markdown: str, ctx: _RewriteContext) -> str:
     )
 
 
+@dataclass(frozen=True)
+class _RefDef:
+    indent: str
+    label: str
+    path: str
+    fragment: str
+    title: str | None
+
+
+def _parse_ref_def(body: str) -> _RefDef | None:  # pylint: disable=too-many-return-statements
+    """Parse a single-line ``[label]: ../path "title"`` reference definition, or ``None``.
+
+    The label is read with bracket-aware scanning so nested (``[a [b]]``) and backslash-escaped
+    (``[a\\]b]``) ``]`` characters are matched, mirroring inline link labels.
+    """
+    start_m = _REF_DEF_LABEL_START.match(body)
+    if start_m is None:
+        return None
+    label_parsed = _read_balanced_brackets(body, start_m.end())
+    if label_parsed is None:
+        return None
+    label, after_label = label_parsed
+    if not label.strip():
+        return None
+    if after_label >= len(body) or body[after_label] != ":":
+        return None
+    after_ws = _skip_link_whitespace(body, after_label + 1)
+    if after_ws == after_label + 1:
+        return None
+    parsed = _read_destination_and_title(body, after_ws)
+    if parsed is None:
+        return None
+    raw_dest, title, cursor = parsed
+    if _skip_link_whitespace(body, cursor) != len(body):
+        return None
+    raw_path, raw_fragment = _split_destination_fragment(raw_dest)
+    return _RefDef(
+        indent=start_m.group("indent"),
+        label=label,
+        path=_unescape_destination(raw_path),
+        fragment=_unescape_destination(raw_fragment),
+        title=title,
+    )
+
+
 def _rewrite_ref_def_line(body: str, ctx: _RewriteContext) -> str | None:
     """Return a rewritten reference-definition line, or ``None`` if unchanged."""
-    ref_m = _REF_DEF.match(body)
-    if ref_m is None:
+    ref = _parse_ref_def(body)
+    if ref is None or not ref.path.startswith("../"):
         return None
-    label = ref_m.group("label")
-    if _normalize_ref_label(label) in ctx.image_ref_labels:
+    if _normalize_ref_label(ref.label) in ctx.image_ref_labels:
         if ctx.report_skipped_shared_label is not None:
-            ctx.report_skipped_shared_label(label)
+            ctx.report_skipped_shared_label(ref.label)
         return None
-    path_part = ref_m.group("path") or ref_m.group("path_a")
-    fragment = ref_m.group("frag") or ref_m.group("frag_a") or ""
-    title = ref_m.group("title")
-    url = _parent_link_forge_url(path_part, fragment, ctx)
+    url = _parent_link_forge_url(ref.path, ref.fragment, ctx)
     if url is None:
         return None
     if ctx.report_rewrite is not None:
         ctx.report_rewrite()
-    title_suffix = f" {title}" if title else ""
-    indent = ref_m.group("indent")
-    return f"{indent}[{label}]: {url}{title_suffix}"
+    title_suffix = f" {ref.title}" if ref.title else ""
+    return f"{ref.indent}[{ref.label}]: {url}{title_suffix}"
 
 
 def _rewrite_reference_definitions(markdown: str, ctx: _RewriteContext) -> str:
