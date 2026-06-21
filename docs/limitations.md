@@ -7,7 +7,9 @@ Known limitations of the current release. Several are tracked on the
 
 Complete inline `[text](../path)` links are matched, including titled links (`[text](../x "title")`) and angle-bracket
 destinations (`[text](<../x>)`, which may contain spaces); the title and fragment are preserved, and
-spaces are percent-encoded in the resulting URL. Reference-style definitions (`[ref]: ../path`,
+spaces are percent-encoded in the resulting URL. A bare (non-angle-bracket) destination ends at the
+first space, so a link to a path that contains spaces such as `[text](../wide img.png)` is **not**
+matched; wrap the destination in angle brackets — `[text](<../wide img.png>)` — for it to be rewritten. Reference-style definitions (`[ref]: ../path`,
 optional title) are rewritten the same way; usages such as `[text][ref]` pick up the forge URL
 when the markdown processor resolves the reference. Inline and reference labels may contain nested
 (`[a [b]]`) or backslash-escaped (`[a\]b]`) `]` characters.
@@ -83,8 +85,11 @@ See [Pin modes and URL shape](forges.md#pin-modes-and-url-shape).
 When plugin `branch` and `extra.git_branch` are unset, the branch name is parsed from `edit_uri`
 by taking the **first path segment** after `edit/` or `blob/`. Branch names that contain `/`
 (for example `feature/my-branch` in `edit/feature/my-branch/docs/`) are truncated to the first
-segment only. Set [`branch`](configuration.md#options) or `extra.git_branch` explicitly for
-slash-containing branch names.
+segment only. This truncation is **silent** — no build-time warning is emitted, because a
+multi-segment `edit_uri` is indistinguishable from a nested docs directory (for example
+`edit/main/packages/app/docs/`) without knowing the repository layout. Set
+[`branch`](configuration.md#options) or `extra.git_branch` explicitly for slash-containing branch
+names so forge URLs use the full branch.
 
 ## Symlinks
 

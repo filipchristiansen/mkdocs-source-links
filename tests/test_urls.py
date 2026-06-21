@@ -31,6 +31,8 @@ from mkdocs_source_links.urls import (
         ("https://bitbucket.example.com/org/repo", None),
         # Hostnames where the forge name is not a distinct label:
         ("https://notgitlab.com/org/repo", None),
+        ("https://my-github.com/org/repo", None),
+        ("https://github-mirror.example.com/org/repo", None),
         # Unknown / ambiguous hosts:
         ("https://example.com/org/repo", None),
         ("not-a-url", None),

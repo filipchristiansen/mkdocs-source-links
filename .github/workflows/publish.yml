@@ -43,7 +43,7 @@ jobs:
         run: uv sync --all-groups --frozen
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run pytest --cov
 
       - name: Build documentation
         run: uv run mkdocs build --strict
