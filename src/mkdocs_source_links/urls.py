@@ -131,15 +131,13 @@ SUPPORTED_FORGES: tuple[str, ...] = tuple(_BUILDERS)
 
 
 def _host_matches_hint(host: str, needle: str) -> bool:
-    """Return whether ``needle`` appears as a hostname label in ``host``."""
-    return (
-        host == needle
-        or host.startswith(f"{needle}.")
-        or host.endswith((f".{needle}", f"-{needle}"))
-        or f".{needle}." in host
-        or f"-{needle}." in host
-        or f".{needle}-" in host
-    )
+    """Return whether ``needle`` is a complete dot-delimited label in ``host``.
+
+    Matching whole labels only avoids false positives where the forge name is merely a substring of
+    a label (for example ``my-github.com`` or ``notgitlab.com``); such ambiguous hosts return
+    ``None`` from :func:`detect_forge` and need an explicit ``forge`` setting.
+    """
+    return needle in host.split(".")
 
 
 def detect_forge(repo_url: str) -> str | None:

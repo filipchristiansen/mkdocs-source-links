@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Forge autodetection matches host hints on complete dot-delimited labels only, so hosts where a forge name is merely a substring of a label (for example `my-github.com` or `notgitlab.com`) are no longer misdetected; such hosts return no forge and need an explicit `forge:` setting.
+
 ## [0.7.1] - 2026-06-21
 
 ### Fixed
