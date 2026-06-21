@@ -17,13 +17,9 @@ _CHECK_DCO = Path(".github/scripts/check-dco.sh").resolve()
 _BASH = shutil.which("bash") or "/bin/bash"
 
 pytestmark = pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="CI helper scripts run on the Linux/macOS runners only",
+    sys.platform == "win32" or shutil.which("bash") is None,
+    reason="CI helper scripts require bash (Linux/macOS runners)",
 )
-
-
-def _bash_available() -> bool:
-    return shutil.which("bash") is not None
 
 
 def _env_with(**overrides: str) -> dict[str, str]:
@@ -44,8 +40,6 @@ def _run_verify_tag_version(cwd: Path, tag: str) -> subprocess.CompletedProcess[
 
 
 def test_verify_tag_version_matches(tmp_path: Path) -> None:
-    if not _bash_available():
-        pytest.skip("bash not available")
     (tmp_path / "pyproject.toml").write_text('version = "1.2.3"\n')
 
     result = _run_verify_tag_version(tmp_path, "v1.2.3")
@@ -55,8 +49,6 @@ def test_verify_tag_version_matches(tmp_path: Path) -> None:
 
 
 def test_verify_tag_version_mismatch_fails(tmp_path: Path) -> None:
-    if not _bash_available():
-        pytest.skip("bash not available")
     (tmp_path / "pyproject.toml").write_text('version = "1.2.3"\n')
 
     result = _run_verify_tag_version(tmp_path, "v9.9.9")
@@ -66,8 +58,6 @@ def test_verify_tag_version_mismatch_fails(tmp_path: Path) -> None:
 
 
 def test_verify_tag_version_missing_version_fails(tmp_path: Path) -> None:
-    if not _bash_available():
-        pytest.skip("bash not available")
     (tmp_path / "pyproject.toml").write_text('name = "x"\n')
 
     result = _run_verify_tag_version(tmp_path, "v1.2.3")
@@ -104,8 +94,6 @@ def _run_check_dco(repo: Path, base: str, head: str) -> subprocess.CompletedProc
 
 
 def test_check_dco_fails_on_missing_signoff(tmp_path: Path, git_exe: str) -> None:
-    if not _bash_available():
-        pytest.skip("bash not available")
     base = init_git_repo(tmp_path, git_exe)
     head = _commit(tmp_path, git_exe, "unsigned change", signoff=False)
 
@@ -116,8 +104,6 @@ def test_check_dco_fails_on_missing_signoff(tmp_path: Path, git_exe: str) -> Non
 
 
 def test_check_dco_passes_when_signed_off(tmp_path: Path, git_exe: str) -> None:
-    if not _bash_available():
-        pytest.skip("bash not available")
     base = init_git_repo(tmp_path, git_exe)
     head = _commit(tmp_path, git_exe, "signed change", signoff=True)
 
