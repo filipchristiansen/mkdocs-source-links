@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `warn_on_missing` emits at most one warning per distinct missing target on a page; a target repeated across several links no longer produces a duplicate warning for each occurrence.
+
 ### Fixed
 
 - Forge autodetection matches host hints on complete dot-delimited labels only, so hosts where a forge name is merely a substring of a label (for example `my-github.com` or `notgitlab.com`) are no longer misdetected; such hosts return no forge and need an explicit `forge:` setting.

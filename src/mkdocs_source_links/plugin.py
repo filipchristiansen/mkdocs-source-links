@@ -152,8 +152,14 @@ class SourceLinksPlugin(BasePlugin):
         report_missing: Callable[[str], None] | None = None
         if self.config.get("warn_on_missing", True):
             src_path = page.file.src_path
+            warned_targets: set[str] = set()
 
             def _warn(target: str) -> None:
+                # Warn once per distinct target on a page; a target repeated in several links
+                # would otherwise emit a duplicate warning for each occurrence.
+                if target in warned_targets:
+                    return
+                warned_targets.add(target)
                 log.warning("Link target does not exist: %s (in %s)", target, src_path)
 
             report_missing = _warn

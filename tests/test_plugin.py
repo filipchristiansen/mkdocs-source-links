@@ -151,6 +151,37 @@ def test_warn_on_missing_logs_warning(tmp_path: Path, caplog: pytest.LogCaptureF
     assert "missing.py" in caplog.text
 
 
+def test_warn_on_missing_dedupes_repeated_target(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _missing_target_setup(tmp_path)
+    plugin.config = {}
+    markdown = "[one](../missing.py) and [two](../missing.py)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.WARNING):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    assert caplog.text.count("../missing.py") == 1
+
+
+def test_warn_on_missing_warns_per_distinct_target(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    plugin, page, config, files = _missing_target_setup(tmp_path)
+    plugin.config = {}
+    markdown = "[a](../missing.py) and [b](../gone.py)."
+
+    plugin.on_config(config)
+    with caplog.at_level(logging.WARNING):
+        plugin.on_page_markdown(markdown, page=page, config=config, files=files)
+
+    assert "../missing.py" in caplog.text
+    assert "../gone.py" in caplog.text
+
+
 def test_warn_on_missing_disabled_is_silent(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
