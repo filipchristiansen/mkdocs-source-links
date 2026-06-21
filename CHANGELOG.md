@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-21
+
 ### Added
 
 - Build warning (once per build) when `../` links cannot be rewritten because the git forge could not be autodetected from `repo_url` and no `forge:` override is set.
@@ -233,7 +235,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release: rewrite `](../path)` markdown links to GitHub `blob`/`tree` URLs in built HTML, leaving source files unchanged.
 - Optional `branch` config and branch resolution from `extra.git_branch` / `edit_uri`.
 
-[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/filipchristiansen/mkdocs-source-links/compare/v0.5.0...v0.5.1
