@@ -41,6 +41,16 @@ def test_rewrite_skips_image_when_alt_contains_link_like_parent_path(repo_tree: 
     assert "github.com" not in out
 
 
+def test_rewrite_leaves_inline_link_wrapped_in_literal_brackets_unchanged(repo_tree: Path) -> None:
+    # A complete inline link wrapped in literal brackets: the outer [...] is matched first and has
+    # no "(" after it, so the whole span is treated as text and the inner link is left unchanged.
+    # Documented limitation (docs/limitations.md); a correct fix needs CommonMark delimiter parsing.
+    md = "[note: see [src](../src.py)]\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
 def test_rewrite_leaves_unbalanced_bracket_text_unchanged(repo_tree: Path) -> None:
     md = "See [unclosed text\n"
     out = rewrite_on_docs_page(repo_tree, md)

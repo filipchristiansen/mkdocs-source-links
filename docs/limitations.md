@@ -14,6 +14,12 @@ optional title) are rewritten the same way; usages such as `[text][ref]` pick up
 when the markdown processor resolves the reference. Inline and reference labels may contain nested
 (`[a [b]]`) or backslash-escaped (`[a\]b]`) `]` characters.
 
+A complete inline `[text](../path)` link **wrapped in literal square brackets** — for example
+`[note: see [config](../config.md)]` — is left unchanged. The scanner matches the outer balanced
+`[...]` first and, finding no `(` after it, treats the whole span as text, so the inner link is not
+rewritten even though CommonMark renders it as a link. This is uncommon and fails safe (the inner
+link still works as written); a fully correct fix needs CommonMark delimiter-stack parsing.
+
 Reference definitions must fit on a **single line**. Multi-line definitions (for example a title
 wrapped to the next line) are not matched and are left unchanged.
 
