@@ -219,8 +219,11 @@ def test_mkdocs_build_pin_tag_uses_gt_on_azure(tmp_path: Path, git_exe: str) -> 
 
     html = _run_mkdocs_build(tmp_path)
 
-    assert "version=GTv1.0.0" in html
-    assert "path=/backend/config.py" in html
+    azure_file = (
+        "https://dev.azure.com/org/project/_git/test-repo"
+        "?path=/backend/config.py&amp;version=GTv1.0.0"
+    )
+    assert f'href="{azure_file}"' in html
 
 
 def test_mkdocs_build_enabled_false_leaves_links_unchanged(tmp_path: Path) -> None:
@@ -345,3 +348,75 @@ plugins:
     stderr = _run_mkdocs_build_stderr(tmp_path)
 
     assert "Rewrote" not in stderr
+
+
+def test_mkdocs_build_pin_tag_fallback_warns_when_head_not_tagged(
+    tmp_path: Path, git_exe: str
+) -> None:
+    _setup_doc_site(tmp_path)
+    init_git_repo(tmp_path, git_exe)
+    _write_mkdocs_yml(tmp_path, plugin_options={"pin": "tag"})
+
+    stderr = _run_mkdocs_build_stderr(tmp_path)
+
+    assert "could not be resolved via git" in stderr
+    html = (tmp_path / "site" / "index.html").read_text()
+    assert 'href="https://github.com/example/test-repo/blob/main/backend/config.py"' in html
+
+
+@pytest.mark.parametrize(
+    ("repo_url", "edit_uri", "file_url"),
+    [
+        (
+            "https://github.com/example/test-repo",
+            "edit/main/docs/",
+            "https://github.com/example/test-repo/blob/main/backend/config.py#L1-L2",
+        ),
+        (
+            "https://gitlab.com/example/test-repo",
+            "-/edit/main/docs/",
+            "https://gitlab.com/example/test-repo/-/blob/main/backend/config.py#L1-2",
+        ),
+        (
+            "https://bitbucket.org/example/test-repo",
+            "src/main/docs/",
+            "https://bitbucket.org/example/test-repo/src/main/backend/config.py#lines-1:2",
+        ),
+    ],
+)
+def test_mkdocs_build_translates_line_fragment_by_forge(
+    tmp_path: Path,
+    repo_url: str,
+    edit_uri: str,
+    file_url: str,
+) -> None:
+    _setup_doc_site(tmp_path)
+    (tmp_path / "docs" / "index.md").write_text("See [config](../backend/config.py#L1-L2).\n")
+    _write_mkdocs_yml(tmp_path, repo_url=repo_url, edit_uri=edit_uri)
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert f'href="{file_url}"' in html
+
+
+def test_mkdocs_build_normalizes_repo_url_git_suffix_and_query(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    _write_mkdocs_yml(tmp_path, repo_url="https://github.com/example/test-repo.git?foo=bar")
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert 'href="https://github.com/example/test-repo/blob/main/backend/config.py"' in html
+    assert "test-repo.git" not in html
+
+
+def test_mkdocs_build_rewrites_link_with_escaped_parens(tmp_path: Path) -> None:
+    _setup_doc_site(tmp_path)
+    (tmp_path / "backend" / "weird(name).py").write_text("X = 1\n")
+    (tmp_path / "docs" / "index.md").write_text(r"See [w](../backend/weird\(name\).py)." + "\n")
+    _write_mkdocs_yml(tmp_path)
+
+    html = _run_mkdocs_build(tmp_path)
+
+    assert (
+        'href="https://github.com/example/test-repo/blob/main/backend/weird%28name%29.py"' in html
+    )
