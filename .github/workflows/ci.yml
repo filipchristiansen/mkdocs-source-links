@@ -68,6 +68,27 @@ jobs:
       - name: pip-audit
         run: uv run pip-audit -l --desc on
 
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          version: "0.11.17"
+          python-version: "3.10"
+          enable-cache: true
+          cache-python: true
+          cache-suffix: docs
+
+      - name: Install dependencies
+        run: uv sync --group docs --frozen
+
+      # Mirrors `make docs`: a strict build fails on broken nav, links, or anchors.
+      - name: Build docs (strict)
+        run: uv run mkdocs build --strict
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
