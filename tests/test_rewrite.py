@@ -107,7 +107,7 @@ def test_rewrite_link_to_filename_starting_with_dot_dot(repo_tree: Path) -> None
         repo_url=REPO,
         view_ref=ViewRef("main", "branch"),
     )
-    assert f"]({REPO}/blob/main/..weird/file.txt)" in out
+    assert out == f"[f]({REPO}/blob/main/..weird/file.txt)\n"
 
 
 def test_rewrite_outside_repo_unchanged(repo_tree: Path) -> None:
@@ -520,9 +520,10 @@ def test_rewrite_real_link_with_adjacent_code(repo_tree: Path) -> None:
         view_ref=ViewRef("main", "branch"),
     )
     # Inline code and fenced blocks stay literal; lonely `](../x)` in prose is not matched.
-    assert "`](../x)`" in out
-    assert "```\n[env](../env.example)\n```" in out
-    assert f"[env]({REPO}/blob/main/env.example)" in out
+    assert out == (
+        f"Example `](../x)` then real [env]({REPO}/blob/main/env.example) and:\n\n"
+        "```\n[env](../env.example)\n```\n"
+    )
 
 
 def test_rewrite_titled_link_preserves_title(repo_tree: Path) -> None:
@@ -615,4 +616,4 @@ def test_rewrite_uses_branch(repo_tree: Path) -> None:
         repo_url=REPO,
         view_ref=ViewRef("master", "branch"),
     )
-    assert "blob/master/env.example" in out
+    assert out == f"[env]({REPO}/blob/master/env.example)."
