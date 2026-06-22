@@ -95,6 +95,56 @@ def test_repo_relative_path_filename_starting_with_dot_dot(repo_tree: Path) -> N
     )
 
 
+def _require_symlink_support(base: Path) -> None:
+    """Skip the calling test when the platform/privilege level can't create symlinks."""
+    probe = base / "_symlink_probe"
+    try:
+        probe.symlink_to(base)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are not supported on this platform")
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_repo_relative_path_symlinked_repo_root(tmp_path: Path) -> None:
+    _require_symlink_support(tmp_path)
+    real = tmp_path / "real_repo"
+    (real / "docs").mkdir(parents=True)
+    (real / "docs" / "page.md").write_text("# Page\n")
+    (real / "README.md").write_text("# Readme\n")
+    link = tmp_path / "link_repo"
+    link.symlink_to(real, target_is_directory=True)
+    page = link / "docs" / "page.md"
+    assert (
+        repo_relative_path(page_abs_path=page, href="../README.md", repo_root=link) == "README.md"
+    )
+
+
+def test_repo_relative_path_in_repo_symlink_target_keeps_lexical_name(repo_tree: Path) -> None:
+    _require_symlink_support(repo_tree)
+    real = repo_tree / "real_config.py"
+    real.write_text("X = 1\n")
+    link = repo_tree / "linked_config.py"
+    link.symlink_to(real)
+    page = repo_tree / "docs" / "page.md"
+    assert (
+        repo_relative_path(page_abs_path=page, href="../linked_config.py", repo_root=repo_tree)
+        == "linked_config.py"
+    )
+
+
+def test_repo_relative_path_symlinked_root_outside_target_rejected(tmp_path: Path) -> None:
+    _require_symlink_support(tmp_path)
+    real = tmp_path / "real_repo"
+    (real / "docs").mkdir(parents=True)
+    (real / "docs" / "page.md").write_text("# Page\n")
+    (tmp_path / "secret.txt").write_text("nope\n")
+    link = tmp_path / "link_repo"
+    link.symlink_to(real, target_is_directory=True)
+    page = link / "docs" / "page.md"
+    assert repo_relative_path(page_abs_path=page, href="../../secret.txt", repo_root=link) is None
+
+
 def test_rewrite_link_to_filename_starting_with_dot_dot(repo_tree: Path) -> None:
     weird = repo_tree / "..weird"
     weird.mkdir()

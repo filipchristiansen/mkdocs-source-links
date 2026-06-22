@@ -40,12 +40,17 @@ def resolve_parent_href(
     # Resolve the repository root once; the same value drives both the inside-repo check and the
     # relative-path base below.
     root = repo_root.resolve()
-    resolved = (page_abs_path.parent / href).resolve()
+    # Resolve the page's directory before the lexical join so the relative-path base shares a
+    # real prefix with the resolved root (e.g. when the root is reached via a symlinked component
+    # like macOS /tmp -> /private/tmp). The final href component stays lexical, so a symlinked
+    # target keeps the name written in the link.
+    lexical = page_abs_path.parent.resolve() / href
+    resolved = lexical.resolve()
     if not _is_within(target=resolved, root=root):
         return None
     repo_rel = Path(
         os.path.relpath(
-            os.path.normpath(str(page_abs_path.parent / href)),
+            os.path.normpath(str(lexical)),
             str(root),
         )
     ).as_posix()

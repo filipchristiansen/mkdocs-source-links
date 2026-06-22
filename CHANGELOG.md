@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Forge autodetection matches host hints on complete dot-delimited labels only, so hosts where a forge name is merely a substring of a label (for example `my-github.com` or `notgitlab.com`) are no longer misdetected; such hosts return no forge and need an explicit `forge:` setting.
 - A trailing `.git` suffix in `repo_url` is stripped case-insensitively, so an uppercase `.GIT` no longer leaks into the built forge URLs.
 - An empty or whitespace-only `extra.git_branch` is now ignored with a build warning (falling back to `edit_uri` or `main`) instead of being silently dropped; falsy non-string values (for example `0`) are coerced and warned about like any other non-string.
+- `../` links resolve to a clean repo-relative path when the repository root is reached through a symlinked path component (for example macOS `/tmp` -> `/private/tmp`, symlinked checkouts, or container bind mounts); previously the mismatch between the lexical link path and the resolved root produced broken forge URLs with `../` escapes.
 
 ## [0.7.1] - 2026-06-21
 
