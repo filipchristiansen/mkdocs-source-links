@@ -21,7 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Forge autodetection matches host hints on complete dot-delimited labels only, so hosts where a forge name is merely a substring of a label (for example `my-github.com` or `notgitlab.com`) are no longer misdetected; such hosts return no forge and need an explicit `forge:` setting.
 - A trailing `.git` suffix in `repo_url` is stripped case-insensitively, so an uppercase `.GIT` no longer leaks into the built forge URLs.
 - An empty or whitespace-only `extra.git_branch` is now ignored with a build warning (falling back to `edit_uri` or `main`) instead of being silently dropped; falsy non-string values (for example `0`) are coerced and warned about like any other non-string.
+- An empty or whitespace-only plugin `branch` option is now ignored with a build warning (falling back to `extra.git_branch`, `edit_uri`, or `main`), matching `extra.git_branch` handling; previously a whitespace-only value produced a broken `…/blob/%20%20/…` URL.
+- Backslash-escaped link and code openers (`\[text](../x)`, `\![alt](../x)`, and an escaped `` \` `` before a code span) are treated as CommonMark literal text, so their destinations are no longer rewritten and a link after an escaped backtick is rewritten correctly.
+- A bare `../` link that resolves to the repository root is rewritten to a clean forge root URL (for example `…/tree/<ref>`) instead of a malformed `…/tree/<ref>/.` path.
 - `../` links resolve to a clean repo-relative path when the repository root is reached through a symlinked path component (for example macOS `/tmp` -> `/private/tmp`, symlinked checkouts, or container bind mounts); previously the mismatch between the lexical link path and the resolved root produced broken forge URLs with `../` escapes.
+
+### Documentation
+
+- Correct the forge autodetection docs: a forge name must be a whole hostname label, so `github-internal.corp` is **not** autodetected; the GitHub Enterprise recipe now uses `github.example.com` and notes when an explicit `forge:` is required.
+- Note that text-level rewriting does not parse raw HTML block context, and that `../` targets with a `?query` are treated as a literal path (and therefore reported as missing).
 
 ## [0.7.1] - 2026-06-21
 

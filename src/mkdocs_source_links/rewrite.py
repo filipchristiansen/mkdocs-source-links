@@ -96,6 +96,11 @@ def _rewrite_inline_links_text(text: str, ctx: _RewriteContext) -> str:
     out: list[str] = []
     index = 0
     while index < len(text):
+        if text[index] == "\\":
+            out.append(text[index : index + 2])
+            index += 2
+            continue
+
         code_match = INLINE_CODE.match(text, index)
         if code_match is not None:
             out.append(code_match.group(0))

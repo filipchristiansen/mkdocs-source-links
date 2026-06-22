@@ -80,6 +80,23 @@ def test_rewrite_rewrites_link_ref_when_full_image_ref_shares_alt_label(repo_tre
     assert out == f"![logo][cfg]\n\n[logo]: {REPO}/blob/main/src.py\n"
 
 
+def test_escaped_image_opener_does_not_suppress_link_reference_definition(repo_tree: Path) -> None:
+    # ``\!`` is a literal ``!``, so ``\![logo][cfg]`` is not an image and must not register a label.
+    md = r"\![logo][cfg]" + "\n\n[cfg]: ../src.py\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == r"\![logo][cfg]" + f"\n\n[cfg]: {REPO}/blob/main/src.py\n"
+
+
+def test_real_image_opener_after_escaped_backslash_suppresses_definition(repo_tree: Path) -> None:
+    # ``\\`` is an escaped backslash, so ``![logo][cfg]`` is a real image and suppresses the def.
+    md = r"\\![logo][cfg]" + "\n\n[cfg]: ../src.py\n"
+    assert rewrite_on_docs_page(repo_tree, md) == md
+
+
+def test_collect_image_reference_labels_skips_escaped_image_opener() -> None:
+    assert collect_image_reference_labels(r"\![logo][cfg]") == frozenset()
+
+
 def test_collect_image_reference_labels_shortcut_at_eof() -> None:
     assert "solo" in collect_image_reference_labels("![solo]")
 

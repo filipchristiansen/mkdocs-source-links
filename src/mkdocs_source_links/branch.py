@@ -24,7 +24,8 @@ def resolve_branch(
     Parameters
     ----------
     plugin_branch : str | None
-        Value of the plugin's ``branch`` config option, if set.
+        Value of the plugin's ``branch`` config option, if set. An empty or whitespace-only value
+        is ignored with a warning, falling back to ``extra.git_branch``, ``edit_uri``, or ``main``.
     extra : Mapping[str, Any]
         MkDocs ``extra`` mapping; ``git_branch`` is consulted when set (not ``None``). A non-string
         ``git_branch`` is coerced with ``str()`` and logs a build warning. An empty or
@@ -39,8 +40,13 @@ def resolve_branch(
     str
         Branch name for forge URLs.
     """
-    if plugin_branch:
-        return plugin_branch
+    if plugin_branch is not None:
+        if plugin_branch.strip():
+            return plugin_branch
+        log.warning(
+            "plugin 'branch' is set but empty; ignoring it and falling back "
+            "to extra.git_branch, edit_uri, or 'main'.",
+        )
     if (branch := extra.get("git_branch")) is not None:
         if not isinstance(branch, str):
             log.warning(

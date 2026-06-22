@@ -85,6 +85,9 @@ def collect_image_reference_labels(markdown: str) -> frozenset[str]:
             continue
         index = 0
         while index < len(text):
+            if text[index] == "\\":
+                index += 2
+                continue
             code_match = INLINE_CODE.match(text, index)
             if code_match is not None:
                 index = code_match.end()

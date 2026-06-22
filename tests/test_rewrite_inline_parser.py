@@ -69,6 +69,36 @@ def test_rewrite_leaves_inline_link_with_non_parent_dest_unchanged(repo_tree: Pa
     assert out == md
 
 
+def test_rewrite_leaves_escaped_inline_link_opener_unchanged(repo_tree: Path) -> None:
+    # A backslash-escaped ``[`` is literal text in CommonMark, so ``\[x](../y)`` is not a link.
+    md = r"\[src](../src.py)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_rewrites_inline_link_after_escaped_backslash(repo_tree: Path) -> None:
+    # A double backslash is an escaped backslash, so the ``[`` after it is a real link opener.
+    md = r"\\[src](../src.py)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == "\\\\[src](" + f"{REPO}/blob/main/src.py" + ")\n"
+
+
+def test_rewrite_leaves_inline_link_after_odd_backslash_run_unchanged(repo_tree: Path) -> None:
+    # Three backslashes: the first pair escapes, the third escapes the ``[`` -> literal text.
+    md = r"\\\[src](../src.py)" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == md
+    assert "github.com" not in out
+
+
+def test_rewrite_rewrites_link_after_escaped_backtick(repo_tree: Path) -> None:
+    # A backslash-escaped backtick does not open a code span, so the link is rewritten.
+    md = r"\`[src](../src.py)`" + "\n"
+    out = rewrite_on_docs_page(repo_tree, md)
+    assert out == r"\`[src](" + f"{REPO}/blob/main/src.py" + ")`\n"
+
+
 def test_rewrite_inline_link_with_escaped_parens(repo_tree: Path) -> None:
     (repo_tree / "file(draft).md").write_text("draft\n")
     md = r"[draft](../file\(draft\).md)" + "\n"

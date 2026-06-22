@@ -20,6 +20,16 @@ def test_repo_relative_path_from_docs(repo_tree: Path) -> None:
     )
 
 
+def test_repo_relative_path_bare_parent_is_repo_root(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    assert repo_relative_path(page_abs_path=page, href="../", repo_root=repo_tree) == ""
+
+
+def test_repo_relative_path_parent_round_trip_is_repo_root(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    assert repo_relative_path(page_abs_path=page, href="../scripts/..", repo_root=repo_tree) == ""
+
+
 def test_repo_relative_path_to_nested_file(repo_tree: Path) -> None:
     page = repo_tree / "docs" / "page.md"
     assert (
@@ -379,6 +389,45 @@ def test_rewrite_directory_link_without_trailing_slash(repo_tree: Path) -> None:
         view_ref=ViewRef("develop", "branch"),
     )
     assert out == f"[scripts]({REPO}/tree/develop/scripts)."
+
+
+def test_rewrite_bare_parent_link_to_repo_root(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[root](../)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[root]({REPO}/tree/main)."
+
+
+def test_rewrite_parent_round_trip_link_to_repo_root(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[root](../scripts/..)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[root]({REPO}/tree/main)."
+
+
+def test_rewrite_bare_parent_link_to_repo_root_with_fragment(repo_tree: Path) -> None:
+    page = repo_tree / "docs" / "page.md"
+    md = "[root](../#section)."
+    out = rewrite_repo_parent_links(
+        md,
+        page_abs_path=page,
+        repo_root=repo_tree,
+        repo_url=REPO,
+        view_ref=ViewRef("main", "branch"),
+    )
+    assert out == f"[root]({REPO}/tree/main#section)."
 
 
 def test_rewrite_link_with_fragment(repo_tree: Path) -> None:

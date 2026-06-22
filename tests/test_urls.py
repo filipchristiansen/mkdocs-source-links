@@ -33,6 +33,7 @@ from mkdocs_source_links.urls import (
         ("https://notgitlab.com/org/repo", None),
         ("https://my-github.com/org/repo", None),
         ("https://github-mirror.example.com/org/repo", None),
+        ("https://github-internal.corp/org/repo", None),
         # Unknown / ambiguous hosts:
         ("https://example.com/org/repo", None),
         ("not-a-url", None),
@@ -173,6 +174,34 @@ def test_repo_view_url_per_forge(
             ref_kind=ref_kind,
             repo_path="a/b.py",
             is_dir=is_dir,
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    ("repo_url", "expected"),
+    [
+        ("https://github.com/o/r", "https://github.com/o/r/tree/main"),
+        ("https://gitlab.com/o/r", "https://gitlab.com/o/r/-/tree/main"),
+        ("https://bitbucket.org/o/r", "https://bitbucket.org/o/r/src/main"),
+        ("https://codeberg.org/o/r", "https://codeberg.org/o/r/src/branch/main"),
+        (
+            "https://dev.azure.com/o/p/_git/r",
+            "https://dev.azure.com/o/p/_git/r?path=/&version=GBmain",
+        ),
+    ],
+)
+def test_repo_view_url_repo_root_empty_path(repo_url: str, expected: str) -> None:
+    # A bare ``../`` link resolves to the repo root (empty repo_path); URLs must omit the path
+    # segment and the trailing ``/.`` it would otherwise produce.
+    assert (
+        repo_view_url(
+            repo_url=repo_url,
+            ref="main",
+            ref_kind="branch",
+            repo_path="",
+            is_dir=True,
         )
         == expected
     )
