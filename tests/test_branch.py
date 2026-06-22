@@ -24,6 +24,45 @@ def test_plugin_branch_wins() -> None:
     )
 
 
+def test_plugin_branch_empty_string_falls_back_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch="",
+            extra={"git_branch": "master"},
+            edit_uri="edit/main/docs/",
+        )
+    assert result == "master"
+    assert "plugin 'branch' is set but empty" in caplog.text
+
+
+def test_plugin_branch_blank_string_falls_back_to_main_with_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch="   ",
+            extra={},
+            edit_uri=None,
+        )
+    assert result == "main"
+    assert "plugin 'branch' is set but empty" in caplog.text
+
+
+def test_plugin_branch_non_blank_emits_no_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        result = resolve_branch(
+            plugin_branch="develop",
+            extra={},
+            edit_uri=None,
+        )
+    assert result == "develop"
+    assert "plugin 'branch' is set but empty" not in caplog.text
+
+
 def test_extra_git_branch() -> None:
     assert (
         resolve_branch(

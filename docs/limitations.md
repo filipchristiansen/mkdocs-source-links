@@ -1,7 +1,8 @@
 # Limitations
 
-Known limitations of the current release. Several are tracked on the
-[issue tracker](https://github.com/filipchristiansen/mkdocs-source-links/issues).
+Known limitations of the current release. If one affects you, please check the
+[issue tracker](https://github.com/filipchristiansen/mkdocs-source-links/issues) and open a new
+issue if it is not already reported.
 
 ## Link syntax
 
@@ -32,7 +33,14 @@ inline `[text](../path)` link inside an indented block **will be rewritten**; lo
 suffixes in prose are not matched. Use fenced code blocks for examples that must stay literal.
 
 Raw HTML links (`<a href="../...">`) are not rewritten; only markdown inline and reference-style
-`../` links are.
+`../` links are. Rewriting is text-level and does **not** parse raw HTML *block* context: a
+complete `[text](../path)` link or `[ref]: ../path` definition written inside a raw HTML block is
+rewritten like any other link. Use a fenced or inline code span to keep an example literal.
+
+`../` targets that include a `?query` string are treated as a **literal path** (the query is not
+split off), so the resolved path usually does not exist on disk. Such targets are therefore
+**reported as missing** — by default a missing-target warning is emitted, which fails
+`mkdocs build --strict` unless [`warn_on_missing: false`](configuration.md#options) is set.
 
 **HTML comments are not treated as code.** A complete `[text](../path)` link or `[ref]: ../path`
 definition inside `<!-- ... -->` is rewritten like any other link. Use a fenced or inline code

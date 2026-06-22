@@ -19,7 +19,7 @@ plus its own options.
 | `extra.git_branch` | Overrides `edit_uri` for branch resolution when plugin `branch` is unset. |
 
 `repo_url` also supplies the forge host for URL building. Autodetection uses hostname labels such as
-`github.com`, `gitlab.example.com`, or `github-internal.corp`. When the host cannot be identified, set
+`github.com` or `github.example.com`. When the host cannot be identified, set
 [`forge`](configuration.md#options) explicitly — see [Self-hosted GitLab on a neutral hostname](#self-hosted-gitlab-on-a-neutral-hostname)
 and [Forges](forges.md).
 
@@ -408,15 +408,19 @@ See [Forges](forges.md#self-hosted-instances) for autodetection vs explicit `for
 
 ### GitHub Enterprise
 
-Hosts such as `github-internal.corp` autodetect as GitHub (hostname label `github`). No `forge` needed:
+Hosts such as `github.example.com` autodetect as GitHub (whole hostname label `github`). No `forge`
+needed:
 
 ```yaml
-repo_url: https://github-internal.corp/org/repo
+repo_url: https://github.example.com/org/repo
 edit_uri: edit/main/docs/
 
 plugins:
   - source-links
 ```
+
+Hosts where `github` is only **part** of a label (for example `github-internal.corp`) are **not**
+autodetected; set `forge: github` explicitly for those.
 
 ### Monorepo with `docs_dir` at repo root
 

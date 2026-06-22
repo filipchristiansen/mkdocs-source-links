@@ -80,21 +80,30 @@ def _quote_part(part: str) -> str:
     return quote(part, safe="/")
 
 
+def _path_suffix(repo_path: str) -> str:
+    """Return ``/<encoded-path>`` for a non-empty repo path, or ``""`` for the repo root.
+
+    A repo-root target (``../``) resolves to an empty ``repo_path``; emitting no path segment
+    keeps the forge root URL clean (``…/tree/<ref>`` rather than ``…/tree/<ref>/.``).
+    """
+    return f"/{_quote_part(repo_path)}" if repo_path else ""
+
+
 def _github_url(req: _ForgeRequest) -> str:
     """Build a GitHub blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
+    return f"{req.base}/{kind}/{_quote_part(req.ref)}{_path_suffix(req.repo_path)}"
 
 
 def _gitlab_url(req: _ForgeRequest) -> str:
     """Build a GitLab blob/tree URL."""
     kind = "tree" if req.is_dir else "blob"
-    return f"{req.base}/-/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
+    return f"{req.base}/-/{kind}/{_quote_part(req.ref)}{_path_suffix(req.repo_path)}"
 
 
 def _bitbucket_url(req: _ForgeRequest) -> str:
     """Build a Bitbucket Cloud src URL (files and directories share the same path)."""
-    return f"{req.base}/src/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
+    return f"{req.base}/src/{_quote_part(req.ref)}{_path_suffix(req.repo_path)}"
 
 
 def _gitea_ref_segment(ref_kind: RefKind) -> str:
@@ -105,7 +114,7 @@ def _gitea_ref_segment(ref_kind: RefKind) -> str:
 def _gitea_url(req: _ForgeRequest) -> str:
     """Build a Gitea/Forgejo src URL (files and directories share the same path)."""
     kind = _gitea_ref_segment(req.ref_kind)
-    return f"{req.base}/src/{kind}/{_quote_part(req.ref)}/{_quote_part(req.repo_path)}"
+    return f"{req.base}/src/{kind}/{_quote_part(req.ref)}{_path_suffix(req.repo_path)}"
 
 
 def _azure_version_prefix(ref_kind: RefKind) -> str:

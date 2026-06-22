@@ -54,6 +54,10 @@ def resolve_parent_href(
             str(root),
         )
     ).as_posix()
+    # A link resolving to the repo root yields ``"."``; normalize it to an empty path so URL
+    # builders emit a clean forge root URL instead of a trailing ``/.``.
+    if repo_rel == ".":
+        repo_rel = ""
     return repo_rel, resolved
 
 

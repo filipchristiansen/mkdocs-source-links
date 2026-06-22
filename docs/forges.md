@@ -51,9 +51,10 @@ from an exact tag checkout, or paste a full forge URL for one-off links. See
 
 ## Autodetection limits
 
-Self-hosted detection matches forge names as **hostname labels** (for example `gitlab.example.com`
-or `github-internal.corp`), not arbitrary substrings. A host like `notgitlab.com` is not treated
-as GitLab. **Bitbucket Cloud** is only autodetected at `bitbucket.org`; self-hosted Bitbucket
+Self-hosted detection matches forge names as **whole hostname labels** (for example
+`gitlab.example.com` or `github.example.com`), not arbitrary substrings. Hosts like `notgitlab.com`
+or `github-internal.corp` — where the forge name is only **part** of a label — are not matched and
+need an explicit [`forge`](configuration.md#options) setting. **Bitbucket Cloud** is only autodetected at `bitbucket.org`; self-hosted Bitbucket
 Server/Data Center hostnames are not matched (see [unsupported forges](#unsupported-forges)). When
 autodetection cannot identify your forge, set [`forge`](configuration.md#options) explicitly.
 
