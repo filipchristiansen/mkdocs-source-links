@@ -15,6 +15,11 @@ missing=0
 while IFS= read -r sha; do
   [ -n "$sha" ] || continue
   author="$(git show -s --format='%an <%ae>' "$sha")"
+  # Bots (e.g. dependabot[bot]) cannot satisfy DCO: their sign-off email
+  # (support@github.com) never matches their author noreply address. Skip them.
+  case "$author" in
+    *"[bot]@users.noreply.github.com>") continue ;;
+  esac
   if git show -s --format='%(trailers:key=Signed-off-by,valueonly)' "$sha" | grep -qixF "$author"; then
     continue
   fi
