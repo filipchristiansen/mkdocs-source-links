@@ -8,6 +8,11 @@ updates:
       day: monday
     labels:
       - chore
+    # One weekly PR for all Actions pins (keeps codeql-action init/analyze in sync).
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: uv
     directory: /
@@ -18,3 +23,8 @@ updates:
     versioning-strategy: lockfile-only
     labels:
       - chore
+    # One weekly PR for all lockfile bumps.
+    groups:
+      uv:
+        patterns:
+          - "*"
