@@ -28,9 +28,10 @@ Install them with `make sync` or `uv sync --all-groups`. CI and publish workflow
 are kept minimal (currently MkDocs only). Dev tools are chosen for ecosystem fit (ruff, mypy,
 pytest, etc.).
 
-**Updates:** Dependabot (`.github/dependabot.yml`) opens weekly PRs for the lockfile
-(`versioning-strategy: lockfile-only` for uv — constraints in `pyproject.toml` are unchanged)
-and for GitHub Actions. Maintainers review and merge after CI passes.
+**Updates:** Dependabot (`.github/dependabot.yml`) opens one weekly grouped PR per
+ecosystem — uv lockfile (`versioning-strategy: lockfile-only`; constraints in
+`pyproject.toml` are unchanged) and GitHub Actions. Maintainers review and merge
+after CI passes.
 
 ## Workflow
 
