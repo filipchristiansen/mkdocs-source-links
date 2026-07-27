@@ -57,7 +57,11 @@ dev = [
     "pip-audit>=2.9.0",
     "hypothesis>=6.155.7",
 ]
-docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.27"]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.27",
+    "pymdown-extensions>=11.0",   # CVE-2026-61632 (path traversal in b64)
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
