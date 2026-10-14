@@ -60,7 +60,8 @@ dev = [
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.27",
-    "pymdown-extensions>=11.0",   # CVE-2026-61632 (path traversal in b64)
+    # >=11.0 fixes CVE-2026-61632; 12.2 breaks mkdocstrings highlighting on Python 3.10.
+    "pymdown-extensions>=11.0,<12.2",
 ]
 
 [tool.pytest.ini_options]
