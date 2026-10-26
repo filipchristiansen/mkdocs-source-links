@@ -21,7 +21,7 @@ help:
 	@echo "  release-tag    Signed tag; publish workflow creates GitHub release  (VERSION=X.Y.Z)"
 
 install:
-	uv python install 3.10
+	uv python install 3.11
 	$(MAKE) sync
 	uv run pre-commit install
 

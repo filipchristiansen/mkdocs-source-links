@@ -19,7 +19,7 @@ Security fixes follow the policy in [Security policy](https://github.com/filipch
 
 ## Platform support
 
-- **Python:** 3.10 and newer (see `requires-python` in `pyproject.toml`)
+- **Python:** 3.11 and newer (see `requires-python` in `pyproject.toml`)
 - **MkDocs:** 1.5 and newer (runtime dependency)
 
 There is no commercial support, SLA, or guaranteed response time for general issues. Security
