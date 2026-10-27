@@ -6,7 +6,7 @@ for concrete work see the [issue tracker](https://github.com/filipchristiansen/m
 
 ## Next 12 months
 
-- **Maintain compatibility** with MkDocs 1.x and Python 3.10+.
+- **Maintain compatibility** with MkDocs 1.x and Python 3.11+.
 - **Fix bugs** and edge cases reported via GitHub Issues.
 - **Keep docs and tests current** with each release.
 - **Improve forge handling** on a best-effort basis when users report self-hosted or autodetection gaps.
