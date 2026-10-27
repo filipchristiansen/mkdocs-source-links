@@ -10,7 +10,7 @@ participating, you agree to uphold it.
 This project uses [uv](https://docs.astral.sh/uv), [pre-commit](https://pre-commit.com), and a `Makefile`.
 
 ```bash
-make install   # install Python 3.10, sync all groups, set up pre-commit hooks
+make install   # install Python 3.11, sync all groups, set up pre-commit hooks
 ```
 
 When editing [`.github/scripts/`](https://github.com/filipchristiansen/mkdocs-source-links/tree/main/.github/scripts/): install [ShellCheck](https://www.shellcheck.net) locally — `brew install shellcheck` (macOS) or `sudo apt install shellcheck` (Linux). CI installs it automatically.
@@ -52,7 +52,7 @@ after CI passes.
    ```
 
 4. Open a pull request targeting `main` with a conventional title (for example `fix: ...`).
-   CI runs the same lint and test suite across Python 3.10-3.13. The Docs workflow builds
+   CI runs the same lint and test suite across Python 3.11-3.13. The Docs workflow builds
    with Python 3.12 (a representative version from that matrix).
 
 5. Include `Signed-off-by: Your Name <email@example.com>` in each commit message (see

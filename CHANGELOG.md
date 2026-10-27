@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Require Python 3.11 or newer; drop support for Python 3.10, which has reached end of life.
+
+### Security
+
+- Update certifi, filelock, and virtualenv to patched releases and constrain their minimum versions to prevent vulnerable resolutions.
+
 ## [0.7.2] - 2026-06-22
 
 ### Added
