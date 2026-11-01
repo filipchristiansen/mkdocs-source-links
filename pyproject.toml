@@ -65,8 +65,8 @@ docs = [
 
 [tool.uv]
 constraint-dependencies = [
-"certifi>=2026.10.19", # PYSEC-2026-4320: remove emSign roots after intermediate CA compromise.
-"filelock>=4.2.1",     # GHSA-567q-5qvw-pf92, GHSA-9vhv-jxww-xfm5, GHSA-v4x8-3wr5-3wq8: unsafe lock-file handling.
+    "certifi>=2026.10.19", # PYSEC-2026-4320: remove emSign roots after intermediate CA compromise.
+    "filelock>=4.2.1",     # GHSA-567q-5qvw-pf92, GHSA-9vhv-jxww-xfm5, GHSA-v4x8-3wr5-3wq8: unsafe lock-file handling.
     "msgpack>=1.2.3",     # CVE-2026-114613: C-extension memory leak and use-after-free.
     "virtualenv>=21.14.9", # GHSA-c978-59m8-c77v, GHSA-cw65-gx24-rc82, GHSA-43mp-35q3-x3fq (among others): shell injection and unsafe filesystem operations.
 ]
